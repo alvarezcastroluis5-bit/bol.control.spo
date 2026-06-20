@@ -215,6 +215,20 @@
       cursor: not-allowed;
     }
 
+    .btn-lapiz {
+      width: auto !important;
+      padding: 4px 9px !important;
+      margin-left: 8px;
+      margin-bottom: 0 !important;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #1e90ff;
+      color: white;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
     .mensaje {
       margin-top: 18px;
       padding: 13px;
@@ -448,6 +462,18 @@
 
         <div class="row">
           <div>
+            <label for="nombreCliente">Nombre del cliente</label>
+            <input type="text" id="nombreCliente" placeholder="Nombre completo" required>
+          </div>
+
+          <div>
+            <label for="numeroCliente">WhatsApp del cliente</label>
+            <input type="tel" id="numeroCliente" placeholder="+591XXXXXXXX" required>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
             <label for="tipoCuenta">Tipo de cuenta</label>
             <select id="tipoCuenta" required>
               <option value="">Seleccionar</option>
@@ -552,9 +578,27 @@
       <div id="panelRenovacion" style="display:none;">
 
         <div class="resultado">
+          <p>
+            <strong>Cliente:</strong>
+            <span id="renovacionNombreCliente">-</span>
+            <button type="button" id="btnEditarCliente" class="btn-lapiz">✏️</button>
+          </p>
+          <p><strong>WhatsApp:</strong> <span id="renovacionNumeroCliente">-</span></p>
           <p><strong>País de la cuenta:</strong> <span id="renovacionPaisCuenta">-</span></p>
           <p><strong>Fecha en la cual vencía:</strong> <span id="renovacionVencia">-</span></p>
           <p><strong>Días que le quedan:</strong> <span id="renovacionDias" class="contador">-</span></p>
+        </div>
+
+        <div id="bloqueEditarCliente" class="bloque-oculto">
+          <label for="editarNombreCliente">Nuevo nombre del cliente</label>
+          <input type="text" id="editarNombreCliente" placeholder="Nuevo nombre completo">
+
+          <label for="editarNumeroCliente">Nuevo WhatsApp del cliente</label>
+          <input type="tel" id="editarNumeroCliente" placeholder="+591XXXXXXXX">
+
+          <p class="nota">
+            Al actualizar, se guardará el dato anterior y el dato nuevo en el historial de cambios.
+          </p>
         </div>
 
         <label for="tiempoRenovacion">Ampliar tiempo de renovación</label>
@@ -663,6 +707,8 @@
     const btnBuscarRenovacion = document.getElementById("btnBuscarRenovacion");
 
     const panelRenovacion = document.getElementById("panelRenovacion");
+    const renovacionNombreCliente = document.getElementById("renovacionNombreCliente");
+    const renovacionNumeroCliente = document.getElementById("renovacionNumeroCliente");
     const renovacionPaisCuenta = document.getElementById("renovacionPaisCuenta");
     const renovacionPaisBanca = document.getElementById("renovacionPaisBanca");
     const renovacionVencia = document.getElementById("renovacionVencia");
@@ -670,6 +716,11 @@
     const renovacionCorreoBanca = document.getElementById("renovacionCorreoBanca");
     const renovacionTarjeta = document.getElementById("renovacionTarjeta");
     const tiempoRenovacion = document.getElementById("tiempoRenovacion");
+
+    const btnEditarCliente = document.getElementById("btnEditarCliente");
+    const bloqueEditarCliente = document.getElementById("bloqueEditarCliente");
+    const editarNombreCliente = document.getElementById("editarNombreCliente");
+    const editarNumeroCliente = document.getElementById("editarNumeroCliente");
 
     const btnCambiarBanca = document.getElementById("btnCambiarBanca");
     const bloqueCambiarBanca = document.getElementById("bloqueCambiarBanca");
@@ -822,6 +873,8 @@
       e.preventDefault();
 
       const correoCuenta = document.getElementById("correoCuenta").value.trim();
+      const nombreCliente = document.getElementById("nombreCliente").value.trim();
+      const numeroCliente = document.getElementById("numeroCliente").value.trim();
       const tipoCuenta = document.getElementById("tipoCuenta").value;
       const pais = document.getElementById("pais").value;
       const fechaAct = fechaActivacion.value;
@@ -831,7 +884,7 @@
       const tarjetaSegura = obtenerTarjetaSegura(numeroTarjetaInput);
       const fechasCalculadas = calcularFechasRegistro();
 
-      if (!correoCuenta || !tipoCuenta || !pais || !fechaAct || !tiempoSuscripcion || !correoBanca) {
+      if (!correoCuenta || !nombreCliente || !numeroCliente || !tipoCuenta || !pais || !fechaAct || !tiempoSuscripcion || !correoBanca) {
         mostrarMensaje(mensajeRegistro, "Completa todos los campos.", "error");
         return;
       }
@@ -849,6 +902,8 @@
       const datos = {
         action: "registro",
         correoCuenta,
+        nombreCliente,
+        numeroCliente,
         tipoCuenta,
         pais,
         fechaActivacion: fechaAct,
@@ -942,12 +997,25 @@
 
         card.innerHTML = `
           <h3>Registro ${index + 1}</h3>
-          <p><strong>Correo:</strong> ${escaparHTML(item.correoCuenta)}</p>
+
+          <p><strong>Correo de la cuenta:</strong> ${escaparHTML(item.correoCuenta)}</p>
+          <p><strong>Nombre del cliente:</strong> ${escaparHTML(item.nombreCliente)}</p>
+          <p><strong>WhatsApp del cliente:</strong> ${escaparHTML(item.numeroCliente)}</p>
+
           <p><strong>Tipo de cuenta:</strong> ${escaparHTML(item.tipoCuenta)}</p>
-          <p><strong>País:</strong> ${obtenerBanderaHTML(item.pais)} ${escaparHTML(item.pais)}</p>
+          <p><strong>País de la cuenta:</strong> ${obtenerBanderaHTML(item.pais)} ${escaparHTML(item.pais)}</p>
+
+          <p><strong>Fecha de activación:</strong> ${escaparHTML(item.fechaActivacion)}</p>
+          <p><strong>Tiempo de suscripción:</strong> ${escaparHTML(item.tiempoSuscripcion)} días</p>
+          <p><strong>Fecha de vencimiento:</strong> ${escaparHTML(item.fechaVencimiento)}</p>
+          <p><strong>Días restantes:</strong> ${escaparHTML(item.diasRestantes)}</p>
+
           <p><strong>Estado:</strong> <span class="${estadoClase}">${escaparHTML(item.estado)}</span></p>
+
           <p><strong>Correo de banca:</strong> ${escaparHTML(item.correoBanca)}</p>
+          <p><strong>País de banca:</strong> ${item.paisBanca ? obtenerBanderaHTML(item.paisBanca) + " " + escaparHTML(item.paisBanca) : "-"}</p>
           <p><strong>Tarjeta:</strong> ${escaparHTML(item.tarjetaEnmascarada)}</p>
+          <p><strong>Últimos 4 dígitos:</strong> ${escaparHTML(item.ultimos4Tarjeta)}</p>
         `;
 
         resultadoConsulta.appendChild(card);
@@ -994,6 +1062,8 @@
     });
 
     function mostrarPanelRenovacion(item) {
+      renovacionNombreCliente.textContent = item.nombreCliente || "-";
+      renovacionNumeroCliente.textContent = item.numeroCliente || "-";
       renovacionPaisCuenta.innerHTML = `${obtenerBanderaHTML(item.pais)} ${escaparHTML(item.pais || "-")}`;
       renovacionPaisBanca.innerHTML = item.paisBanca
         ? `${obtenerBanderaHTML(item.paisBanca)} ${escaparHTML(item.paisBanca)}`
@@ -1013,6 +1083,12 @@
       tiempoRenovacion.value = "";
       nuevoCorreoBanca.value = "";
       nuevaTarjetaInput.value = "";
+
+      editarNombreCliente.value = "";
+      editarNumeroCliente.value = "";
+      bloqueEditarCliente.style.display = "none";
+      btnEditarCliente.textContent = "✏️";
+
       resetearSelectorPais("paisBancaNuevo");
 
       bloqueCambiarBanca.style.display = "none";
@@ -1020,6 +1096,21 @@
 
       panelRenovacion.style.display = "block";
     }
+
+    btnEditarCliente.addEventListener("click", function() {
+      const visible = bloqueEditarCliente.style.display === "block";
+
+      if (visible) {
+        bloqueEditarCliente.style.display = "none";
+        btnEditarCliente.textContent = "✏️";
+      } else {
+        bloqueEditarCliente.style.display = "block";
+        btnEditarCliente.textContent = "❌";
+
+        editarNombreCliente.value = datosRenovacionActual?.nombreCliente || "";
+        editarNumeroCliente.value = datosRenovacionActual?.numeroCliente || "";
+      }
+    });
 
     btnCambiarBanca.addEventListener("click", function() {
       const visible = bloqueCambiarBanca.style.display === "block";
@@ -1040,20 +1131,41 @@
       }
 
       const tiempo = tiempoRenovacion.value;
+      const cambiarBanca = bloqueCambiarBanca.style.display === "block";
+      const cambiarCliente = bloqueEditarCliente.style.display === "block";
 
-      if (!tiempo) {
-        mostrarMensaje(mensajeRenovacion, "Selecciona el tiempo de renovación.", "error");
+      if (!tiempo && !cambiarBanca && !cambiarCliente) {
+        mostrarMensaje(mensajeRenovacion, "Selecciona tiempo de renovación o cambia algún dato.", "error");
         return;
       }
-
-      const cambiarBanca = bloqueCambiarBanca.style.display === "block";
 
       let datos = {
         action: "renovacionActualizar",
         correoCuenta: datosRenovacionActual.correoCuenta,
         tiempoRenovacion: tiempo,
-        cambiarBanca: cambiarBanca ? "si" : "no"
+        cambiarBanca: cambiarBanca ? "si" : "no",
+        cambiarCliente: cambiarCliente ? "si" : "no"
       };
+
+      if (cambiarCliente) {
+        const nombreNuevo = editarNombreCliente.value.trim();
+        const numeroNuevo = editarNumeroCliente.value.trim();
+
+        if (!nombreNuevo) {
+          mostrarMensaje(mensajeRenovacion, "Coloca el nuevo nombre del cliente.", "error");
+          return;
+        }
+
+        if (!numeroNuevo) {
+          mostrarMensaje(mensajeRenovacion, "Coloca el nuevo WhatsApp del cliente.", "error");
+          return;
+        }
+
+        datos.nombreClienteAnterior = datosRenovacionActual.nombreCliente || "";
+        datos.numeroClienteAnterior = datosRenovacionActual.numeroCliente || "";
+        datos.nombreClienteNuevo = nombreNuevo;
+        datos.numeroClienteNuevo = numeroNuevo;
+      }
 
       if (cambiarBanca) {
         const correoNuevo = nuevoCorreoBanca.value.trim();
@@ -1095,7 +1207,7 @@
 
         datosRenovacionActual = respuesta.data;
         mostrarPanelRenovacion(respuesta.data);
-        mostrarMensaje(mensajeRenovacion, "Renovación actualizada correctamente.", "exito");
+        mostrarMensaje(mensajeRenovacion, "Datos actualizados correctamente.", "exito");
       });
     });
 
