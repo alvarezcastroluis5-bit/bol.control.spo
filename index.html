@@ -477,27 +477,65 @@
     </div>
 
     <section id="seccionRegistro" class="seccion active">
-      <form id="formRegistro">
+      <form id="formRegistro" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 
         <label for="correoCuenta">Correo de la cuenta</label>
-        <input type="email" id="correoCuenta" placeholder="ejemplo@gmail.com" required>
+        <input
+          type="text"
+          inputmode="email"
+          id="correoCuenta"
+          name="correo_cuenta_no_autofill_9871"
+          placeholder="ejemplo@gmail.com"
+          autocomplete="new-password"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          data-lpignore="true"
+          data-form-type="other"
+          required
+        >
 
         <div class="row">
           <div>
             <label for="nombreCliente">Nombre del cliente</label>
-            <input type="text" id="nombreCliente" placeholder="Nombre completo" required>
+            <input
+              type="text"
+              id="nombreCliente"
+              name="nombre_cliente_no_autofill_8731"
+              placeholder="Nombre completo"
+              autocomplete="new-password"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
+              data-lpignore="true"
+              data-form-type="other"
+              required
+            >
           </div>
 
           <div>
             <label for="numeroCliente">WhatsApp del cliente</label>
-            <input type="tel" id="numeroCliente" placeholder="+591XXXXXXXX" required>
+            <input
+              type="text"
+              inputmode="tel"
+              id="numeroCliente"
+              name="numero_cliente_no_autofill_7218"
+              placeholder="+591XXXXXXXX"
+              autocomplete="new-password"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
+              data-lpignore="true"
+              data-form-type="other"
+              required
+            >
           </div>
         </div>
 
         <div class="row">
           <div>
             <label for="tipoCuenta">Tipo de cuenta</label>
-            <select id="tipoCuenta" required>
+            <select id="tipoCuenta" autocomplete="off" required>
               <option value="">Seleccionar</option>
               <option value="Individual">Individual</option>
               <option value="Dúo">Dúo</option>
@@ -528,12 +566,18 @@
         <div class="row">
           <div>
             <label for="fechaActivacion">Fecha de activación</label>
-            <input type="date" id="fechaActivacion" required>
+            <input
+              type="date"
+              id="fechaActivacion"
+              name="fecha_activacion_no_autofill_3421"
+              autocomplete="off"
+              required
+            >
           </div>
 
           <div>
             <label for="duracion">Tiempo de suscripción</label>
-            <select id="duracion" required>
+            <select id="duracion" autocomplete="off" required>
               <option value="">Seleccionar</option>
               <option value="30">30 días</option>
               <option value="60">60 días</option>
@@ -545,10 +589,37 @@
         </div>
 
         <label for="correoBanca">Correo de la banca</label>
-        <input type="email" id="correoBanca" placeholder="correo asociado a la banca" required>
+        <input
+          type="text"
+          inputmode="email"
+          id="correoBanca"
+          name="correo_banca_no_autofill_6549"
+          placeholder="correo asociado a la banca"
+          autocomplete="new-password"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          data-lpignore="true"
+          data-form-type="other"
+          required
+        >
 
         <label for="numeroTarjeta">Número de tarjeta</label>
-        <input type="text" id="numeroTarjeta" inputmode="numeric" maxlength="23" placeholder="1234 5678 9012 3456" required>
+        <input
+          type="text"
+          id="numeroTarjeta"
+          name="tarjeta_no_autofill_1122"
+          inputmode="numeric"
+          maxlength="23"
+          placeholder="1234 5678 9012 3456"
+          autocomplete="new-password"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          data-lpignore="true"
+          data-form-type="other"
+          required
+        >
 
         <p class="nota">
           Por seguridad, se guardarán solo los primeros 6 dígitos y los últimos 4 dígitos de la tarjeta.
@@ -561,9 +632,23 @@
     </section>
 
     <section id="seccionConsulta" class="seccion">
-      <form id="formConsulta">
+      <form id="formConsulta" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <label for="correoConsulta">Correo de la cuenta</label>
-        <input type="email" id="correoConsulta" placeholder="ejemplo@gmail.com" required>
+        <input
+          type="text"
+          inputmode="email"
+          id="correoConsulta"
+          name="correo_consulta_no_autofill_3487"
+          placeholder="ejemplo@gmail.com"
+          autocomplete="new-password"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          data-lpignore="true"
+          data-form-type="other"
+          required
+        >
+
         <button type="submit" class="enviar" id="btnBuscar">Consultar</button>
       </form>
 
@@ -579,9 +664,23 @@
     </section>
 
     <section id="seccionRenovacion" class="seccion">
-      <form id="formBuscarRenovacion">
+      <form id="formBuscarRenovacion" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <label for="correoRenovacion">Correo de la cuenta</label>
-        <input type="email" id="correoRenovacion" placeholder="ejemplo@gmail.com" required>
+        <input
+          type="text"
+          inputmode="email"
+          id="correoRenovacion"
+          name="correo_renovacion_no_autofill_7731"
+          placeholder="ejemplo@gmail.com"
+          autocomplete="new-password"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          data-lpignore="true"
+          data-form-type="other"
+          required
+        >
+
         <button type="submit" class="enviar" id="btnBuscarRenovacion">Buscar cuenta</button>
       </form>
 
@@ -603,10 +702,33 @@
 
         <div id="bloqueEditarCliente" class="bloque-oculto">
           <label for="editarNombreCliente">Nuevo nombre del cliente</label>
-          <input type="text" id="editarNombreCliente" placeholder="Nuevo nombre completo">
+          <input
+            type="text"
+            id="editarNombreCliente"
+            name="editar_nombre_no_autofill_9081"
+            placeholder="Nuevo nombre completo"
+            autocomplete="new-password"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            data-lpignore="true"
+            data-form-type="other"
+          >
 
           <label for="editarNumeroCliente">Nuevo WhatsApp del cliente</label>
-          <input type="tel" id="editarNumeroCliente" placeholder="+591XXXXXXXX">
+          <input
+            type="text"
+            inputmode="tel"
+            id="editarNumeroCliente"
+            name="editar_numero_no_autofill_9082"
+            placeholder="+591XXXXXXXX"
+            autocomplete="new-password"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            data-lpignore="true"
+            data-form-type="other"
+          >
 
           <p class="nota">
             Al actualizar, se guardará el dato anterior y el dato nuevo en el historial de cambios.
@@ -614,7 +736,7 @@
         </div>
 
         <label for="tiempoRenovacion">Ampliar tiempo de renovación</label>
-        <select id="tiempoRenovacion">
+        <select id="tiempoRenovacion" autocomplete="off">
           <option value="">Seleccionar tiempo</option>
           <option value="30">30 días</option>
           <option value="60">60 días</option>
@@ -650,10 +772,35 @@
           <input type="hidden" id="paisBancaNuevo">
 
           <label for="nuevoCorreoBanca">Nuevo correo asociado a la banca</label>
-          <input type="email" id="nuevoCorreoBanca" placeholder="nuevo correo de banca">
+          <input
+            type="text"
+            inputmode="email"
+            id="nuevoCorreoBanca"
+            name="nuevo_correo_banca_no_autofill_9083"
+            placeholder="nuevo correo de banca"
+            autocomplete="new-password"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            data-lpignore="true"
+            data-form-type="other"
+          >
 
           <label for="nuevaTarjeta">Nuevo número de tarjeta</label>
-          <input type="text" id="nuevaTarjeta" inputmode="numeric" maxlength="23" placeholder="1234 5678 9012 3456">
+          <input
+            type="text"
+            id="nuevaTarjeta"
+            name="nueva_tarjeta_no_autofill_9084"
+            inputmode="numeric"
+            maxlength="23"
+            placeholder="1234 5678 9012 3456"
+            autocomplete="new-password"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            data-lpignore="true"
+            data-form-type="other"
+          >
 
           <p class="nota">
             No coloques mes, año ni CVV. Se guardarán solo los primeros 6 dígitos y los últimos 4 dígitos.
@@ -730,14 +877,39 @@
     const btnActualizarRenovacion = document.getElementById("btnActualizarRenovacion");
 
     let datosRenovacionActual = null;
+    let seccionActual = "registro";
 
     iniciarSelectoresPais();
+
+    window.addEventListener("load", function() {
+      limpiarRegistro();
+      limpiarConsulta();
+      limpiarRenovacion();
+      seccionActual = "registro";
+      btnRegistro.classList.add("active");
+      seccionRegistro.classList.add("active");
+    });
+
+    window.addEventListener("pageshow", function() {
+      limpiarRegistro();
+      limpiarConsulta();
+      limpiarRenovacion();
+      seccionActual = "registro";
+      btnRegistro.classList.add("active");
+      seccionRegistro.classList.add("active");
+    });
 
     btnRegistro.addEventListener("click", () => cambiarSeccion("registro"));
     btnConsulta.addEventListener("click", () => cambiarSeccion("consulta"));
     btnRenovacion.addEventListener("click", () => cambiarSeccion("renovacion"));
 
     function cambiarSeccion(seccion) {
+      if (seccionActual === seccion) return;
+
+      limpiarRegistro();
+      limpiarConsulta();
+      limpiarRenovacion();
+
       btnRegistro.classList.remove("active");
       btnConsulta.classList.remove("active");
       btnRenovacion.classList.remove("active");
@@ -759,6 +931,100 @@
       if (seccion === "renovacion") {
         btnRenovacion.classList.add("active");
         seccionRenovacion.classList.add("active");
+      }
+
+      seccionActual = seccion;
+    }
+
+    function limpiarRegistro() {
+      if (formRegistro) formRegistro.reset();
+      resetearSelectorPais("pais");
+
+      if (mensajeRegistro) {
+        mensajeRegistro.style.display = "none";
+        mensajeRegistro.textContent = "";
+      }
+
+      if (btnGuardar) {
+        btnGuardar.disabled = false;
+        btnGuardar.textContent = "Guardar registro";
+      }
+    }
+
+    function limpiarConsulta() {
+      if (formConsulta) formConsulta.reset();
+
+      if (resultadoConsulta) resultadoConsulta.innerHTML = "";
+      if (resumenConsulta) resumenConsulta.style.display = "none";
+
+      if (mensajeConsulta) {
+        mensajeConsulta.style.display = "none";
+        mensajeConsulta.textContent = "";
+      }
+
+      if (consultaActivacion) consultaActivacion.textContent = "-";
+      if (consultaVencimiento) consultaVencimiento.textContent = "-";
+
+      if (consultaDias) {
+        consultaDias.textContent = "-";
+        consultaDias.classList.remove("vencido");
+      }
+
+      if (btnBuscar) {
+        btnBuscar.disabled = false;
+        btnBuscar.textContent = "Consultar";
+      }
+    }
+
+    function limpiarRenovacion() {
+      if (formBuscarRenovacion) formBuscarRenovacion.reset();
+
+      datosRenovacionActual = null;
+
+      if (panelRenovacion) panelRenovacion.style.display = "none";
+
+      if (mensajeRenovacion) {
+        mensajeRenovacion.style.display = "none";
+        mensajeRenovacion.textContent = "";
+      }
+
+      if (renovacionNombreCliente) renovacionNombreCliente.textContent = "-";
+      if (renovacionNumeroCliente) renovacionNumeroCliente.textContent = "-";
+      if (renovacionPaisCuenta) renovacionPaisCuenta.textContent = "-";
+      if (renovacionVencia) renovacionVencia.textContent = "-";
+
+      if (renovacionDias) {
+        renovacionDias.textContent = "-";
+        renovacionDias.classList.remove("vencido");
+      }
+
+      if (renovacionCorreoBanca) renovacionCorreoBanca.textContent = "-";
+      if (renovacionTarjeta) renovacionTarjeta.textContent = "-";
+
+      if (tiempoRenovacion) tiempoRenovacion.value = "";
+
+      if (nuevoCorreoBanca) nuevoCorreoBanca.value = "";
+      if (nuevaTarjetaInput) nuevaTarjetaInput.value = "";
+
+      if (editarNombreCliente) editarNombreCliente.value = "";
+      if (editarNumeroCliente) editarNumeroCliente.value = "";
+
+      if (bloqueEditarCliente) bloqueEditarCliente.style.display = "none";
+      if (btnEditarCliente) btnEditarCliente.textContent = "✏️";
+
+      if (bloqueCambiarBanca) bloqueCambiarBanca.style.display = "none";
+      if (btnCambiarBanca) btnCambiarBanca.textContent = "Cambiar banca";
+
+      resetearSelectorPais("paisBancaNuevo");
+
+      if (btnBuscarRenovacion) {
+        btnBuscarRenovacion.disabled = false;
+        btnBuscarRenovacion.textContent = "Buscar cuenta";
+      }
+
+      if (btnActualizarRenovacion) {
+        btnActualizarRenovacion.disabled = false;
+        btnActualizarRenovacion.textContent = "Actualizar datos de renovación";
       }
     }
 
