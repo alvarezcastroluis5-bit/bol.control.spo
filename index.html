@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Registro y Consulta de Suscripciones</title>
+  <title>Registro, Consulta y Renovación</title>
 
   <style>
     * {
@@ -49,7 +49,7 @@
 
     .container {
       width: 100%;
-      max-width: 620px;
+      max-width: 660px;
       background: rgba(255, 255, 255, 0.09);
       padding: 26px;
       border-radius: 20px;
@@ -89,7 +89,7 @@
 
     .tabs {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 10px;
       margin-bottom: 24px;
     }
@@ -179,25 +179,39 @@
       line-height: 1.4;
     }
 
-    button.enviar {
+    button.enviar,
+    button.secundario {
       width: 100%;
       padding: 14px;
       border: none;
       border-radius: 12px;
-      background: #1e90ff;
       color: #fff;
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
       transition: 0.3s;
+      margin-bottom: 12px;
+    }
+
+    button.enviar {
+      background: #1e90ff;
     }
 
     button.enviar:hover {
       background: #0077e6;
     }
 
-    button.enviar:disabled {
-      background: #777;
+    button.secundario {
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+
+    button.secundario:hover {
+      background: rgba(255,255,255,0.28);
+    }
+
+    button:disabled {
+      background: #777 !important;
       cursor: not-allowed;
     }
 
@@ -226,6 +240,7 @@
       border-radius: 15px;
       padding: 16px;
       margin-top: 14px;
+      margin-bottom: 14px;
     }
 
     .consulta-card h3 {
@@ -250,7 +265,20 @@
       font-weight: bold;
     }
 
+    .bloque-oculto {
+      display: none;
+      background: rgba(255,255,255,0.08);
+      padding: 15px;
+      border-radius: 15px;
+      border: 1px solid rgba(255,255,255,0.18);
+      margin-bottom: 16px;
+    }
+
     @media (max-width: 560px) {
+      .tabs {
+        grid-template-columns: 1fr;
+      }
+
       .row {
         grid-template-columns: 1fr;
         gap: 0;
@@ -286,30 +314,25 @@
     </div>
 
     <h1>Control de Suscripciones</h1>
-    <p class="subtitulo">Registra cuentas y consulta días restantes por correo.</p>
+    <p class="subtitulo">Registra, consulta y renueva cuentas por correo.</p>
 
     <div class="tabs">
       <button class="tab-btn active" id="btnRegistro" type="button">Registro</button>
       <button class="tab-btn" id="btnConsulta" type="button">Consulta</button>
+      <button class="tab-btn" id="btnRenovacion" type="button">Renovación</button>
     </div>
 
-    <!-- SECCIÓN REGISTRO -->
+    <!-- REGISTRO -->
     <section id="seccionRegistro" class="seccion active">
       <form id="formRegistro">
 
         <label for="correoCuenta">Correo de la cuenta</label>
-        <input 
-          type="email" 
-          id="correoCuenta" 
-          name="correoCuenta" 
-          placeholder="ejemplo@gmail.com" 
-          required
-        >
+        <input type="email" id="correoCuenta" placeholder="ejemplo@gmail.com" required>
 
         <div class="row">
           <div>
             <label for="tipoCuenta">Tipo de cuenta</label>
-            <select id="tipoCuenta" name="tipoCuenta" required>
+            <select id="tipoCuenta" required>
               <option value="">Seleccionar</option>
               <option value="Individual">Individual</option>
               <option value="Dúo">Dúo</option>
@@ -319,11 +342,12 @@
 
           <div>
             <label for="pais">País</label>
-            <select id="pais" name="pais" required>
-              <option value="">Seleccionar</option>
-              <option value="Nigeria">Nigeria</option>
-              <option value="Egipto">Egipto</option>
-              <option value="Brasil">Brasil</option>
+            <select id="pais" required>
+              <option value="">🌎 Seleccionar</option>
+              <option value="Nigeria">🇳🇬 Nigeria</option>
+              <option value="Egipto">🇪🇬 Egipto</option>
+              <option value="Brasil">🇧🇷 Brasil</option>
+              <option value="Bolivia">🇧🇴 Bolivia</option>
             </select>
           </div>
         </div>
@@ -331,17 +355,12 @@
         <div class="row">
           <div>
             <label for="fechaActivacion">Fecha de activación</label>
-            <input 
-              type="date" 
-              id="fechaActivacion" 
-              name="fechaActivacion" 
-              required
-            >
+            <input type="date" id="fechaActivacion" required>
           </div>
 
           <div>
             <label for="duracion">Tiempo de suscripción</label>
-            <select id="duracion" name="duracion" required>
+            <select id="duracion" required>
               <option value="">Seleccionar</option>
               <option value="30">30 días</option>
               <option value="60">60 días</option>
@@ -353,28 +372,13 @@
         </div>
 
         <label for="correoBanca">Correo de la banca</label>
-        <input 
-          type="email" 
-          id="correoBanca" 
-          name="correoBanca" 
-          placeholder="correo asociado a la banca"
-          required
-        >
+        <input type="email" id="correoBanca" placeholder="correo asociado a la banca" required>
 
         <label for="numeroTarjeta">Número de tarjeta</label>
-        <input 
-          type="text"
-          id="numeroTarjeta"
-          name="numeroTarjeta"
-          inputmode="numeric"
-          maxlength="19"
-          placeholder="1234 5678 9012 3456"
-          required
-        >
+        <input type="text" id="numeroTarjeta" inputmode="numeric" maxlength="19" placeholder="1234 5678 9012 3456" required>
 
         <p class="nota">
-          Por seguridad, la tarjeta completa no se guarda en Google Sheets. 
-          Solo se registrará enmascarada y con los últimos 4 dígitos.
+          Por seguridad, la tarjeta completa no se guarda. Solo se registrará enmascarada y con los últimos 4 dígitos.
         </p>
 
         <button type="submit" class="enviar" id="btnGuardar">Guardar registro</button>
@@ -383,18 +387,11 @@
       <div id="mensajeRegistro" class="mensaje"></div>
     </section>
 
-    <!-- SECCIÓN CONSULTA -->
+    <!-- CONSULTA -->
     <section id="seccionConsulta" class="seccion">
       <form id="formConsulta">
         <label for="correoConsulta">Correo de la cuenta</label>
-        <input 
-          type="email" 
-          id="correoConsulta" 
-          name="correoConsulta" 
-          placeholder="ejemplo@gmail.com" 
-          required
-        >
-
+        <input type="email" id="correoConsulta" placeholder="ejemplo@gmail.com" required>
         <button type="submit" class="enviar" id="btnBuscar">Consultar</button>
       </form>
 
@@ -409,13 +406,63 @@
       <div id="resultadoConsulta"></div>
     </section>
 
+    <!-- RENOVACIÓN -->
+    <section id="seccionRenovacion" class="seccion">
+      <form id="formBuscarRenovacion">
+        <label for="correoRenovacion">Correo de la cuenta</label>
+        <input type="email" id="correoRenovacion" placeholder="ejemplo@gmail.com" required>
+        <button type="submit" class="enviar" id="btnBuscarRenovacion">Buscar cuenta</button>
+      </form>
+
+      <div id="mensajeRenovacion" class="mensaje"></div>
+
+      <div id="panelRenovacion" style="display:none;">
+
+        <div class="resultado">
+          <p><strong>Fecha en la cual vencía:</strong> <span id="renovacionVencia">-</span></p>
+          <p><strong>Días que le quedan:</strong> <span id="renovacionDias" class="contador">-</span></p>
+        </div>
+
+        <label for="tiempoRenovacion">Ampliar tiempo de renovación</label>
+        <select id="tiempoRenovacion">
+          <option value="">Seleccionar tiempo</option>
+          <option value="30">30 días</option>
+          <option value="60">60 días</option>
+          <option value="90">90 días</option>
+          <option value="180">180 días</option>
+          <option value="365">365 días</option>
+        </select>
+
+        <div class="consulta-card">
+          <h3>Datos de banca actual</h3>
+          <p><strong>Correo de banca:</strong> <span id="renovacionCorreoBanca">-</span></p>
+          <p><strong>Tarjeta:</strong> <span id="renovacionTarjeta">-</span></p>
+        </div>
+
+        <button type="button" class="secundario" id="btnCambiarBanca">Cambiar banca</button>
+
+        <div id="bloqueCambiarBanca" class="bloque-oculto">
+          <label for="nuevoCorreoBanca">Nuevo correo asociado a la banca</label>
+          <input type="email" id="nuevoCorreoBanca" placeholder="nuevo correo de banca">
+
+          <label for="nuevaTarjeta">Nuevo número de tarjeta</label>
+          <input type="text" id="nuevaTarjeta" inputmode="numeric" maxlength="19" placeholder="1234 5678 9012 3456">
+
+          <p class="nota">
+            No coloques mes, año ni CVV. Solo el número de tarjeta. Se guardará enmascarada por seguridad.
+          </p>
+        </div>
+
+        <button type="button" class="enviar" id="btnActualizarRenovacion">Actualizar datos de renovación</button>
+      </div>
+    </section>
+
   </div>
 
   <script>
     const URL_APPS_SCRIPT = "PEGAR_AQUI_TU_URL_DE_APPS_SCRIPT";
 
     const videoFondo = document.getElementById("videoFondo");
-
     if (videoFondo) {
       videoFondo.muted = true;
       videoFondo.play().catch(() => {
@@ -425,63 +472,91 @@
 
     const btnRegistro = document.getElementById("btnRegistro");
     const btnConsulta = document.getElementById("btnConsulta");
+    const btnRenovacion = document.getElementById("btnRenovacion");
 
     const seccionRegistro = document.getElementById("seccionRegistro");
     const seccionConsulta = document.getElementById("seccionConsulta");
+    const seccionRenovacion = document.getElementById("seccionRenovacion");
 
     const formRegistro = document.getElementById("formRegistro");
     const formConsulta = document.getElementById("formConsulta");
+    const formBuscarRenovacion = document.getElementById("formBuscarRenovacion");
 
     const mensajeRegistro = document.getElementById("mensajeRegistro");
     const mensajeConsulta = document.getElementById("mensajeConsulta");
-    const resultadoConsulta = document.getElementById("resultadoConsulta");
+    const mensajeRenovacion = document.getElementById("mensajeRenovacion");
 
+    const resultadoConsulta = document.getElementById("resultadoConsulta");
     const resumenConsulta = document.getElementById("resumenConsulta");
     const consultaActivacion = document.getElementById("consultaActivacion");
     const consultaVencimiento = document.getElementById("consultaVencimiento");
     const consultaDias = document.getElementById("consultaDias");
 
-    const btnGuardar = document.getElementById("btnGuardar");
-    const btnBuscar = document.getElementById("btnBuscar");
-
     const fechaActivacion = document.getElementById("fechaActivacion");
     const duracion = document.getElementById("duracion");
     const numeroTarjetaInput = document.getElementById("numeroTarjeta");
+    const nuevaTarjetaInput = document.getElementById("nuevaTarjeta");
 
-    btnRegistro.addEventListener("click", () => {
-      cambiarSeccion("registro");
-    });
+    const btnGuardar = document.getElementById("btnGuardar");
+    const btnBuscar = document.getElementById("btnBuscar");
+    const btnBuscarRenovacion = document.getElementById("btnBuscarRenovacion");
 
-    btnConsulta.addEventListener("click", () => {
-      cambiarSeccion("consulta");
-    });
+    const panelRenovacion = document.getElementById("panelRenovacion");
+    const renovacionVencia = document.getElementById("renovacionVencia");
+    const renovacionDias = document.getElementById("renovacionDias");
+    const renovacionCorreoBanca = document.getElementById("renovacionCorreoBanca");
+    const renovacionTarjeta = document.getElementById("renovacionTarjeta");
+    const tiempoRenovacion = document.getElementById("tiempoRenovacion");
+
+    const btnCambiarBanca = document.getElementById("btnCambiarBanca");
+    const bloqueCambiarBanca = document.getElementById("bloqueCambiarBanca");
+    const nuevoCorreoBanca = document.getElementById("nuevoCorreoBanca");
+    const btnActualizarRenovacion = document.getElementById("btnActualizarRenovacion");
+
+    let datosRenovacionActual = null;
+
+    btnRegistro.addEventListener("click", () => cambiarSeccion("registro"));
+    btnConsulta.addEventListener("click", () => cambiarSeccion("consulta"));
+    btnRenovacion.addEventListener("click", () => cambiarSeccion("renovacion"));
 
     function cambiarSeccion(seccion) {
+      btnRegistro.classList.remove("active");
+      btnConsulta.classList.remove("active");
+      btnRenovacion.classList.remove("active");
+
+      seccionRegistro.classList.remove("active");
+      seccionConsulta.classList.remove("active");
+      seccionRenovacion.classList.remove("active");
+
       if (seccion === "registro") {
         btnRegistro.classList.add("active");
-        btnConsulta.classList.remove("active");
-
         seccionRegistro.classList.add("active");
-        seccionConsulta.classList.remove("active");
-      } else {
-        btnConsulta.classList.add("active");
-        btnRegistro.classList.remove("active");
+      }
 
+      if (seccion === "consulta") {
+        btnConsulta.classList.add("active");
         seccionConsulta.classList.add("active");
-        seccionRegistro.classList.remove("active");
+      }
+
+      if (seccion === "renovacion") {
+        btnRenovacion.classList.add("active");
+        seccionRenovacion.classList.add("active");
       }
     }
 
-    numeroTarjetaInput.addEventListener("input", () => {
-      let valor = numeroTarjetaInput.value.replace(/\D/g, "");
-      valor = valor.substring(0, 16);
-      numeroTarjetaInput.value = valor.replace(/(.{4})/g, "$1 ").trim();
-    });
+    formatearInputTarjeta(numeroTarjetaInput);
+    formatearInputTarjeta(nuevaTarjetaInput);
+
+    function formatearInputTarjeta(input) {
+      input.addEventListener("input", () => {
+        let valor = input.value.replace(/\D/g, "");
+        valor = valor.substring(0, 16);
+        input.value = valor.replace(/(.{4})/g, "$1 ").trim();
+      });
+    }
 
     function calcularFechasRegistro() {
-      if (!fechaActivacion.value || !duracion.value) {
-        return null;
-      }
+      if (!fechaActivacion.value || !duracion.value) return null;
 
       const fechaInicio = new Date(fechaActivacion.value + "T00:00:00");
       const diasPlan = parseInt(duracion.value);
@@ -497,13 +572,9 @@
 
       let textoDias = "";
 
-      if (diasRestantes > 0) {
-        textoDias = diasRestantes + " días";
-      } else if (diasRestantes === 0) {
-        textoDias = "Vence hoy";
-      } else {
-        textoDias = "Vencida hace " + Math.abs(diasRestantes) + " días";
-      }
+      if (diasRestantes > 0) textoDias = diasRestantes + " días";
+      else if (diasRestantes === 0) textoDias = "Vence hoy";
+      else textoDias = "Vencida hace " + Math.abs(diasRestantes) + " días";
 
       return {
         fechaVencimiento: formatearFecha(fechaVencimiento),
@@ -519,19 +590,18 @@
       });
     }
 
-    function obtenerTarjetaSegura() {
-      const numeroLimpio = numeroTarjetaInput.value.replace(/\D/g, "");
+    function obtenerTarjetaSegura(input) {
+      const numeroLimpio = input.value.replace(/\D/g, "");
 
       if (numeroLimpio.length < 13 || numeroLimpio.length > 16) {
         return null;
       }
 
       const ultimos4 = numeroLimpio.slice(-4);
-      const tarjetaEnmascarada = "**** **** **** " + ultimos4;
 
       return {
         ultimos4Tarjeta: ultimos4,
-        tarjetaEnmascarada: tarjetaEnmascarada
+        tarjetaEnmascarada: "**** **** **** " + ultimos4
       };
     }
 
@@ -545,7 +615,7 @@
       const tiempoSuscripcion = duracion.value;
       const correoBanca = document.getElementById("correoBanca").value.trim();
 
-      const tarjetaSegura = obtenerTarjetaSegura();
+      const tarjetaSegura = obtenerTarjetaSegura(numeroTarjetaInput);
       const fechasCalculadas = calcularFechasRegistro();
 
       if (!correoCuenta || !tipoCuenta || !pais || !fechaAct || !tiempoSuscripcion || !correoBanca) {
@@ -565,14 +635,14 @@
 
       const datos = {
         action: "registro",
-        correoCuenta: correoCuenta,
-        tipoCuenta: tipoCuenta,
-        pais: pais,
+        correoCuenta,
+        tipoCuenta,
+        pais,
         fechaActivacion: fechaAct,
-        tiempoSuscripcion: tiempoSuscripcion,
+        tiempoSuscripcion,
         fechaVencimiento: fechasCalculadas.fechaVencimiento,
         diasRestantes: fechasCalculadas.diasRestantes,
-        correoBanca: correoBanca,
+        correoBanca,
         tarjetaEnmascarada: tarjetaSegura.tarjetaEnmascarada,
         ultimos4Tarjeta: tarjetaSegura.ultimos4Tarjeta
       };
@@ -660,7 +730,7 @@
           <h3>Registro ${index + 1}</h3>
           <p><strong>Correo:</strong> ${escaparHTML(item.correoCuenta)}</p>
           <p><strong>Tipo de cuenta:</strong> ${escaparHTML(item.tipoCuenta)}</p>
-          <p><strong>País:</strong> ${escaparHTML(item.pais)}</p>
+          <p><strong>País:</strong> ${obtenerBanderaPais(item.pais)} ${escaparHTML(item.pais)}</p>
           <p><strong>Estado:</strong> <span class="${estadoClase}">${escaparHTML(item.estado)}</span></p>
           <p><strong>Correo de banca:</strong> ${escaparHTML(item.correoBanca)}</p>
           <p><strong>Tarjeta:</strong> ${escaparHTML(item.tarjetaEnmascarada)}</p>
@@ -670,12 +740,153 @@
       });
     }
 
+    formBuscarRenovacion.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const correo = document.getElementById("correoRenovacion").value.trim();
+
+      if (!correo) {
+        mostrarMensaje(mensajeRenovacion, "Coloca el correo de la cuenta.", "error");
+        return;
+      }
+
+      panelRenovacion.style.display = "none";
+      datosRenovacionActual = null;
+
+      btnBuscarRenovacion.disabled = true;
+      btnBuscarRenovacion.textContent = "Buscando...";
+
+      enviarJSONP({
+        action: "renovacionBuscar",
+        correoCuenta: correo
+      }, function(respuesta) {
+        btnBuscarRenovacion.disabled = false;
+        btnBuscarRenovacion.textContent = "Buscar cuenta";
+
+        if (respuesta.status !== "success") {
+          mostrarMensaje(mensajeRenovacion, "Error: " + respuesta.message, "error");
+          return;
+        }
+
+        if (!respuesta.data) {
+          mostrarMensaje(mensajeRenovacion, "No se encontró una cuenta con ese correo.", "error");
+          return;
+        }
+
+        datosRenovacionActual = respuesta.data;
+        mostrarPanelRenovacion(respuesta.data);
+        mostrarMensaje(mensajeRenovacion, "Cuenta encontrada correctamente.", "exito");
+      });
+    });
+
+    function mostrarPanelRenovacion(item) {
+      renovacionVencia.textContent = item.fechaVencimiento || "-";
+      renovacionDias.textContent = item.diasRestantes || "-";
+      renovacionCorreoBanca.textContent = item.correoBanca || "-";
+      renovacionTarjeta.textContent = item.tarjetaEnmascarada || "-";
+
+      renovacionDias.classList.remove("vencido");
+
+      if (item.estado === "Vencida") {
+        renovacionDias.classList.add("vencido");
+      }
+
+      tiempoRenovacion.value = "";
+      nuevoCorreoBanca.value = "";
+      nuevaTarjetaInput.value = "";
+      bloqueCambiarBanca.style.display = "none";
+      btnCambiarBanca.textContent = "Cambiar banca";
+
+      panelRenovacion.style.display = "block";
+    }
+
+    btnCambiarBanca.addEventListener("click", function() {
+      const visible = bloqueCambiarBanca.style.display === "block";
+
+      if (visible) {
+        bloqueCambiarBanca.style.display = "none";
+        btnCambiarBanca.textContent = "Cambiar banca";
+      } else {
+        bloqueCambiarBanca.style.display = "block";
+        btnCambiarBanca.textContent = "No cambiar banca";
+      }
+    });
+
+    btnActualizarRenovacion.addEventListener("click", function() {
+      if (!datosRenovacionActual) {
+        mostrarMensaje(mensajeRenovacion, "Primero busca una cuenta.", "error");
+        return;
+      }
+
+      const tiempo = tiempoRenovacion.value;
+
+      if (!tiempo) {
+        mostrarMensaje(mensajeRenovacion, "Selecciona el tiempo de renovación.", "error");
+        return;
+      }
+
+      const cambiarBanca = bloqueCambiarBanca.style.display === "block";
+
+      let datos = {
+        action: "renovacionActualizar",
+        correoCuenta: datosRenovacionActual.correoCuenta,
+        tiempoRenovacion: tiempo,
+        cambiarBanca: cambiarBanca ? "si" : "no"
+      };
+
+      if (cambiarBanca) {
+        const correoNuevo = nuevoCorreoBanca.value.trim();
+        const tarjetaNueva = obtenerTarjetaSegura(nuevaTarjetaInput);
+
+        if (!correoNuevo) {
+          mostrarMensaje(mensajeRenovacion, "Coloca el nuevo correo de banca.", "error");
+          return;
+        }
+
+        if (!tarjetaNueva) {
+          mostrarMensaje(mensajeRenovacion, "Coloca un nuevo número de tarjeta válido.", "error");
+          return;
+        }
+
+        datos.correoBanca = correoNuevo;
+        datos.tarjetaEnmascarada = tarjetaNueva.tarjetaEnmascarada;
+        datos.ultimos4Tarjeta = tarjetaNueva.ultimos4Tarjeta;
+      }
+
+      btnActualizarRenovacion.disabled = true;
+      btnActualizarRenovacion.textContent = "Actualizando...";
+
+      enviarJSONP(datos, function(respuesta) {
+        btnActualizarRenovacion.disabled = false;
+        btnActualizarRenovacion.textContent = "Actualizar datos de renovación";
+
+        if (respuesta.status !== "success") {
+          mostrarMensaje(mensajeRenovacion, "Error al actualizar: " + respuesta.message, "error");
+          return;
+        }
+
+        datosRenovacionActual = respuesta.data;
+        mostrarPanelRenovacion(respuesta.data);
+        mostrarMensaje(mensajeRenovacion, "Renovación actualizada correctamente.", "exito");
+      });
+    });
+
+    function obtenerBanderaPais(pais) {
+      const nombre = String(pais || "").trim().toLowerCase();
+
+      if (nombre === "nigeria") return "🇳🇬";
+      if (nombre === "egipto") return "🇪🇬";
+      if (nombre === "brasil") return "🇧🇷";
+      if (nombre === "bolivia") return "🇧🇴";
+
+      return "🌎";
+    }
+
     function enviarJSONP(parametros, callback) {
       const callbackName = "callback_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
 
       window[callbackName] = function(respuesta) {
         callback(respuesta);
-
         delete window[callbackName];
         script.remove();
       };
