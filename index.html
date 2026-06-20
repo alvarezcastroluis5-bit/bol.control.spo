@@ -49,10 +49,10 @@
 
     .container {
       width: 100%;
-      max-width: 680px;
+      max-width: 700px;
       background: rgba(255, 255, 255, 0.09);
-      padding: 26px;
-      border-radius: 20px;
+      padding: 28px;
+      border-radius: 22px;
       box-shadow: 0 15px 35px rgba(0,0,0,0.35);
       backdrop-filter: blur(12px);
       position: relative;
@@ -77,14 +77,14 @@
     h1 {
       text-align: center;
       margin: 0 0 8px;
-      font-size: 27px;
+      font-size: 30px;
     }
 
     .subtitulo {
       text-align: center;
-      color: #cfd8ff;
-      font-size: 14px;
-      margin-bottom: 22px;
+      color: #d9e3ff;
+      font-size: 15px;
+      margin-bottom: 24px;
     }
 
     .tabs {
@@ -95,10 +95,10 @@
     }
 
     .tab-btn {
-      padding: 13px;
+      padding: 14px;
       border: none;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.15);
+      border-radius: 13px;
+      background: rgba(255,255,255,0.17);
       color: #fff;
       font-size: 15px;
       font-weight: bold;
@@ -149,26 +149,28 @@
     }
 
     .resultado {
-      background: rgba(255,255,255,0.12);
-      padding: 16px;
-      border-radius: 15px;
-      margin-bottom: 18px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.08));
+      padding: 18px;
+      border-radius: 18px;
+      margin-bottom: 20px;
       border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+      backdrop-filter: blur(8px);
     }
 
     .resultado p {
-      margin: 7px 0;
-      font-size: 14px;
+      margin: 8px 0;
+      font-size: 15px;
     }
 
     .contador {
-      font-size: 22px;
+      font-size: 24px;
       font-weight: bold;
       color: #4cff9b;
     }
 
     .vencido {
-      color: #ff5f5f;
+      color: #ff5f5f !important;
     }
 
     .nota {
@@ -249,24 +251,41 @@
     }
 
     .consulta-card {
-      background: rgba(0,0,0,0.24);
+      background: linear-gradient(135deg, rgba(10,20,45,0.88), rgba(45,15,30,0.72));
       border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 15px;
-      padding: 16px;
-      margin-top: 14px;
-      margin-bottom: 14px;
-    }
-
-    .consulta-card h3 {
-      margin: 0 0 12px;
-      font-size: 18px;
-      color: #4cff9b;
+      border-radius: 20px;
+      padding: 22px;
+      margin-top: 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+      backdrop-filter: blur(8px);
     }
 
     .consulta-card p {
-      margin: 7px 0;
-      font-size: 14px;
-      line-height: 1.4;
+      margin: 10px 0;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #ffffff;
+    }
+
+    .consulta-card strong {
+      color: #ffffff;
+    }
+
+    .detalle-titulo {
+      font-size: 28px;
+      font-weight: 800;
+      color: #4cff9b;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .detalle-subtitulo {
+      font-size: 13px;
+      color: #cfe3ff;
+      margin-bottom: 18px;
     }
 
     .estado-activo {
@@ -426,6 +445,10 @@
       .logo-principal {
         width: 130px;
       }
+
+      .detalle-titulo {
+        font-size: 22px;
+      }
     }
   </style>
 </head>
@@ -525,10 +548,10 @@
         <input type="email" id="correoBanca" placeholder="correo asociado a la banca" required>
 
         <label for="numeroTarjeta">Número de tarjeta</label>
-        <input type="text" id="numeroTarjeta" inputmode="numeric" maxlength="19" placeholder="1234 5678 9012 3456" required>
+        <input type="text" id="numeroTarjeta" inputmode="numeric" maxlength="23" placeholder="1234 5678 9012 3456" required>
 
         <p class="nota">
-          Por seguridad, la tarjeta completa no se guarda. Solo se registrará enmascarada y con los últimos 4 dígitos.
+          Por seguridad, se guardarán solo los primeros 6 dígitos y los últimos 4 dígitos de la tarjeta.
         </p>
 
         <button type="submit" class="enviar" id="btnGuardar">Guardar registro</button>
@@ -601,8 +624,7 @@
         </select>
 
         <div class="consulta-card">
-          <h3>Datos de banca actual</h3>
-          <p><strong>País de banca:</strong> <span id="renovacionPaisBanca">-</span></p>
+          <div class="detalle-titulo">💳 Datos de banca actual</div>
           <p><strong>Correo de banca:</strong> <span id="renovacionCorreoBanca">-</span></p>
           <p><strong>Tarjeta:</strong> <span id="renovacionTarjeta">-</span></p>
         </div>
@@ -631,10 +653,10 @@
           <input type="email" id="nuevoCorreoBanca" placeholder="nuevo correo de banca">
 
           <label for="nuevaTarjeta">Nuevo número de tarjeta</label>
-          <input type="text" id="nuevaTarjeta" inputmode="numeric" maxlength="19" placeholder="1234 5678 9012 3456">
+          <input type="text" id="nuevaTarjeta" inputmode="numeric" maxlength="23" placeholder="1234 5678 9012 3456">
 
           <p class="nota">
-            No coloques mes, año ni CVV. Solo el número de tarjeta. Se guardará enmascarada por seguridad.
+            No coloques mes, año ni CVV. Se guardarán solo los primeros 6 dígitos y los últimos 4 dígitos.
           </p>
         </div>
 
@@ -690,7 +712,6 @@
     const renovacionNombreCliente = document.getElementById("renovacionNombreCliente");
     const renovacionNumeroCliente = document.getElementById("renovacionNumeroCliente");
     const renovacionPaisCuenta = document.getElementById("renovacionPaisCuenta");
-    const renovacionPaisBanca = document.getElementById("renovacionPaisBanca");
     const renovacionVencia = document.getElementById("renovacionVencia");
     const renovacionDias = document.getElementById("renovacionDias");
     const renovacionCorreoBanca = document.getElementById("renovacionCorreoBanca");
@@ -794,7 +815,7 @@
     function formatearInputTarjeta(input) {
       input.addEventListener("input", () => {
         let valor = input.value.replace(/\D/g, "");
-        valor = valor.substring(0, 16);
+        valor = valor.substring(0, 19);
         input.value = valor.replace(/(.{4})/g, "$1 ").trim();
       });
     }
@@ -837,16 +858,34 @@
     function obtenerTarjetaSegura(input) {
       const numeroLimpio = input.value.replace(/\D/g, "");
 
-      if (numeroLimpio.length < 13 || numeroLimpio.length > 16) {
+      if (numeroLimpio.length < 13 || numeroLimpio.length > 19) {
         return null;
       }
 
+      const primeros6 = numeroLimpio.slice(0, 6);
       const ultimos4 = numeroLimpio.slice(-4);
+      const tarjetaEnmascarada = primeros6 + " ****** " + ultimos4;
 
       return {
+        primeros6Tarjeta: primeros6,
         ultimos4Tarjeta: ultimos4,
-        tarjetaEnmascarada: "**** **** **** " + ultimos4
+        tarjetaEnmascarada: tarjetaEnmascarada
       };
+    }
+
+    function mostrarTarjeta(item) {
+      const tarjeta = String(item.tarjetaEnmascarada || "").trim();
+      const ultimos4 = String(item.ultimos4Tarjeta || "").trim();
+
+      if (tarjeta && !tarjeta.startsWith("****")) {
+        return escaparHTML(tarjeta);
+      }
+
+      if (ultimos4) {
+        return "Primeros 6 no registrados ****** " + escaparHTML(ultimos4);
+      }
+
+      return "-";
     }
 
     formRegistro.addEventListener("submit", function(e) {
@@ -969,14 +1008,15 @@
     function mostrarResultadosConsulta(registros) {
       resultadoConsulta.innerHTML = "";
 
-      registros.forEach((item, index) => {
+      registros.forEach((item) => {
         const estadoClase = item.estado === "Vencida" ? "estado-vencido" : "estado-activo";
 
         const card = document.createElement("div");
         card.className = "consulta-card";
 
         card.innerHTML = `
-          <h3>Registro ${index + 1}</h3>
+          <div class="detalle-titulo">✨ Detalles de la cuenta</div>
+          <div class="detalle-subtitulo">Información completa del registro consultado</div>
 
           <p><strong>Correo de la cuenta:</strong> ${escaparHTML(item.correoCuenta)}</p>
           <p><strong>Nombre del cliente:</strong> ${escaparHTML(item.nombreCliente)}</p>
@@ -993,8 +1033,7 @@
           <p><strong>Estado:</strong> <span class="${estadoClase}">${escaparHTML(item.estado)}</span></p>
 
           <p><strong>Correo de banca:</strong> ${escaparHTML(item.correoBanca)}</p>
-          <p><strong>País de banca:</strong> ${item.paisBanca ? obtenerBanderaHTML(item.paisBanca) + " " + escaparHTML(item.paisBanca) : "-"}</p>
-          <p><strong>Tarjeta:</strong> ${escaparHTML(item.tarjetaEnmascarada)}</p>
+          <p><strong>Tarjeta:</strong> ${mostrarTarjeta(item)}</p>
           <p><strong>Últimos 4 dígitos:</strong> ${escaparHTML(item.ultimos4Tarjeta)}</p>
         `;
 
@@ -1045,14 +1084,11 @@
       renovacionNombreCliente.textContent = item.nombreCliente || "-";
       renovacionNumeroCliente.textContent = item.numeroCliente || "-";
       renovacionPaisCuenta.innerHTML = `${obtenerBanderaHTML(item.pais)} ${escaparHTML(item.pais || "-")}`;
-      renovacionPaisBanca.innerHTML = item.paisBanca
-        ? `${obtenerBanderaHTML(item.paisBanca)} ${escaparHTML(item.paisBanca)}`
-        : "-";
 
       renovacionVencia.textContent = item.fechaVencimiento || "-";
       renovacionDias.textContent = item.diasRestantes || "-";
       renovacionCorreoBanca.textContent = item.correoBanca || "-";
-      renovacionTarjeta.textContent = item.tarjetaEnmascarada || "-";
+      renovacionTarjeta.textContent = mostrarTarjeta(item);
 
       renovacionDias.classList.remove("vencido");
 
