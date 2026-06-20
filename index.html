@@ -49,7 +49,7 @@
 
     .container {
       width: 100%;
-      max-width: 660px;
+      max-width: 680px;
       background: rgba(255, 255, 255, 0.09);
       padding: 26px;
       border-radius: 20px;
@@ -274,6 +274,123 @@
       margin-bottom: 16px;
     }
 
+    .selector-personalizado {
+      position: relative;
+      margin-bottom: 17px;
+    }
+
+    .selector-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 11px;
+      background: #fff;
+      color: #111;
+      font-size: 15px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .selector-btn::after {
+      content: "▼";
+      font-size: 11px;
+      color: #222;
+    }
+
+    .selector-lista {
+      display: none;
+      position: absolute;
+      top: 50px;
+      left: 0;
+      width: 100%;
+      background: #fff;
+      color: #111;
+      border-radius: 11px;
+      overflow: hidden;
+      z-index: 99;
+      box-shadow: 0 12px 25px rgba(0,0,0,0.35);
+    }
+
+    .selector-lista.active {
+      display: block;
+    }
+
+    .opcion-pais {
+      padding: 12px 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+    }
+
+    .opcion-pais:hover {
+      background: #e8f2ff;
+    }
+
+    .pais-con-bandera {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .flag {
+      width: 26px;
+      height: 18px;
+      display: inline-block;
+      border-radius: 3px;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
+      vertical-align: middle;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .flag-ng {
+      background: linear-gradient(90deg, #008751 0 33.33%, #fff 33.33% 66.66%, #008751 66.66% 100%);
+    }
+
+    .flag-eg {
+      background: linear-gradient(180deg, #ce1126 0 33.33%, #fff 33.33% 66.66%, #000 66.66% 100%);
+    }
+
+    .flag-br {
+      background: #009b3a;
+    }
+
+    .flag-br::before {
+      content: "";
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      background: #ffdf00;
+      transform: rotate(45deg);
+      top: 1.5px;
+      left: 5.5px;
+    }
+
+    .flag-br::after {
+      content: "";
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: #002776;
+      border-radius: 50%;
+      top: 5px;
+      left: 9px;
+    }
+
+    .flag-bo {
+      background: linear-gradient(180deg, #d52b1e 0 33.33%, #f9e300 33.33% 66.66%, #007934 66.66% 100%);
+    }
+
+    .flag-empty {
+      background: linear-gradient(135deg, #dfefff, #ffffff);
+    }
+
     @media (max-width: 560px) {
       .tabs {
         grid-template-columns: 1fr;
@@ -341,14 +458,30 @@
           </div>
 
           <div>
-            <label for="pais">País</label>
-            <select id="pais" required>
-              <option value="">🌎 Seleccionar</option>
-              <option value="Nigeria">🇳🇬 Nigeria</option>
-              <option value="Egipto">🇪🇬 Egipto</option>
-              <option value="Brasil">🇧🇷 Brasil</option>
-              <option value="Bolivia">🇧🇴 Bolivia</option>
-            </select>
+            <label>País</label>
+
+            <div class="selector-personalizado" data-input="pais">
+              <button type="button" class="selector-btn">
+                <span class="pais-con-bandera"><span class="flag flag-empty"></span> Seleccionar</span>
+              </button>
+
+              <div class="selector-lista">
+                <div class="opcion-pais" data-value="Nigeria">
+                  <span class="flag flag-ng"></span> Nigeria
+                </div>
+                <div class="opcion-pais" data-value="Egipto">
+                  <span class="flag flag-eg"></span> Egipto
+                </div>
+                <div class="opcion-pais" data-value="Brasil">
+                  <span class="flag flag-br"></span> Brasil
+                </div>
+                <div class="opcion-pais" data-value="Bolivia">
+                  <span class="flag flag-bo"></span> Bolivia
+                </div>
+              </div>
+            </div>
+
+            <input type="hidden" id="pais">
           </div>
         </div>
 
@@ -419,6 +552,7 @@
       <div id="panelRenovacion" style="display:none;">
 
         <div class="resultado">
+          <p><strong>País de la cuenta:</strong> <span id="renovacionPaisCuenta">-</span></p>
           <p><strong>Fecha en la cual vencía:</strong> <span id="renovacionVencia">-</span></p>
           <p><strong>Días que le quedan:</strong> <span id="renovacionDias" class="contador">-</span></p>
         </div>
@@ -435,6 +569,7 @@
 
         <div class="consulta-card">
           <h3>Datos de banca actual</h3>
+          <p><strong>País de banca:</strong> <span id="renovacionPaisBanca">-</span></p>
           <p><strong>Correo de banca:</strong> <span id="renovacionCorreoBanca">-</span></p>
           <p><strong>Tarjeta:</strong> <span id="renovacionTarjeta">-</span></p>
         </div>
@@ -442,6 +577,32 @@
         <button type="button" class="secundario" id="btnCambiarBanca">Cambiar banca</button>
 
         <div id="bloqueCambiarBanca" class="bloque-oculto">
+
+          <label>País de la nueva banca</label>
+
+          <div class="selector-personalizado" data-input="paisBancaNuevo">
+            <button type="button" class="selector-btn">
+              <span class="pais-con-bandera"><span class="flag flag-empty"></span> Seleccionar</span>
+            </button>
+
+            <div class="selector-lista">
+              <div class="opcion-pais" data-value="Nigeria">
+                <span class="flag flag-ng"></span> Nigeria
+              </div>
+              <div class="opcion-pais" data-value="Egipto">
+                <span class="flag flag-eg"></span> Egipto
+              </div>
+              <div class="opcion-pais" data-value="Brasil">
+                <span class="flag flag-br"></span> Brasil
+              </div>
+              <div class="opcion-pais" data-value="Bolivia">
+                <span class="flag flag-bo"></span> Bolivia
+              </div>
+            </div>
+          </div>
+
+          <input type="hidden" id="paisBancaNuevo">
+
           <label for="nuevoCorreoBanca">Nuevo correo asociado a la banca</label>
           <input type="email" id="nuevoCorreoBanca" placeholder="nuevo correo de banca">
 
@@ -502,6 +663,8 @@
     const btnBuscarRenovacion = document.getElementById("btnBuscarRenovacion");
 
     const panelRenovacion = document.getElementById("panelRenovacion");
+    const renovacionPaisCuenta = document.getElementById("renovacionPaisCuenta");
+    const renovacionPaisBanca = document.getElementById("renovacionPaisBanca");
     const renovacionVencia = document.getElementById("renovacionVencia");
     const renovacionDias = document.getElementById("renovacionDias");
     const renovacionCorreoBanca = document.getElementById("renovacionCorreoBanca");
@@ -511,9 +674,12 @@
     const btnCambiarBanca = document.getElementById("btnCambiarBanca");
     const bloqueCambiarBanca = document.getElementById("bloqueCambiarBanca");
     const nuevoCorreoBanca = document.getElementById("nuevoCorreoBanca");
+    const paisBancaNuevo = document.getElementById("paisBancaNuevo");
     const btnActualizarRenovacion = document.getElementById("btnActualizarRenovacion");
 
     let datosRenovacionActual = null;
+
+    iniciarSelectoresPais();
 
     btnRegistro.addEventListener("click", () => cambiarSeccion("registro"));
     btnConsulta.addEventListener("click", () => cambiarSeccion("consulta"));
@@ -542,6 +708,53 @@
         btnRenovacion.classList.add("active");
         seccionRenovacion.classList.add("active");
       }
+    }
+
+    function iniciarSelectoresPais() {
+      const selectores = document.querySelectorAll(".selector-personalizado");
+
+      selectores.forEach(selector => {
+        const boton = selector.querySelector(".selector-btn");
+        const lista = selector.querySelector(".selector-lista");
+        const inputId = selector.dataset.input;
+        const inputHidden = document.getElementById(inputId);
+
+        boton.addEventListener("click", function(e) {
+          e.stopPropagation();
+
+          document.querySelectorAll(".selector-lista").forEach(l => {
+            if (l !== lista) l.classList.remove("active");
+          });
+
+          lista.classList.toggle("active");
+        });
+
+        selector.querySelectorAll(".opcion-pais").forEach(opcion => {
+          opcion.addEventListener("click", function() {
+            const valor = this.dataset.value;
+            inputHidden.value = valor;
+
+            boton.innerHTML = `<span class="pais-con-bandera">${obtenerBanderaHTML(valor)} ${valor}</span>`;
+            lista.classList.remove("active");
+          });
+        });
+      });
+
+      document.addEventListener("click", function() {
+        document.querySelectorAll(".selector-lista").forEach(lista => {
+          lista.classList.remove("active");
+        });
+      });
+    }
+
+    function resetearSelectorPais(inputId) {
+      const input = document.getElementById(inputId);
+      const selector = document.querySelector(`.selector-personalizado[data-input="${inputId}"]`);
+      if (!selector || !input) return;
+
+      input.value = "";
+      const boton = selector.querySelector(".selector-btn");
+      boton.innerHTML = `<span class="pais-con-bandera"><span class="flag flag-empty"></span> Seleccionar</span>`;
     }
 
     formatearInputTarjeta(numeroTarjetaInput);
@@ -657,6 +870,7 @@
         if (respuesta.status === "success") {
           mostrarMensaje(mensajeRegistro, "Registro guardado correctamente.", "exito");
           formRegistro.reset();
+          resetearSelectorPais("pais");
         } else {
           mostrarMensaje(mensajeRegistro, "Error al guardar: " + respuesta.message, "error");
         }
@@ -730,7 +944,7 @@
           <h3>Registro ${index + 1}</h3>
           <p><strong>Correo:</strong> ${escaparHTML(item.correoCuenta)}</p>
           <p><strong>Tipo de cuenta:</strong> ${escaparHTML(item.tipoCuenta)}</p>
-          <p><strong>País:</strong> ${obtenerBanderaPais(item.pais)} ${escaparHTML(item.pais)}</p>
+          <p><strong>País:</strong> ${obtenerBanderaHTML(item.pais)} ${escaparHTML(item.pais)}</p>
           <p><strong>Estado:</strong> <span class="${estadoClase}">${escaparHTML(item.estado)}</span></p>
           <p><strong>Correo de banca:</strong> ${escaparHTML(item.correoBanca)}</p>
           <p><strong>Tarjeta:</strong> ${escaparHTML(item.tarjetaEnmascarada)}</p>
@@ -780,6 +994,11 @@
     });
 
     function mostrarPanelRenovacion(item) {
+      renovacionPaisCuenta.innerHTML = `${obtenerBanderaHTML(item.pais)} ${escaparHTML(item.pais || "-")}`;
+      renovacionPaisBanca.innerHTML = item.paisBanca
+        ? `${obtenerBanderaHTML(item.paisBanca)} ${escaparHTML(item.paisBanca)}`
+        : "-";
+
       renovacionVencia.textContent = item.fechaVencimiento || "-";
       renovacionDias.textContent = item.diasRestantes || "-";
       renovacionCorreoBanca.textContent = item.correoBanca || "-";
@@ -794,6 +1013,8 @@
       tiempoRenovacion.value = "";
       nuevoCorreoBanca.value = "";
       nuevaTarjetaInput.value = "";
+      resetearSelectorPais("paisBancaNuevo");
+
       bloqueCambiarBanca.style.display = "none";
       btnCambiarBanca.textContent = "Cambiar banca";
 
@@ -836,7 +1057,13 @@
 
       if (cambiarBanca) {
         const correoNuevo = nuevoCorreoBanca.value.trim();
+        const paisBanca = paisBancaNuevo.value;
         const tarjetaNueva = obtenerTarjetaSegura(nuevaTarjetaInput);
+
+        if (!paisBanca) {
+          mostrarMensaje(mensajeRenovacion, "Selecciona el país de la nueva banca.", "error");
+          return;
+        }
 
         if (!correoNuevo) {
           mostrarMensaje(mensajeRenovacion, "Coloca el nuevo correo de banca.", "error");
@@ -848,6 +1075,7 @@
           return;
         }
 
+        datos.paisBanca = paisBanca;
         datos.correoBanca = correoNuevo;
         datos.tarjetaEnmascarada = tarjetaNueva.tarjetaEnmascarada;
         datos.ultimos4Tarjeta = tarjetaNueva.ultimos4Tarjeta;
@@ -871,15 +1099,15 @@
       });
     });
 
-    function obtenerBanderaPais(pais) {
+    function obtenerBanderaHTML(pais) {
       const nombre = String(pais || "").trim().toLowerCase();
 
-      if (nombre === "nigeria") return "🇳🇬";
-      if (nombre === "egipto") return "🇪🇬";
-      if (nombre === "brasil") return "🇧🇷";
-      if (nombre === "bolivia") return "🇧🇴";
+      if (nombre === "nigeria") return '<span class="flag flag-ng"></span>';
+      if (nombre === "egipto") return '<span class="flag flag-eg"></span>';
+      if (nombre === "brasil") return '<span class="flag flag-br"></span>';
+      if (nombre === "bolivia") return '<span class="flag flag-bo"></span>';
 
-      return "🌎";
+      return '<span class="flag flag-empty"></span>';
     }
 
     function enviarJSONP(parametros, callback) {
