@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Registro, Consulta y Renovación</title>
+  <title>Control de Suscripciones</title>
 
   <style>
     * {
@@ -38,10 +38,7 @@
 
     .capa-oscura {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      inset: 0;
       background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(4, 21, 47, 0.75));
       z-index: 1;
       pointer-events: none;
@@ -49,7 +46,7 @@
 
     .container {
       width: 100%;
-      max-width: 700px;
+      max-width: 760px;
       background: rgba(255, 255, 255, 0.09);
       padding: 28px;
       border-radius: 22px;
@@ -89,7 +86,7 @@
 
     .tabs {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: repeat(4, 1fr);
       gap: 10px;
       margin-bottom: 24px;
     }
@@ -126,7 +123,7 @@
       font-size: 14px;
     }
 
-    input, select {
+    input, select, textarea {
       width: 100%;
       padding: 13px;
       border: none;
@@ -138,7 +135,13 @@
       color: #111;
     }
 
-    input:focus, select:focus {
+    textarea {
+      min-height: 240px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    input:focus, select:focus, textarea:focus {
       box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.35);
     }
 
@@ -307,6 +310,17 @@
       margin-bottom: 16px;
     }
 
+    .voucher-box {
+      background: linear-gradient(135deg, rgba(10,35,30,0.88), rgba(15,25,55,0.82));
+      border: 1px solid rgba(76,255,155,0.35);
+      border-radius: 20px;
+      padding: 20px;
+      margin-top: 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+      backdrop-filter: blur(8px);
+    }
+
     .selector-personalizado {
       position: relative;
       margin-bottom: 17px;
@@ -424,6 +438,86 @@
       background: linear-gradient(135deg, #dfefff, #ffffff);
     }
 
+    .aviso-seguridad {
+      background: rgba(255, 193, 7, 0.14);
+      border: 1px solid rgba(255, 193, 7, 0.35);
+      color: #fff3c4;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.45;
+      margin-bottom: 16px;
+    }
+
+    .check-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.08);
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+
+    .check-line input {
+      width: auto;
+      margin: 0;
+    }
+
+    .info-box {
+      background: linear-gradient(135deg, rgba(30,144,255,0.16), rgba(76,255,155,0.08));
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 15px;
+      border-radius: 15px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .qr-pago {
+      width: 100%;
+      max-width: 320px;
+      display: block;
+      margin: 18px auto;
+      border-radius: 16px;
+      background: #fff;
+      padding: 10px;
+    }
+
+    .copy-box {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    .copy-box input {
+      margin-bottom: 0;
+      font-size: 13px;
+    }
+
+    .copy-box button {
+      border: none;
+      background: #1e90ff;
+      color: #fff;
+      border-radius: 10px;
+      padding: 0 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .aviso-pago {
+      background: rgba(76,255,155,0.12);
+      border: 1px solid rgba(76,255,155,0.28);
+      color: #eafff2;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.45;
+      margin-top: 15px;
+    }
+
     @media (max-width: 560px) {
       .tabs {
         grid-template-columns: 1fr;
@@ -449,6 +543,14 @@
       .detalle-titulo {
         font-size: 22px;
       }
+
+      .copy-box {
+        grid-template-columns: 1fr;
+      }
+
+      .copy-box button {
+        padding: 12px;
+      }
     }
   </style>
 </head>
@@ -468,67 +570,31 @@
     </div>
 
     <h1>Control de Suscripciones</h1>
-    <p class="subtitulo">Registra, consulta y renueva cuentas por correo.</p>
+    <p class="subtitulo">Registra, consulta, renueva y solicita cuentas por correo.</p>
 
     <div class="tabs">
       <button class="tab-btn active" id="btnRegistro" type="button">Registro</button>
       <button class="tab-btn" id="btnConsulta" type="button">Consulta</button>
       <button class="tab-btn" id="btnRenovacion" type="button">Renovación</button>
+      <button class="tab-btn" id="btnSolicitudes" type="button">Solicitudes</button>
     </div>
 
+    <!-- REGISTRO -->
     <section id="seccionRegistro" class="seccion active">
       <form id="formRegistro" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 
         <label for="correoCuenta">Correo de la cuenta</label>
-        <input
-          type="text"
-          inputmode="email"
-          id="correoCuenta"
-          name="correo_cuenta_no_autofill_9871"
-          placeholder="ejemplo@gmail.com"
-          autocomplete="new-password"
-          autocorrect="off"
-          autocapitalize="off"
-          spellcheck="false"
-          data-lpignore="true"
-          data-form-type="other"
-          required
-        >
+        <input type="text" inputmode="email" id="correoCuenta" name="correo_cuenta_no_autofill_9871" placeholder="ejemplo@gmail.com" autocomplete="new-password" required>
 
         <div class="row">
           <div>
             <label for="nombreCliente">Nombre del cliente</label>
-            <input
-              type="text"
-              id="nombreCliente"
-              name="nombre_cliente_no_autofill_8731"
-              placeholder="Nombre completo"
-              autocomplete="new-password"
-              autocorrect="off"
-              autocapitalize="off"
-              spellcheck="false"
-              data-lpignore="true"
-              data-form-type="other"
-              required
-            >
+            <input type="text" id="nombreCliente" name="nombre_cliente_no_autofill_8731" placeholder="Nombre completo" autocomplete="new-password" required>
           </div>
 
           <div>
             <label for="numeroCliente">WhatsApp del cliente</label>
-            <input
-              type="text"
-              inputmode="tel"
-              id="numeroCliente"
-              name="numero_cliente_no_autofill_7218"
-              placeholder="+591XXXXXXXX"
-              autocomplete="new-password"
-              autocorrect="off"
-              autocapitalize="off"
-              spellcheck="false"
-              data-lpignore="true"
-              data-form-type="other"
-              required
-            >
+            <input type="text" inputmode="tel" id="numeroCliente" name="numero_cliente_no_autofill_7218" placeholder="+591XXXXXXXX" autocomplete="new-password" required>
           </div>
         </div>
 
@@ -545,12 +611,10 @@
 
           <div>
             <label>País</label>
-
             <div class="selector-personalizado" data-input="pais">
               <button type="button" class="selector-btn">
                 <span class="pais-con-bandera"><span class="flag flag-empty"></span> Seleccionar</span>
               </button>
-
               <div class="selector-lista">
                 <div class="opcion-pais" data-value="Nigeria"><span class="flag flag-ng"></span> Nigeria</div>
                 <div class="opcion-pais" data-value="Egipto"><span class="flag flag-eg"></span> Egipto</div>
@@ -558,7 +622,6 @@
                 <div class="opcion-pais" data-value="Bolivia"><span class="flag flag-bo"></span> Bolivia</div>
               </div>
             </div>
-
             <input type="hidden" id="pais">
           </div>
         </div>
@@ -566,13 +629,7 @@
         <div class="row">
           <div>
             <label for="fechaActivacion">Fecha de activación</label>
-            <input
-              type="date"
-              id="fechaActivacion"
-              name="fecha_activacion_no_autofill_3421"
-              autocomplete="off"
-              required
-            >
+            <input type="date" id="fechaActivacion" name="fecha_activacion_no_autofill_3421" autocomplete="off" required>
           </div>
 
           <div>
@@ -589,37 +646,10 @@
         </div>
 
         <label for="correoBanca">Correo de la banca</label>
-        <input
-          type="text"
-          inputmode="email"
-          id="correoBanca"
-          name="correo_banca_no_autofill_6549"
-          placeholder="correo asociado a la banca"
-          autocomplete="new-password"
-          autocorrect="off"
-          autocapitalize="off"
-          spellcheck="false"
-          data-lpignore="true"
-          data-form-type="other"
-          required
-        >
+        <input type="text" inputmode="email" id="correoBanca" name="correo_banca_no_autofill_6549" placeholder="correo asociado a la banca" autocomplete="new-password" required>
 
         <label for="numeroTarjeta">Número de tarjeta</label>
-        <input
-          type="text"
-          id="numeroTarjeta"
-          name="tarjeta_no_autofill_1122"
-          inputmode="numeric"
-          maxlength="23"
-          placeholder="1234 5678 9012 3456"
-          autocomplete="new-password"
-          autocorrect="off"
-          autocapitalize="off"
-          spellcheck="false"
-          data-lpignore="true"
-          data-form-type="other"
-          required
-        >
+        <input type="text" id="numeroTarjeta" name="tarjeta_no_autofill_1122" inputmode="numeric" maxlength="23" placeholder="1234 5678 9012 3456" autocomplete="new-password" required>
 
         <p class="nota">
           Por seguridad, se guardarán solo los primeros 6 dígitos y los últimos 4 dígitos de la tarjeta.
@@ -631,23 +661,11 @@
       <div id="mensajeRegistro" class="mensaje"></div>
     </section>
 
+    <!-- CONSULTA -->
     <section id="seccionConsulta" class="seccion">
       <form id="formConsulta" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <label for="correoConsulta">Correo de la cuenta</label>
-        <input
-          type="text"
-          inputmode="email"
-          id="correoConsulta"
-          name="correo_consulta_no_autofill_3487"
-          placeholder="ejemplo@gmail.com"
-          autocomplete="new-password"
-          autocorrect="off"
-          autocapitalize="off"
-          spellcheck="false"
-          data-lpignore="true"
-          data-form-type="other"
-          required
-        >
+        <input type="text" inputmode="email" id="correoConsulta" name="correo_consulta_no_autofill_3487" placeholder="ejemplo@gmail.com" autocomplete="new-password" required>
 
         <button type="submit" class="enviar" id="btnBuscar">Consultar</button>
       </form>
@@ -663,23 +681,11 @@
       <div id="resultadoConsulta"></div>
     </section>
 
+    <!-- RENOVACIÓN -->
     <section id="seccionRenovacion" class="seccion">
       <form id="formBuscarRenovacion" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <label for="correoRenovacion">Correo de la cuenta</label>
-        <input
-          type="text"
-          inputmode="email"
-          id="correoRenovacion"
-          name="correo_renovacion_no_autofill_7731"
-          placeholder="ejemplo@gmail.com"
-          autocomplete="new-password"
-          autocorrect="off"
-          autocapitalize="off"
-          spellcheck="false"
-          data-lpignore="true"
-          data-form-type="other"
-          required
-        >
+        <input type="text" inputmode="email" id="correoRenovacion" name="correo_renovacion_no_autofill_7731" placeholder="ejemplo@gmail.com" autocomplete="new-password" required>
 
         <button type="submit" class="enviar" id="btnBuscarRenovacion">Buscar cuenta</button>
       </form>
@@ -702,33 +708,10 @@
 
         <div id="bloqueEditarCliente" class="bloque-oculto">
           <label for="editarNombreCliente">Nuevo nombre del cliente</label>
-          <input
-            type="text"
-            id="editarNombreCliente"
-            name="editar_nombre_no_autofill_9081"
-            placeholder="Nuevo nombre completo"
-            autocomplete="new-password"
-            autocorrect="off"
-            autocapitalize="off"
-            spellcheck="false"
-            data-lpignore="true"
-            data-form-type="other"
-          >
+          <input type="text" id="editarNombreCliente" name="editar_nombre_no_autofill_9081" placeholder="Nuevo nombre completo" autocomplete="new-password">
 
           <label for="editarNumeroCliente">Nuevo WhatsApp del cliente</label>
-          <input
-            type="text"
-            inputmode="tel"
-            id="editarNumeroCliente"
-            name="editar_numero_no_autofill_9082"
-            placeholder="+591XXXXXXXX"
-            autocomplete="new-password"
-            autocorrect="off"
-            autocapitalize="off"
-            spellcheck="false"
-            data-lpignore="true"
-            data-form-type="other"
-          >
+          <input type="text" inputmode="tel" id="editarNumeroCliente" name="editar_numero_no_autofill_9082" placeholder="+591XXXXXXXX" autocomplete="new-password">
 
           <p class="nota">
             Al actualizar, se guardará el dato anterior y el dato nuevo en el historial de cambios.
@@ -772,35 +755,10 @@
           <input type="hidden" id="paisBancaNuevo">
 
           <label for="nuevoCorreoBanca">Nuevo correo asociado a la banca</label>
-          <input
-            type="text"
-            inputmode="email"
-            id="nuevoCorreoBanca"
-            name="nuevo_correo_banca_no_autofill_9083"
-            placeholder="nuevo correo de banca"
-            autocomplete="new-password"
-            autocorrect="off"
-            autocapitalize="off"
-            spellcheck="false"
-            data-lpignore="true"
-            data-form-type="other"
-          >
+          <input type="text" inputmode="email" id="nuevoCorreoBanca" name="nuevo_correo_banca_no_autofill_9083" placeholder="nuevo correo de banca" autocomplete="new-password">
 
           <label for="nuevaTarjeta">Nuevo número de tarjeta</label>
-          <input
-            type="text"
-            id="nuevaTarjeta"
-            name="nueva_tarjeta_no_autofill_9084"
-            inputmode="numeric"
-            maxlength="23"
-            placeholder="1234 5678 9012 3456"
-            autocomplete="new-password"
-            autocorrect="off"
-            autocapitalize="off"
-            spellcheck="false"
-            data-lpignore="true"
-            data-form-type="other"
-          >
+          <input type="text" id="nuevaTarjeta" name="nueva_tarjeta_no_autofill_9084" inputmode="numeric" maxlength="23" placeholder="1234 5678 9012 3456" autocomplete="new-password">
 
           <p class="nota">
             No coloques mes, año ni CVV. Se guardarán solo los primeros 6 dígitos y los últimos 4 dígitos.
@@ -808,7 +766,138 @@
         </div>
 
         <button type="button" class="enviar" id="btnActualizarRenovacion">Actualizar datos de renovación</button>
+
+        <div id="voucherWhatsappBox" class="voucher-box" style="display:none;">
+          <div class="detalle-titulo">📄 Voucher de renovación</div>
+          <div class="detalle-subtitulo">Mensaje listo para enviar al cliente por WhatsApp</div>
+
+          <textarea id="textoVoucherWhatsapp" readonly></textarea>
+
+          <button type="button" class="enviar" id="btnEnviarVoucherWhatsapp">
+            Enviar voucher por WhatsApp
+          </button>
+        </div>
+
       </div>
+    </section>
+
+    <!-- SOLICITUDES -->
+    <section id="seccionSolicitudes" class="seccion">
+      <form id="formSolicitudes" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
+        <label for="solNombre">Nombre del cliente</label>
+        <input type="text" id="solNombre" name="sol_nombre_no_autofill" placeholder="Nombre completo" autocomplete="new-password" required>
+
+        <label for="solNumero">Número WhatsApp con prefijo</label>
+        <input type="text" inputmode="tel" id="solNumero" name="sol_numero_no_autofill" placeholder="+591XXXXXXXX" autocomplete="new-password" required>
+
+        <label for="solCorreo">Correo de la cuenta</label>
+        <input type="text" inputmode="email" id="solCorreo" name="sol_correo_no_autofill" placeholder="correo@gmail.com" autocomplete="new-password" required>
+
+        <div class="aviso-seguridad">
+          🔐 <strong>PASS / ACCESOS</strong><br>
+          Por seguridad, no coloques tu contraseña en esta página.
+          Nuestro equipo se contactará contigo para pedirte los accesos necesarios y continuar con la activación.
+          Si no podemos acceder a la cuenta, tu solicitud puede tener demora.
+        </div>
+
+        <label class="check-line">
+          <input type="checkbox" id="solAccesoConfirmado">
+          Confirmo que mi cuenta está disponible y que el equipo puede contactarme para solicitar los accesos.
+        </label>
+
+        <div class="row">
+          <div>
+            <label>País que desea la cuenta</label>
+            <div class="selector-personalizado" data-input="solPais">
+              <button type="button" class="selector-btn">
+                <span class="pais-con-bandera"><span class="flag flag-empty"></span> Seleccionar</span>
+              </button>
+
+              <div class="selector-lista">
+                <div class="opcion-pais" data-value="Nigeria"><span class="flag flag-ng"></span> Nigeria</div>
+                <div class="opcion-pais" data-value="Egipto"><span class="flag flag-eg"></span> Egipto</div>
+                <div class="opcion-pais" data-value="Brasil"><span class="flag flag-br"></span> Brasil</div>
+                <div class="opcion-pais" data-value="Bolivia"><span class="flag flag-bo"></span> Bolivia</div>
+              </div>
+            </div>
+            <input type="hidden" id="solPais">
+          </div>
+
+          <div>
+            <label for="solPlan">Plan</label>
+            <select id="solPlan" required>
+              <option value="">Seleccionar plan</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="solTiempo">Tiempo</label>
+            <select id="solTiempo" required>
+              <option value="">Seleccionar tiempo</option>
+              <option value="30">30 días</option>
+              <option value="60">60 días</option>
+              <option value="90">90 días</option>
+              <option value="180">180 días</option>
+              <option value="365">365 días</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="solGarantia">Garantía</label>
+            <select id="solGarantia" required>
+              <option value="">Seleccionar garantía</option>
+              <option value="Garantía de Activación">Garantía de Activación</option>
+              <option value="Garantía Parcial">Garantía Parcial</option>
+              <option value="Garantía Total">Garantía Total</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="descripcionGarantia" class="info-box" style="display:none;"></div>
+
+        <label for="solMetodoPago">Método de pago</label>
+        <select id="solMetodoPago" required>
+          <option value="">Seleccionar método</option>
+          <option value="QR Bolivia">QR Bolivia</option>
+          <option value="Binance">Binance</option>
+        </select>
+
+        <div id="resumenPagoSolicitud" class="consulta-card" style="display:none;">
+          <div class="detalle-titulo">💰 Resumen de pago</div>
+          <p><strong>Precio base mensual:</strong> <span id="solPrecioBaseUsd">-</span></p>
+          <p><strong>Total a pagar:</strong> <span id="solPrecioUsd">-</span></p>
+
+          <p id="lineaTipoCambio" style="display:none;"><strong>Tipo de cambio:</strong> <span id="solTipoCambio">-</span></p>
+          <p id="lineaMontoBs" style="display:none;"><strong>Monto a pagar en Bs:</strong> <span id="solMontoBs">-</span></p>
+
+          <div id="bloqueQrBolivia" style="display:none;">
+            <img src="qr-bnb.png" alt="QR BNB Bolivia" class="qr-pago">
+          </div>
+
+          <div id="bloqueBinance" style="display:none;">
+            <img src="qr-binance.png" alt="QR Binance" class="qr-pago">
+
+            <label>Dirección de depósito Binance</label>
+            <div class="copy-box">
+              <input type="text" id="direccionBinance" value="0xec75fc8e3f8fb72d8002094b63775cc3ad21c453" readonly>
+              <button type="button" id="btnCopiarBinance">Copiar</button>
+            </div>
+          </div>
+
+          <div class="aviso-pago">
+            📌 Realiza tu pago. Una vez realizado, saca una captura del comprobante, voucher o recibo.
+          </div>
+        </div>
+
+        <button type="submit" class="enviar" id="btnEnviarSolicitud">
+          Presiona aquí para enviar solicitud y comprobante
+        </button>
+      </form>
+
+      <div id="mensajeSolicitud" class="mensaje"></div>
     </section>
 
   </div>
@@ -819,26 +908,28 @@
     const videoFondo = document.getElementById("videoFondo");
     if (videoFondo) {
       videoFondo.muted = true;
-      videoFondo.play().catch(() => {
-        console.log("El navegador bloqueó la reproducción automática del video.");
-      });
+      videoFondo.play().catch(() => {});
     }
 
     const btnRegistro = document.getElementById("btnRegistro");
     const btnConsulta = document.getElementById("btnConsulta");
     const btnRenovacion = document.getElementById("btnRenovacion");
+    const btnSolicitudes = document.getElementById("btnSolicitudes");
 
     const seccionRegistro = document.getElementById("seccionRegistro");
     const seccionConsulta = document.getElementById("seccionConsulta");
     const seccionRenovacion = document.getElementById("seccionRenovacion");
+    const seccionSolicitudes = document.getElementById("seccionSolicitudes");
 
     const formRegistro = document.getElementById("formRegistro");
     const formConsulta = document.getElementById("formConsulta");
     const formBuscarRenovacion = document.getElementById("formBuscarRenovacion");
+    const formSolicitudes = document.getElementById("formSolicitudes");
 
     const mensajeRegistro = document.getElementById("mensajeRegistro");
     const mensajeConsulta = document.getElementById("mensajeConsulta");
     const mensajeRenovacion = document.getElementById("mensajeRenovacion");
+    const mensajeSolicitud = document.getElementById("mensajeSolicitud");
 
     const resultadoConsulta = document.getElementById("resultadoConsulta");
     const resumenConsulta = document.getElementById("resumenConsulta");
@@ -876,8 +967,93 @@
     const paisBancaNuevo = document.getElementById("paisBancaNuevo");
     const btnActualizarRenovacion = document.getElementById("btnActualizarRenovacion");
 
+    const voucherWhatsappBox = document.getElementById("voucherWhatsappBox");
+    const textoVoucherWhatsapp = document.getElementById("textoVoucherWhatsapp");
+    const btnEnviarVoucherWhatsapp = document.getElementById("btnEnviarVoucherWhatsapp");
+
+    const solNombre = document.getElementById("solNombre");
+    const solNumero = document.getElementById("solNumero");
+    const solCorreo = document.getElementById("solCorreo");
+    const solAccesoConfirmado = document.getElementById("solAccesoConfirmado");
+    const solPais = document.getElementById("solPais");
+    const solPlan = document.getElementById("solPlan");
+    const solTiempo = document.getElementById("solTiempo");
+    const solGarantia = document.getElementById("solGarantia");
+    const solMetodoPago = document.getElementById("solMetodoPago");
+
+    const descripcionGarantia = document.getElementById("descripcionGarantia");
+    const resumenPagoSolicitud = document.getElementById("resumenPagoSolicitud");
+    const solPrecioBaseUsd = document.getElementById("solPrecioBaseUsd");
+    const solPrecioUsd = document.getElementById("solPrecioUsd");
+    const solTipoCambio = document.getElementById("solTipoCambio");
+    const solMontoBs = document.getElementById("solMontoBs");
+    const lineaTipoCambio = document.getElementById("lineaTipoCambio");
+    const lineaMontoBs = document.getElementById("lineaMontoBs");
+    const bloqueQrBolivia = document.getElementById("bloqueQrBolivia");
+    const bloqueBinance = document.getElementById("bloqueBinance");
+    const direccionBinance = document.getElementById("direccionBinance");
+    const btnCopiarBinance = document.getElementById("btnCopiarBinance");
+    const btnEnviarSolicitud = document.getElementById("btnEnviarSolicitud");
+
     let datosRenovacionActual = null;
     let seccionActual = "registro";
+    let ultimoTextoVoucher = "";
+    let ultimoNumeroWhatsapp = "";
+    let solicitudPrecioActual = 0;
+    let solicitudPrecioBaseActual = 0;
+    let solicitudTipoCambioActual = "";
+    let solicitudMontoBsActual = "";
+
+    const PRECIOS_SOLICITUDES = {
+      Nigeria: {
+        "Individual unido a plan familiar": {
+          "Garantía de Activación": 1.5,
+          "Garantía Parcial": 1.8,
+          "Garantía Total": 2
+        },
+        "Dúo": {
+          "Garantía de Activación": 3,
+          "Garantía Parcial": 3.5,
+          "Garantía Total": 4
+        },
+        "Familiar": {
+          "Garantía de Activación": 4,
+          "Garantía Parcial": 5.5,
+          "Garantía Total": 8
+        }
+      },
+      Egipto: {
+        "Individual": {
+          "Garantía de Activación": 1.8,
+          "Garantía Parcial": 2.2,
+          "Garantía Total": 2.5
+        },
+        "Dúo": {
+          "Garantía de Activación": 3,
+          "Garantía Parcial": 3.5,
+          "Garantía Total": 4
+        },
+        "Familiar": {
+          "Garantía de Activación": 4,
+          "Garantía Parcial": 5.5,
+          "Garantía Total": 8
+        }
+      },
+      Brasil: {
+        "Individual unido a plan familiar": {
+          "Garantía de Activación": 1.8,
+          "Garantía Parcial": 2.2,
+          "Garantía Total": 2.5
+        }
+      },
+      Bolivia: {
+        "Individual unido a plan familiar": {
+          "Garantía de Activación": 1.8,
+          "Garantía Parcial": 2.2,
+          "Garantía Total": 2.5
+        }
+      }
+    };
 
     iniciarSelectoresPais();
 
@@ -885,23 +1061,60 @@
       limpiarRegistro();
       limpiarConsulta();
       limpiarRenovacion();
-      seccionActual = "registro";
-      btnRegistro.classList.add("active");
-      seccionRegistro.classList.add("active");
+      limpiarSolicitudes();
+      activarSoloRegistro();
     });
 
     window.addEventListener("pageshow", function() {
       limpiarRegistro();
       limpiarConsulta();
       limpiarRenovacion();
-      seccionActual = "registro";
-      btnRegistro.classList.add("active");
-      seccionRegistro.classList.add("active");
+      limpiarSolicitudes();
+      activarSoloRegistro();
     });
 
     btnRegistro.addEventListener("click", () => cambiarSeccion("registro"));
     btnConsulta.addEventListener("click", () => cambiarSeccion("consulta"));
     btnRenovacion.addEventListener("click", () => cambiarSeccion("renovacion"));
+    btnSolicitudes.addEventListener("click", () => cambiarSeccion("solicitudes"));
+
+    btnEnviarVoucherWhatsapp.addEventListener("click", function() {
+      if (!ultimoTextoVoucher || !ultimoNumeroWhatsapp) {
+        mostrarMensaje(mensajeRenovacion, "Primero actualiza una renovación para generar el voucher.", "error");
+        return;
+      }
+      abrirWhatsapp(ultimoNumeroWhatsapp, ultimoTextoVoucher);
+    });
+
+    solPais.addEventListener("change", actualizarPlanesSolicitud);
+    solPlan.addEventListener("change", actualizarPagoSolicitud);
+    solTiempo.addEventListener("change", actualizarPagoSolicitud);
+    solGarantia.addEventListener("change", function() {
+      actualizarDescripcionGarantia();
+      actualizarPagoSolicitud();
+    });
+    solMetodoPago.addEventListener("change", actualizarPagoSolicitud);
+
+    btnCopiarBinance.addEventListener("click", function() {
+      direccionBinance.select();
+      direccionBinance.setSelectionRange(0, 99999);
+      document.execCommand("copy");
+      mostrarMensaje(mensajeSolicitud, "Dirección de Binance copiada.", "exito");
+    });
+
+    function activarSoloRegistro() {
+      btnRegistro.classList.add("active");
+      btnConsulta.classList.remove("active");
+      btnRenovacion.classList.remove("active");
+      btnSolicitudes.classList.remove("active");
+
+      seccionRegistro.classList.add("active");
+      seccionConsulta.classList.remove("active");
+      seccionRenovacion.classList.remove("active");
+      seccionSolicitudes.classList.remove("active");
+
+      seccionActual = "registro";
+    }
 
     function cambiarSeccion(seccion) {
       if (seccionActual === seccion) return;
@@ -909,14 +1122,17 @@
       limpiarRegistro();
       limpiarConsulta();
       limpiarRenovacion();
+      limpiarSolicitudes();
 
       btnRegistro.classList.remove("active");
       btnConsulta.classList.remove("active");
       btnRenovacion.classList.remove("active");
+      btnSolicitudes.classList.remove("active");
 
       seccionRegistro.classList.remove("active");
       seccionConsulta.classList.remove("active");
       seccionRenovacion.classList.remove("active");
+      seccionSolicitudes.classList.remove("active");
 
       if (seccion === "registro") {
         btnRegistro.classList.add("active");
@@ -933,17 +1149,18 @@
         seccionRenovacion.classList.add("active");
       }
 
+      if (seccion === "solicitudes") {
+        btnSolicitudes.classList.add("active");
+        seccionSolicitudes.classList.add("active");
+      }
+
       seccionActual = seccion;
     }
 
     function limpiarRegistro() {
       if (formRegistro) formRegistro.reset();
       resetearSelectorPais("pais");
-
-      if (mensajeRegistro) {
-        mensajeRegistro.style.display = "none";
-        mensajeRegistro.textContent = "";
-      }
+      ocultarMensaje(mensajeRegistro);
 
       if (btnGuardar) {
         btnGuardar.disabled = false;
@@ -953,14 +1170,9 @@
 
     function limpiarConsulta() {
       if (formConsulta) formConsulta.reset();
-
       if (resultadoConsulta) resultadoConsulta.innerHTML = "";
       if (resumenConsulta) resumenConsulta.style.display = "none";
-
-      if (mensajeConsulta) {
-        mensajeConsulta.style.display = "none";
-        mensajeConsulta.textContent = "";
-      }
+      ocultarMensaje(mensajeConsulta);
 
       if (consultaActivacion) consultaActivacion.textContent = "-";
       if (consultaVencimiento) consultaVencimiento.textContent = "-";
@@ -982,11 +1194,7 @@
       datosRenovacionActual = null;
 
       if (panelRenovacion) panelRenovacion.style.display = "none";
-
-      if (mensajeRenovacion) {
-        mensajeRenovacion.style.display = "none";
-        mensajeRenovacion.textContent = "";
-      }
+      ocultarMensaje(mensajeRenovacion);
 
       if (renovacionNombreCliente) renovacionNombreCliente.textContent = "-";
       if (renovacionNumeroCliente) renovacionNumeroCliente.textContent = "-";
@@ -1002,7 +1210,6 @@
       if (renovacionTarjeta) renovacionTarjeta.textContent = "-";
 
       if (tiempoRenovacion) tiempoRenovacion.value = "";
-
       if (nuevoCorreoBanca) nuevoCorreoBanca.value = "";
       if (nuevaTarjetaInput) nuevaTarjetaInput.value = "";
 
@@ -1017,6 +1224,12 @@
 
       resetearSelectorPais("paisBancaNuevo");
 
+      if (voucherWhatsappBox) voucherWhatsappBox.style.display = "none";
+      if (textoVoucherWhatsapp) textoVoucherWhatsapp.value = "";
+
+      ultimoTextoVoucher = "";
+      ultimoNumeroWhatsapp = "";
+
       if (btnBuscarRenovacion) {
         btnBuscarRenovacion.disabled = false;
         btnBuscarRenovacion.textContent = "Buscar cuenta";
@@ -1025,6 +1238,39 @@
       if (btnActualizarRenovacion) {
         btnActualizarRenovacion.disabled = false;
         btnActualizarRenovacion.textContent = "Actualizar datos de renovación";
+      }
+    }
+
+    function limpiarSolicitudes() {
+      if (formSolicitudes) formSolicitudes.reset();
+
+      resetearSelectorPais("solPais");
+
+      if (solPlan) {
+        solPlan.innerHTML = `<option value="">Seleccionar plan</option>`;
+      }
+
+      if (descripcionGarantia) {
+        descripcionGarantia.innerHTML = "";
+        descripcionGarantia.style.display = "none";
+      }
+
+      if (resumenPagoSolicitud) resumenPagoSolicitud.style.display = "none";
+      if (bloqueQrBolivia) bloqueQrBolivia.style.display = "none";
+      if (bloqueBinance) bloqueBinance.style.display = "none";
+      if (lineaTipoCambio) lineaTipoCambio.style.display = "none";
+      if (lineaMontoBs) lineaMontoBs.style.display = "none";
+
+      solicitudPrecioActual = 0;
+      solicitudPrecioBaseActual = 0;
+      solicitudTipoCambioActual = "";
+      solicitudMontoBsActual = "";
+
+      ocultarMensaje(mensajeSolicitud);
+
+      if (btnEnviarSolicitud) {
+        btnEnviarSolicitud.disabled = false;
+        btnEnviarSolicitud.textContent = "Presiona aquí para enviar solicitud y comprobante";
       }
     }
 
@@ -1054,6 +1300,8 @@
 
             boton.innerHTML = `<span class="pais-con-bandera">${obtenerBanderaHTML(valor)} ${valor}</span>`;
             lista.classList.remove("active");
+
+            inputHidden.dispatchEvent(new Event("change"));
           });
         });
       });
@@ -1475,6 +1723,8 @@
         datos.ultimos4Tarjeta = tarjetaNueva.ultimos4Tarjeta;
       }
 
+      const datosAntesDeActualizar = { ...datosRenovacionActual };
+
       btnActualizarRenovacion.disabled = true;
       btnActualizarRenovacion.textContent = "Actualizando...";
 
@@ -1490,8 +1740,319 @@
         datosRenovacionActual = respuesta.data;
         mostrarPanelRenovacion(respuesta.data);
         mostrarMensaje(mensajeRenovacion, "Datos actualizados correctamente.", "exito");
+
+        if (tiempo) {
+          const textoVoucher = construirVoucherRenovacion(datosAntesDeActualizar, respuesta.data);
+          const numeroCliente = obtenerNumeroWhatsappConMas(respuesta.data.numeroCliente || datosAntesDeActualizar.numeroCliente);
+
+          mostrarVoucherWhatsapp(textoVoucher, numeroCliente);
+          abrirWhatsapp(numeroCliente, textoVoucher);
+        }
       });
     });
+
+    function construirVoucherRenovacion(datosAntes, datosDespues) {
+      const nombreCliente = datosDespues.nombreCliente || datosAntes.nombreCliente || "-";
+      const correoRenovado = datosDespues.correoCuenta || datosAntes.correoCuenta || "-";
+      const fechaInicial = datosAntes.fechaActivacion || datosDespues.fechaActivacion || "-";
+      const fechaTocabaRenovar = datosAntes.fechaVencimiento || "-";
+      const nuevaFechaRenovar = datosDespues.fechaVencimiento || "-";
+      const tarjeta = mostrarTarjeta(datosDespues);
+
+      return `✨ Hola ${nombreCliente}, muchas gracias por confiar en nuestros servicios.
+
+✅ Tu renovación fue actualizada correctamente.
+
+📌 DETALLE DE RENOVACIÓN
+
+👤 Cliente: ${nombreCliente}
+📧 Correo renovado: ${correoRenovado}
+
+📅 Fecha inicial de activación: ${fechaInicial}
+📅 Fecha que tocaba renovar: ${fechaTocabaRenovar}
+📅 Nueva fecha que toca renovar: ${nuevaFechaRenovar}
+
+💳 Tarjeta utilizada: ${tarjeta}
+
+Gracias por tu preferencia.`;
+    }
+
+    function mostrarVoucherWhatsapp(texto, numero) {
+      ultimoTextoVoucher = texto;
+      ultimoNumeroWhatsapp = numero;
+
+      if (voucherWhatsappBox) {
+        voucherWhatsappBox.style.display = "block";
+      }
+
+      if (textoVoucherWhatsapp) {
+        textoVoucherWhatsapp.value = texto;
+      }
+    }
+
+    formSolicitudes.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const nombre = solNombre.value.trim();
+      const numero = obtenerNumeroWhatsappConMas(solNumero.value.trim());
+      const correo = solCorreo.value.trim();
+      const accesoConfirmado = solAccesoConfirmado.checked ? "Sí" : "No";
+      const pais = solPais.value;
+      const plan = solPlan.value;
+      const tiempo = solTiempo.value;
+      const garantia = solGarantia.value;
+      const metodoPago = solMetodoPago.value;
+      const precio = obtenerPrecioTotalSolicitud();
+
+      if (!nombre || !numero || !correo || !pais || !plan || !tiempo || !garantia || !metodoPago) {
+        mostrarMensaje(mensajeSolicitud, "Completa todos los campos de la solicitud.", "error");
+        return;
+      }
+
+      if (!solAccesoConfirmado.checked) {
+        mostrarMensaje(mensajeSolicitud, "Debes confirmar que tu cuenta está disponible y que el equipo puede contactarte para solicitar los accesos.", "error");
+        return;
+      }
+
+      if (!precio) {
+        mostrarMensaje(mensajeSolicitud, "No se pudo calcular el precio. Revisa país, plan y garantía.", "error");
+        return;
+      }
+
+      if (metodoPago === "QR Bolivia" && !solicitudMontoBsActual) {
+        mostrarMensaje(mensajeSolicitud, "Espera a que se cargue el monto en Bs.", "error");
+        return;
+      }
+
+      const codigoSeguimiento = generarCodigoSeguimiento();
+
+      const datos = {
+        action: "solicitud",
+        codigoSeguimiento,
+        nombre,
+        numero,
+        correo,
+        accesoConfirmado,
+        pais,
+        plan,
+        tiempo,
+        garantia,
+        precioBaseUsd: solicitudPrecioBaseActual.toFixed(2),
+        precioUsd: precio.toFixed(2),
+        metodoPago,
+        tipoCambio: solicitudTipoCambioActual,
+        montoBs: solicitudMontoBsActual
+      };
+
+      btnEnviarSolicitud.disabled = true;
+      btnEnviarSolicitud.textContent = "Enviando solicitud...";
+
+      enviarJSONP(datos, function(respuesta) {
+        btnEnviarSolicitud.disabled = false;
+        btnEnviarSolicitud.textContent = "Presiona aquí para enviar solicitud y comprobante";
+
+        if (respuesta.status !== "success") {
+          mostrarMensaje(mensajeSolicitud, "Error al guardar solicitud: " + respuesta.message, "error");
+          return;
+        }
+
+        mostrarMensaje(mensajeSolicitud, "Solicitud enviada correctamente. Código: " + codigoSeguimiento, "exito");
+
+        abrirWhatsappComprobante(codigoSeguimiento);
+
+        formSolicitudes.reset();
+        resetearSelectorPais("solPais");
+        actualizarPlanesSolicitud();
+        actualizarPagoSolicitud();
+      });
+    });
+
+    function actualizarPlanesSolicitud() {
+      const pais = solPais.value;
+      solPlan.innerHTML = `<option value="">Seleccionar plan</option>`;
+
+      if (!pais || !PRECIOS_SOLICITUDES[pais]) {
+        actualizarPagoSolicitud();
+        return;
+      }
+
+      Object.keys(PRECIOS_SOLICITUDES[pais]).forEach(plan => {
+        const option = document.createElement("option");
+        option.value = plan;
+        option.textContent = plan;
+        solPlan.appendChild(option);
+      });
+
+      actualizarPagoSolicitud();
+    }
+
+    function actualizarDescripcionGarantia() {
+      const garantia = solGarantia.value;
+      let texto = "";
+
+      if (garantia === "Garantía de Activación") {
+        texto = `<strong>Garantía de Activación:</strong><br>
+        La garantía solo tiene validez por 30 días luego de la activación. Se revisa la activación inicial del servicio.`;
+      }
+
+      if (garantia === "Garantía Parcial") {
+        texto = `<strong>Garantía Parcial:</strong><br>
+        Desde el momento de activación, si la cuenta cae o presenta algún incidente, el cliente paga la mitad del monto para levantar nuevamente el servicio.`;
+      }
+
+      if (garantia === "Garantía Total") {
+        texto = `<strong>Garantía Total:</strong><br>
+        Si la cuenta cae desde el día 1 hasta el día 30, se levanta una vez sin costo. Si vuelve a caer, el cliente selecciona nuevamente el tipo de plan que desea.`;
+      }
+
+      if (texto) {
+        descripcionGarantia.innerHTML = texto;
+        descripcionGarantia.style.display = "block";
+      } else {
+        descripcionGarantia.innerHTML = "";
+        descripcionGarantia.style.display = "none";
+      }
+    }
+
+    function obtenerPrecioBaseSolicitud() {
+      const pais = solPais.value;
+      const plan = solPlan.value;
+      const garantia = solGarantia.value;
+
+      if (!pais || !plan || !garantia) return 0;
+
+      return PRECIOS_SOLICITUDES?.[pais]?.[plan]?.[garantia] || 0;
+    }
+
+    function obtenerPrecioTotalSolicitud() {
+      const precioBase = obtenerPrecioBaseSolicitud();
+      const dias = parseInt(solTiempo.value || "0", 10);
+
+      if (!precioBase || !dias) return 0;
+
+      return precioBase * (dias / 30);
+    }
+
+    function actualizarPagoSolicitud() {
+      const precioBase = obtenerPrecioBaseSolicitud();
+      const precioTotal = obtenerPrecioTotalSolicitud();
+      const metodo = solMetodoPago.value;
+
+      solicitudPrecioBaseActual = precioBase;
+      solicitudPrecioActual = precioTotal;
+      solicitudTipoCambioActual = "";
+      solicitudMontoBsActual = "";
+
+      if (!precioTotal || !metodo) {
+        resumenPagoSolicitud.style.display = "none";
+        return;
+      }
+
+      resumenPagoSolicitud.style.display = "block";
+      solPrecioBaseUsd.textContent = precioBase.toFixed(2) + " USDT";
+      solPrecioUsd.textContent = precioTotal.toFixed(2) + " USDT";
+
+      bloqueQrBolivia.style.display = "none";
+      bloqueBinance.style.display = "none";
+      lineaTipoCambio.style.display = "none";
+      lineaMontoBs.style.display = "none";
+
+      if (metodo === "Binance") {
+        bloqueBinance.style.display = "block";
+        return;
+      }
+
+      if (metodo === "QR Bolivia") {
+        bloqueQrBolivia.style.display = "block";
+        lineaTipoCambio.style.display = "block";
+        lineaMontoBs.style.display = "block";
+
+        solTipoCambio.textContent = "Consultando...";
+        solMontoBs.textContent = "Consultando...";
+
+        enviarJSONP({ action: "cotizacion" }, function(respuesta) {
+          if (respuesta.status !== "success") {
+            solTipoCambio.textContent = "No disponible";
+            solMontoBs.textContent = "No disponible";
+            mostrarMensaje(mensajeSolicitud, "No se pudo obtener la última cotización. Revisa manualmente USDTBol.", "error");
+            return;
+          }
+
+          const tc = parseFloat(respuesta.tipoCambio);
+
+          if (!tc) {
+            solTipoCambio.textContent = "No disponible";
+            solMontoBs.textContent = "No disponible";
+            return;
+          }
+
+          const montoBs = precioTotal * tc;
+
+          solicitudTipoCambioActual = tc.toFixed(2);
+          solicitudMontoBsActual = montoBs.toFixed(2);
+
+          solTipoCambio.textContent = tc.toFixed(2) + " Bs";
+          solMontoBs.textContent = montoBs.toFixed(2) + " Bs";
+        });
+      }
+    }
+
+    function generarCodigoSeguimiento() {
+      const fecha = new Date();
+      const y = fecha.getFullYear();
+      const m = String(fecha.getMonth() + 1).padStart(2, "0");
+      const d = String(fecha.getDate()).padStart(2, "0");
+      const random = Math.floor(1000 + Math.random() * 9000);
+
+      return `SPO-${y}${m}${d}-${random}`;
+    }
+
+    function abrirWhatsappComprobante(codigo) {
+      const numeroDestino = "59162212956";
+
+      const mensaje = `Hola, quiero enviar el comprobante de pago.
+
+Código de activación / seguimiento: ${codigo}
+
+📌 Coloca aquí el comprobante, voucher o recibo de pago.
+
+🔐 PASS / ACCESOS:
+Mi cuenta está disponible para activación.
+El equipo puede contactarme para solicitar los accesos necesarios.`;
+
+      const url = "https://wa.me/" + numeroDestino + "?text=" + encodeURIComponent(mensaje);
+      window.open(url, "_blank");
+    }
+
+    function obtenerNumeroWhatsappConMas(numero) {
+      let limpio = String(numero || "").trim();
+      limpio = limpio.replace(/[^\d+]/g, "");
+
+      if (!limpio) return "";
+
+      if (!limpio.startsWith("+")) {
+        limpio = "+" + limpio;
+      }
+
+      return limpio;
+    }
+
+    function abrirWhatsapp(numeroConMas, mensaje) {
+      if (!numeroConMas) {
+        mostrarMensaje(mensajeRenovacion, "No se encontró número de WhatsApp del cliente.", "error");
+        return;
+      }
+
+      const numeroParaUrl = numeroConMas.replace(/\D/g, "");
+
+      if (!numeroParaUrl) {
+        mostrarMensaje(mensajeRenovacion, "El número de WhatsApp no es válido.", "error");
+        return;
+      }
+
+      const url = "https://wa.me/" + numeroParaUrl + "?text=" + encodeURIComponent(mensaje);
+      window.open(url, "_blank");
+    }
 
     function obtenerBanderaHTML(pais) {
       const nombre = String(pais || "").trim().toLowerCase();
@@ -1542,6 +2103,12 @@
       setTimeout(() => {
         elemento.style.display = "none";
       }, 4500);
+    }
+
+    function ocultarMensaje(elemento) {
+      if (!elemento) return;
+      elemento.style.display = "none";
+      elemento.textContent = "";
     }
 
     function escaparHTML(texto) {
