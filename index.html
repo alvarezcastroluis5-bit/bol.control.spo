@@ -639,10 +639,10 @@
     </div>
 
     <div class="tabs">
-      <button class="tab-btn protegido" id="btnRegistro" type="button">Registro</button>
-      <button class="tab-btn" id="btnConsulta" type="button">Consulta</button>
-      <button class="tab-btn protegido" id="btnRenovacion" type="button">Renovación</button>
       <button class="tab-btn active" id="btnSolicitudes" type="button">Solicitudes</button>
+      <button class="tab-btn" id="btnConsulta" type="button">Consulta</button>
+      <button class="tab-btn protegido" id="btnRegistro" type="button">Registro</button>
+      <button class="tab-btn protegido" id="btnRenovacion" type="button">Renovación</button>
     </div>
 
     <section id="seccionLogin" class="seccion">
@@ -971,6 +971,7 @@
 
       <div id="mensajeSolicitud" class="mensaje"></div>
     </section>
+
   </div>
 
   <script>
@@ -1166,10 +1167,10 @@
       actualizarEstadoAdmin();
     });
 
-    btnRegistro.addEventListener("click", () => cambiarSeccion("registro"));
-    btnConsulta.addEventListener("click", () => cambiarSeccion("consulta"));
-    btnRenovacion.addEventListener("click", () => cambiarSeccion("renovacion"));
     btnSolicitudes.addEventListener("click", () => cambiarSeccion("solicitudes"));
+    btnConsulta.addEventListener("click", () => cambiarSeccion("consulta"));
+    btnRegistro.addEventListener("click", () => cambiarSeccion("registro"));
+    btnRenovacion.addEventListener("click", () => cambiarSeccion("renovacion"));
 
     btnLoginAdmin.addEventListener("click", iniciarSesionAdmin);
 
@@ -1215,7 +1216,6 @@
       if (dias === 90) return 3;
       if (dias === 180) return 6;
       if (dias === 365) return 12;
-
       return dias / 30;
     }
 
@@ -1294,10 +1294,10 @@
       limpiarRenovacion();
       limpiarSolicitudes();
 
-      btnRegistro.classList.remove("active");
-      btnConsulta.classList.remove("active");
-      btnRenovacion.classList.remove("active");
       btnSolicitudes.classList.remove("active");
+      btnConsulta.classList.remove("active");
+      btnRegistro.classList.remove("active");
+      btnRenovacion.classList.remove("active");
 
       seccionLogin.classList.remove("active");
       seccionRegistro.classList.remove("active");
@@ -1305,9 +1305,9 @@
       seccionRenovacion.classList.remove("active");
       seccionSolicitudes.classList.remove("active");
 
-      if (seccion === "registro") {
-        btnRegistro.classList.add("active");
-        seccionRegistro.classList.add("active");
+      if (seccion === "solicitudes") {
+        btnSolicitudes.classList.add("active");
+        seccionSolicitudes.classList.add("active");
       }
 
       if (seccion === "consulta") {
@@ -1315,14 +1315,14 @@
         seccionConsulta.classList.add("active");
       }
 
+      if (seccion === "registro") {
+        btnRegistro.classList.add("active");
+        seccionRegistro.classList.add("active");
+      }
+
       if (seccion === "renovacion") {
         btnRenovacion.classList.add("active");
         seccionRenovacion.classList.add("active");
-      }
-
-      if (seccion === "solicitudes") {
-        btnSolicitudes.classList.add("active");
-        seccionSolicitudes.classList.add("active");
       }
 
       seccionActual = seccion;
@@ -1334,10 +1334,10 @@
       limpiarRenovacion();
       limpiarSolicitudes();
 
-      btnRegistro.classList.remove("active");
-      btnConsulta.classList.remove("active");
-      btnRenovacion.classList.remove("active");
       btnSolicitudes.classList.remove("active");
+      btnConsulta.classList.remove("active");
+      btnRegistro.classList.remove("active");
+      btnRenovacion.classList.remove("active");
 
       seccionRegistro.classList.remove("active");
       seccionConsulta.classList.remove("active");
@@ -2151,6 +2151,15 @@ Gracias por tu preferencia.`;
       return calculo.total;
     }
 
+    function obtenerMesesPorTiempo(dias) {
+      if (dias === 30) return 1;
+      if (dias === 60) return 2;
+      if (dias === 90) return 3;
+      if (dias === 180) return 6;
+      if (dias === 365) return 12;
+      return dias / 30;
+    }
+
     function calcularPrecioSolicitudConDescuento() {
       const precioBase = obtenerPrecioBaseSolicitud();
       const dias = parseInt(solTiempo.value || "0", 10);
@@ -2273,7 +2282,7 @@ Gracias por tu preferencia.`;
           if (respuesta.status !== "success") {
             solTipoCambio.textContent = "No disponible";
             solMontoBs.textContent = "No disponible";
-            mostrarMensaje(mensajeSolicitud, "No se pudo obtener la última cotización.", "error");
+            mostrarMensaje(mensajeSolicitud, "No se pudo obtener el tipo de cambio desde la base.", "error");
             return;
           }
 
