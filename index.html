@@ -950,7 +950,7 @@
 
           <div class="comprobante-acciones">
             <button type="button" class="enviar" id="btnEnviarVoucherWhatsapp">
-              Enviar imagen por WhatsApp
+              Enviar comprobante por WhatsApp
             </button>
 
             <button type="button" class="secundario" id="btnDescargarComprobante">
@@ -1899,6 +1899,10 @@
 
       panelRenovacion.style.display = "none";
       datosRenovacionActual = null;
+      ultimoTextoVoucher = "";
+      ultimoNumeroWhatsapp = "";
+      ultimoComprobanteDatos = null;
+      if (voucherWhatsappBox) voucherWhatsappBox.style.display = "none";
 
       btnBuscarRenovacion.disabled = true;
       btnBuscarRenovacion.textContent = "Buscando...";
@@ -1928,12 +1932,12 @@
         }
 
         datosRenovacionActual = respuesta.data;
-        mostrarPanelRenovacion(respuesta.data);
-        mostrarMensaje(mensajeRenovacion, "Cuenta encontrada correctamente.", "exito");
+        mostrarPanelRenovacion(respuesta.data, respuesta.comprobanteExistente || null);
+        mostrarMensaje(mensajeRenovacion, "Cuenta encontrada correctamente. Si la cuenta ya está renovada, puedes enviar el comprobante por WhatsApp.", "exito");
       });
     });
 
-    function mostrarPanelRenovacion(item) {
+    function mostrarPanelRenovacion(item, comprobanteGuardado) {
       renovacionNombreCliente.textContent = item.nombreCliente || "-";
       renovacionNumeroCliente.textContent = item.numeroCliente || "-";
       renovacionPaisCuenta.innerHTML = `${obtenerBanderaHTML(item.pais)} ${escaparHTML(item.pais || "-")}`;
@@ -1962,6 +1966,12 @@
       btnCambiarBanca.textContent = "Cambiar banca";
 
       panelRenovacion.style.display = "block";
+
+      const comprobanteParaMostrar = comprobanteGuardado || construirComprobanteDesdeRegistro(item);
+
+      if (comprobanteParaMostrar && comprobanteParaMostrar.numeroCliente) {
+        mostrarComprobanteRenovacion(comprobanteParaMostrar);
+      }
     }
 
     btnEditarCliente.addEventListener("click", function() {
@@ -2093,6 +2103,20 @@
       });
     });
 
+    function construirComprobanteDesdeRegistro(item) {
+      if (!item || !item.fechaVencimiento || !item.numeroCliente) return null;
+
+      return {
+        tipo: "Renovación",
+        correo: item.correoCuenta || "-",
+        fechaRenovacion: formatearFechaActualLocal(),
+        horaRenovacion: formatearHoraActualLocal(),
+        fechaProximoPago: item.fechaVencimiento || "-",
+        ultimos4Tarjeta: item.ultimos4Tarjeta || "-",
+        numeroCliente: item.numeroCliente || ""
+      };
+    }
+
     function construirComprobanteLocal(data) {
       return {
         tipo: "Renovación",
@@ -2201,7 +2225,7 @@
 
     async function descargarComprobanteRenovacion() {
       if (!ultimoComprobanteDatos) {
-        mostrarMensaje(mensajeRenovacion, "Primero actualiza una renovación para generar el comprobante.", "error");
+        mostrarMensaje(mensajeRenovacion, "Primero busca o actualiza una cuenta para generar el comprobante.", "error");
         return;
       }
 
@@ -2297,7 +2321,7 @@
         mostrarMensaje(mensajeRenovacion, error.message || "No se pudo generar el comprobante como imagen.", "error");
       } finally {
         btnEnviarVoucherWhatsapp.disabled = false;
-        btnEnviarVoucherWhatsapp.textContent = "Enviar imagen por WhatsApp";
+        btnEnviarVoucherWhatsapp.textContent = "Enviar comprobante por WhatsApp";
       }
     }
 
