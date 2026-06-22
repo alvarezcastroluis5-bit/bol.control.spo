@@ -675,8 +675,8 @@
           </div>
 
           <div>
-            <label for="numeroCliente">WhatsApp del cliente</label>
-            <input type="text" inputmode="tel" id="numeroCliente" name="numero_cliente_no_autofill_7218" placeholder="+591XXXXXXXX" autocomplete="new-password" required>
+            <label for="numeroCliente">WhatsApp del cliente sin +</label>
+            <input type="text" inputmode="tel" id="numeroCliente" name="numero_cliente_no_autofill_7218" placeholder="591XXXXXXXX" autocomplete="new-password" required>
           </div>
         </div>
 
@@ -787,8 +787,8 @@
           <label for="editarNombreCliente">Nuevo nombre del cliente</label>
           <input type="text" id="editarNombreCliente" name="editar_nombre_no_autofill_9081" placeholder="Nuevo nombre completo" autocomplete="new-password">
 
-          <label for="editarNumeroCliente">Nuevo WhatsApp del cliente</label>
-          <input type="text" inputmode="tel" id="editarNumeroCliente" name="editar_numero_no_autofill_9082" placeholder="+591XXXXXXXX" autocomplete="new-password">
+          <label for="editarNumeroCliente">Nuevo WhatsApp del cliente sin +</label>
+          <input type="text" inputmode="tel" id="editarNumeroCliente" name="editar_numero_no_autofill_9082" placeholder="591XXXXXXXX" autocomplete="new-password">
 
           <p class="nota">Al actualizar, se guardará el dato anterior y el dato nuevo en el historial de cambios.</p>
         </div>
@@ -857,8 +857,8 @@
         <label for="solNombre">Nombre del cliente</label>
         <input type="text" id="solNombre" name="sol_nombre_no_autofill" placeholder="Nombre completo" autocomplete="new-password" required>
 
-        <label for="solNumero">Número WhatsApp con prefijo</label>
-        <input type="text" inputmode="tel" id="solNumero" name="sol_numero_no_autofill" placeholder="+591XXXXXXXX" autocomplete="new-password" required>
+        <label for="solNumero">Número WhatsApp sin + (ejemplo: 591XXXXXXXX)</label>
+        <input type="text" inputmode="tel" id="solNumero" name="sol_numero_no_autofill" placeholder="591XXXXXXXX" autocomplete="new-password" required>
 
         <label for="solCorreo">Correo de la cuenta</label>
         <input type="text" inputmode="email" id="solCorreo" name="sol_correo_no_autofill" placeholder="correo@gmail.com" autocomplete="new-password" required>
@@ -975,7 +975,7 @@
   </div>
 
   <script>
-    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbx95LZAtka6EHy5yCcB6Gwi0E2Uuu_02VQKq0un4TPDSvLnpxXm0gp0yuZMz2RsbqKQVA/exec";
+    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyKZfZPVDBurIIis9g9PIJVqp0YV_rf7-jOR8CEtmLUdtGiVQde2Z7d9zp_tYkeYA0g2A/exec";
 
     const videoFondo = document.getElementById("videoFondo");
     if (videoFondo) {
@@ -1608,7 +1608,7 @@
 
       const correoCuenta = document.getElementById("correoCuenta").value.trim();
       const nombreCliente = document.getElementById("nombreCliente").value.trim();
-      const numeroCliente = document.getElementById("numeroCliente").value.trim();
+      const numeroCliente = obtenerNumeroWhatsappConMas(document.getElementById("numeroCliente").value.trim());
       const tipoCuenta = document.getElementById("tipoCuenta").value;
       const pais = document.getElementById("pais").value;
       const fechaAct = fechaActivacion.value;
@@ -1895,7 +1895,7 @@
 
       if (cambiarCliente) {
         const nombreNuevo = editarNombreCliente.value.trim();
-        const numeroNuevo = editarNumeroCliente.value.trim();
+        const numeroNuevo = obtenerNumeroWhatsappConMas(editarNumeroCliente.value.trim());
 
         if (!nombreNuevo) {
           mostrarMensaje(mensajeRenovacion, "Coloca el nuevo nombre del cliente.", "error");
@@ -2334,12 +2334,7 @@ El equipo puede contactarme para solicitar los accesos necesarios.`;
 
     function obtenerNumeroWhatsappConMas(numero) {
       let limpio = String(numero || "").trim();
-      limpio = limpio.replace(/[^\d+]/g, "");
-
-      if (!limpio) return "";
-
-      if (!limpio.startsWith("+")) limpio = "+" + limpio;
-
+      limpio = limpio.replace(/\D/g, "");
       return limpio;
     }
 
