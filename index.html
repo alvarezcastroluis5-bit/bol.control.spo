@@ -379,6 +379,30 @@
       color: #0f2f67;
     }
 
+    .comprobante-acciones {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .aviso-imagen-whatsapp {
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #eaf2ff;
+      padding: 12px;
+      border-radius: 13px;
+      font-size: 13px;
+      line-height: 1.45;
+      margin: 12px 0 14px;
+    }
+
+    @media (max-width: 560px) {
+      .comprobante-acciones {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .selector-personalizado {
       position: relative;
       margin-bottom: 17px;
@@ -667,6 +691,7 @@
       }
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 
 <body>
@@ -897,9 +922,9 @@
           <div class="detalle-titulo">📄 Comprobante de renovación</div>
           <div class="detalle-subtitulo">Vista previa del comprobante y mensaje listo para enviar al WhatsApp del cliente</div>
 
-          <div class="comprobante-renovacion-card">
+          <div id="comprobanteRenovacionCard" class="comprobante-renovacion-card">
             <div class="comprobante-header">
-              <img src="logocuentas.png" alt="Logo Cuentas Premium BO" class="comprobante-logo">
+              <img src="logocuentas.png" alt="Logo Cuentas Premium BO" class="comprobante-logo" crossorigin="anonymous">
               <div class="comprobante-header-texto">
                 <h3>CUENTAS PREMIUM BO</h3>
                 <p>Comprobante de Renovación</p>
@@ -916,12 +941,22 @@
             </div>
           </div>
 
-          <label for="textoVoucherWhatsapp">Mensaje listo para enviar</label>
+          <div class="aviso-imagen-whatsapp">
+            📌 El comprobante se generará como imagen con el mismo diseño de la vista previa. En celular podrás compartirlo como imagen. En computadora se descargará el PNG y se abrirá el WhatsApp del cliente para adjuntarlo.
+          </div>
+
+          <label for="textoVoucherWhatsapp">Texto de apoyo para WhatsApp</label>
           <textarea id="textoVoucherWhatsapp" readonly></textarea>
 
-          <button type="button" class="enviar" id="btnEnviarVoucherWhatsapp">
-            Enviar comprobante por WhatsApp
-          </button>
+          <div class="comprobante-acciones">
+            <button type="button" class="enviar" id="btnEnviarVoucherWhatsapp">
+              Enviar imagen por WhatsApp
+            </button>
+
+            <button type="button" class="secundario" id="btnDescargarComprobante">
+              Descargar comprobante PNG
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -1125,6 +1160,8 @@
     const voucherWhatsappBox = document.getElementById("voucherWhatsappBox");
     const textoVoucherWhatsapp = document.getElementById("textoVoucherWhatsapp");
     const btnEnviarVoucherWhatsapp = document.getElementById("btnEnviarVoucherWhatsapp");
+    const btnDescargarComprobante = document.getElementById("btnDescargarComprobante");
+    const comprobanteRenovacionCard = document.getElementById("comprobanteRenovacionCard");
 
     const compCorreo = document.getElementById("compCorreo");
     const compFechaRenovacion = document.getElementById("compFechaRenovacion");
@@ -1166,6 +1203,7 @@
     let seccionActual = "solicitudes";
     let ultimoTextoVoucher = "";
     let ultimoNumeroWhatsapp = "";
+    let ultimoComprobanteDatos = null;
     let solicitudPrecioActual = 0;
     let solicitudPrecioBaseActual = 0;
     let solicitudTipoCambioActual = "";
@@ -1268,18 +1306,14 @@
     });
 
     btnEnviarVoucherWhatsapp.addEventListener("click", function() {
-      if (!ultimoTextoVoucher) {
-        mostrarMensaje(mensajeRenovacion, "Primero genera el comprobante de renovación.", "error");
-        return;
-      }
-
-      if (!ultimoNumeroWhatsapp) {
-        mostrarMensaje(mensajeRenovacion, "No se encontró el WhatsApp del cliente en la base de datos.", "error");
-        return;
-      }
-
-      abrirWhatsapp(ultimoNumeroWhatsapp, ultimoTextoVoucher);
+      enviarComprobanteImagenWhatsapp();
     });
+
+    if (btnDescargarComprobante) {
+      btnDescargarComprobante.addEventListener("click", function() {
+        descargarComprobanteRenovacion();
+      });
+    }
 
     solPais.addEventListener("change", actualizarPlanesSolicitud);
     solPlan.addEventListener("change", actualizarPagoSolicitud);
@@ -1518,6 +1552,7 @@
 
       ultimoTextoVoucher = "";
       ultimoNumeroWhatsapp = "";
+      ultimoComprobanteDatos = null;
 
       if (btnBuscarRenovacion) {
         btnBuscarRenovacion.disabled = false;
@@ -2114,9 +2149,156 @@
 
       ultimoTextoVoucher = texto;
       ultimoNumeroWhatsapp = numeroCliente;
+      ultimoComprobanteDatos = datosComprobante;
 
       if (textoVoucherWhatsapp) textoVoucherWhatsapp.value = texto;
       if (voucherWhatsappBox) voucherWhatsappBox.style.display = "block";
+    }
+
+    async function obtenerBlobComprobanteRenovacion() {
+      if (!comprobanteRenovacionCard) {
+        throw new Error("No se encontró la vista previa del comprobante.");
+      }
+
+      if (typeof html2canvas === "undefined") {
+        throw new Error("No se cargó la librería para generar la imagen. Revisa tu conexión a internet y vuelve a intentar.");
+      }
+
+      const canvas = await html2canvas(comprobanteRenovacionCard, {
+        backgroundColor: "#ffffff",
+        scale: Math.min(window.devicePixelRatio || 2, 3),
+        useCORS: true,
+        allowTaint: true,
+        logging: false
+      });
+
+      return new Promise((resolve, reject) => {
+        canvas.toBlob(blob => {
+          if (blob) resolve(blob);
+          else reject(new Error("No se pudo generar la imagen del comprobante."));
+        }, "image/png", 1);
+      });
+    }
+
+    function descargarBlob(blob, nombreArchivo) {
+      const url = URL.createObjectURL(blob);
+      const enlace = document.createElement("a");
+      enlace.href = url;
+      enlace.download = nombreArchivo;
+      document.body.appendChild(enlace);
+      enlace.click();
+      enlace.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+
+    function obtenerNombreArchivoComprobante() {
+      const correo = String(ultimoComprobanteDatos?.correo || "cuenta")
+        .replace(/[^a-zA-Z0-9]/g, "_")
+        .substring(0, 40);
+      const fecha = new Date().toISOString().slice(0, 10);
+      return "comprobante_renovacion_" + correo + "_" + fecha + ".png";
+    }
+
+    async function descargarComprobanteRenovacion() {
+      if (!ultimoComprobanteDatos) {
+        mostrarMensaje(mensajeRenovacion, "Primero actualiza una renovación para generar el comprobante.", "error");
+        return;
+      }
+
+      try {
+        if (btnDescargarComprobante) {
+          btnDescargarComprobante.disabled = true;
+          btnDescargarComprobante.textContent = "Generando imagen...";
+        }
+
+        const blob = await obtenerBlobComprobanteRenovacion();
+        descargarBlob(blob, obtenerNombreArchivoComprobante());
+        mostrarMensaje(mensajeRenovacion, "Comprobante descargado como imagen PNG.", "exito");
+
+      } catch (error) {
+        mostrarMensaje(mensajeRenovacion, error.message || "No se pudo generar la imagen.", "error");
+      } finally {
+        if (btnDescargarComprobante) {
+          btnDescargarComprobante.disabled = false;
+          btnDescargarComprobante.textContent = "Descargar comprobante PNG";
+        }
+      }
+    }
+
+    async function copiarImagenAlPortapapeles(blob) {
+      try {
+        if (!navigator.clipboard || typeof ClipboardItem === "undefined") return false;
+        await navigator.clipboard.write([
+          new ClipboardItem({ "image/png": blob })
+        ]);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    async function compartirImagenSistema(blob, nombreArchivo) {
+      try {
+        const archivo = new File([blob], nombreArchivo, { type: "image/png" });
+
+        if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
+          await navigator.share({
+            files: [archivo],
+            title: "Comprobante de renovación",
+            text: "Comprobante de renovación - Cuentas Premium BO"
+          });
+          return true;
+        }
+
+        return false;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    async function enviarComprobanteImagenWhatsapp() {
+      if (!ultimoComprobanteDatos) {
+        mostrarMensaje(mensajeRenovacion, "Primero genera el comprobante de renovación.", "error");
+        return;
+      }
+
+      if (!ultimoNumeroWhatsapp) {
+        mostrarMensaje(mensajeRenovacion, "No se encontró el WhatsApp del cliente en la base de datos.", "error");
+        return;
+      }
+
+      try {
+        btnEnviarVoucherWhatsapp.disabled = true;
+        btnEnviarVoucherWhatsapp.textContent = "Generando imagen...";
+
+        const blob = await obtenerBlobComprobanteRenovacion();
+        const nombreArchivo = obtenerNombreArchivoComprobante();
+
+        const compartido = await compartirImagenSistema(blob, nombreArchivo);
+
+        if (compartido) {
+          mostrarMensaje(mensajeRenovacion, "Comprobante compartido como imagen. Selecciona WhatsApp y envíalo al cliente.", "exito");
+          return;
+        }
+
+        const copiado = await copiarImagenAlPortapapeles(blob);
+        descargarBlob(blob, nombreArchivo);
+
+        const textoWhatsApp = "Hola, te enviamos tu comprobante de renovación.\n\n" + ultimoTextoVoucher;
+        abrirWhatsapp(ultimoNumeroWhatsapp, textoWhatsApp);
+
+        if (copiado) {
+          mostrarMensaje(mensajeRenovacion, "Se descargó y copió la imagen. Se abrió el WhatsApp del cliente; pega o adjunta el comprobante PNG.", "exito");
+        } else {
+          mostrarMensaje(mensajeRenovacion, "Se descargó la imagen PNG y se abrió el WhatsApp del cliente. Adjunta el comprobante descargado.", "exito");
+        }
+
+      } catch (error) {
+        mostrarMensaje(mensajeRenovacion, error.message || "No se pudo generar el comprobante como imagen.", "error");
+      } finally {
+        btnEnviarVoucherWhatsapp.disabled = false;
+        btnEnviarVoucherWhatsapp.textContent = "Enviar imagen por WhatsApp";
+      }
     }
 
     formSolicitudes.addEventListener("submit", function(e) {
