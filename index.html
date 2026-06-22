@@ -326,6 +326,59 @@
       backdrop-filter: blur(8px);
     }
 
+
+    .comprobante-renovacion-card {
+      background: #ffffff;
+      color: #111;
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 12px 26px rgba(0,0,0,0.22);
+      border: 1px solid rgba(15,47,103,0.14);
+    }
+
+    .comprobante-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 2px solid #e9eef7;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+
+    .comprobante-logo {
+      width: 85px;
+      max-width: 30%;
+      height: auto;
+      border-radius: 12px;
+      object-fit: contain;
+      background: #fff;
+    }
+
+    .comprobante-header-texto h3 {
+      margin: 0;
+      font-size: 20px;
+      color: #0f2f67;
+      letter-spacing: 0.3px;
+    }
+
+    .comprobante-header-texto p {
+      margin: 4px 0 0;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .comprobante-body p {
+      margin: 10px 0;
+      font-size: 15px;
+      line-height: 1.45;
+      color: #111;
+    }
+
+    .comprobante-body strong {
+      color: #0f2f67;
+    }
+
     .selector-personalizado {
       position: relative;
       margin-bottom: 17px;
@@ -841,12 +894,34 @@
         <button type="button" class="enviar" id="btnActualizarRenovacion">Actualizar datos de renovación</button>
 
         <div id="voucherWhatsappBox" class="voucher-box" style="display:none;">
-          <div class="detalle-titulo">📄 Voucher de renovación</div>
-          <div class="detalle-subtitulo">Mensaje listo para enviar al cliente por WhatsApp</div>
+          <div class="detalle-titulo">📄 Comprobante de renovación</div>
+          <div class="detalle-subtitulo">Vista previa del comprobante y mensaje listo para enviar al WhatsApp del cliente</div>
 
+          <div class="comprobante-renovacion-card">
+            <div class="comprobante-header">
+              <img src="logocuentas.png" alt="Logo Cuentas Premium BO" class="comprobante-logo">
+              <div class="comprobante-header-texto">
+                <h3>CUENTAS PREMIUM BO</h3>
+                <p>Comprobante de Renovación</p>
+              </div>
+            </div>
+
+            <div class="comprobante-body">
+              <p><strong>Detalle:</strong> Renovación</p>
+              <p><strong>Correo:</strong> <span id="compCorreo">-</span></p>
+              <p><strong>Fecha de renovación:</strong> <span id="compFechaRenovacion">-</span></p>
+              <p><strong>Hora de renovación:</strong> <span id="compHoraRenovacion">-</span></p>
+              <p><strong>Fecha de próximo pago:</strong> <span id="compFechaProximoPago">-</span></p>
+              <p><strong>Últimos 4 dígitos de tarjeta:</strong> <span id="compUltimos4Tarjeta">-</span></p>
+            </div>
+          </div>
+
+          <label for="textoVoucherWhatsapp">Mensaje listo para enviar</label>
           <textarea id="textoVoucherWhatsapp" readonly></textarea>
 
-          <button type="button" class="enviar" id="btnEnviarVoucherWhatsapp">Enviar voucher por WhatsApp</button>
+          <button type="button" class="enviar" id="btnEnviarVoucherWhatsapp">
+            Enviar comprobante por WhatsApp
+          </button>
         </div>
       </div>
     </section>
@@ -1051,6 +1126,12 @@
     const textoVoucherWhatsapp = document.getElementById("textoVoucherWhatsapp");
     const btnEnviarVoucherWhatsapp = document.getElementById("btnEnviarVoucherWhatsapp");
 
+    const compCorreo = document.getElementById("compCorreo");
+    const compFechaRenovacion = document.getElementById("compFechaRenovacion");
+    const compHoraRenovacion = document.getElementById("compHoraRenovacion");
+    const compFechaProximoPago = document.getElementById("compFechaProximoPago");
+    const compUltimos4Tarjeta = document.getElementById("compUltimos4Tarjeta");
+
     const solNombre = document.getElementById("solNombre");
     const solNumero = document.getElementById("solNumero");
     const solCorreo = document.getElementById("solCorreo");
@@ -1187,10 +1268,16 @@
     });
 
     btnEnviarVoucherWhatsapp.addEventListener("click", function() {
-      if (!ultimoTextoVoucher || !ultimoNumeroWhatsapp) {
-        mostrarMensaje(mensajeRenovacion, "Primero actualiza una renovación para generar el voucher.", "error");
+      if (!ultimoTextoVoucher) {
+        mostrarMensaje(mensajeRenovacion, "Primero genera el comprobante de renovación.", "error");
         return;
       }
+
+      if (!ultimoNumeroWhatsapp) {
+        mostrarMensaje(mensajeRenovacion, "No se encontró el WhatsApp del cliente en la base de datos.", "error");
+        return;
+      }
+
       abrirWhatsapp(ultimoNumeroWhatsapp, ultimoTextoVoucher);
     });
 
@@ -1423,6 +1510,11 @@
 
       if (voucherWhatsappBox) voucherWhatsappBox.style.display = "none";
       if (textoVoucherWhatsapp) textoVoucherWhatsapp.value = "";
+      if (compCorreo) compCorreo.textContent = "-";
+      if (compFechaRenovacion) compFechaRenovacion.textContent = "-";
+      if (compHoraRenovacion) compHoraRenovacion.textContent = "-";
+      if (compFechaProximoPago) compFechaProximoPago.textContent = "-";
+      if (compUltimos4Tarjeta) compUltimos4Tarjeta.textContent = "-";
 
       ultimoTextoVoucher = "";
       ultimoNumeroWhatsapp = "";
@@ -1903,7 +1995,7 @@
         }
 
         if (!numeroNuevo) {
-          mostrarMensaje(mensajeRenovacion, "Coloca el nuevo WhatsApp del cliente.", "error");
+          mostrarMensaje(mensajeRenovacion, "Coloca el nuevo WhatsApp del cliente sin +. Ejemplo: 591XXXXXXXX.", "error");
           return;
         }
 
@@ -1939,8 +2031,6 @@
         datos.ultimos4Tarjeta = tarjetaNueva.ultimos4Tarjeta;
       }
 
-      const datosAntesDeActualizar = { ...datosRenovacionActual };
-
       btnActualizarRenovacion.disabled = true;
       btnActualizarRenovacion.textContent = "Actualizando...";
 
@@ -1949,7 +2039,7 @@
         btnActualizarRenovacion.textContent = "Actualizar datos de renovación";
 
         if (respuesta.status !== "success") {
-          mostrarMensaje(mensajeRenovacion, "Error al actualizar: " + respuesta.message, "error");
+          mostrarMensaje(mensajeRenovacion, "Error al actualizar: " + (respuesta.message || "No se pudo actualizar"), "error");
 
           if (String(respuesta.message || "").toLowerCase().includes("sesión")) {
             cerrarSesionLocal();
@@ -1961,50 +2051,72 @@
 
         datosRenovacionActual = respuesta.data;
         mostrarPanelRenovacion(respuesta.data);
-        mostrarMensaje(mensajeRenovacion, "Datos actualizados correctamente.", "exito");
+        mostrarMensaje(mensajeRenovacion, "Renovación actualizada correctamente. Ya puedes enviar el comprobante por WhatsApp.", "exito");
 
-        if (tiempo) {
-          const textoVoucher = construirVoucherRenovacion(datosAntesDeActualizar, respuesta.data);
-          const numeroCliente = obtenerNumeroWhatsappConMas(respuesta.data.numeroCliente || datosAntesDeActualizar.numeroCliente);
-
-          mostrarVoucherWhatsapp(textoVoucher, numeroCliente);
-          abrirWhatsapp(numeroCliente, textoVoucher);
-        }
+        const comprobante = respuesta.comprobante || construirComprobanteLocal(respuesta.data);
+        mostrarComprobanteRenovacion(comprobante);
       });
     });
 
-    function construirVoucherRenovacion(datosAntes, datosDespues) {
-      const nombreCliente = datosDespues.nombreCliente || datosAntes.nombreCliente || "-";
-      const correoRenovado = datosDespues.correoCuenta || datosAntes.correoCuenta || "-";
-      const fechaInicial = datosAntes.fechaActivacion || datosDespues.fechaActivacion || "-";
-      const fechaTocabaRenovar = datosAntes.fechaVencimiento || "-";
-      const nuevaFechaRenovar = datosDespues.fechaVencimiento || "-";
-      const tarjeta = mostrarTarjeta(datosDespues);
-
-      return `✨ Hola ${nombreCliente}, muchas gracias por confiar en nuestros servicios.
-
-✅ Tu renovación fue actualizada correctamente.
-
-📌 DETALLE DE RENOVACIÓN
-
-👤 Cliente: ${nombreCliente}
-📧 Correo renovado: ${correoRenovado}
-
-📅 Fecha inicial de activación: ${fechaInicial}
-📅 Fecha que tocaba renovar: ${fechaTocabaRenovar}
-📅 Nueva fecha que toca renovar: ${nuevaFechaRenovar}
-
-💳 Tarjeta utilizada: ${tarjeta}
-
-Gracias por tu preferencia.`;
+    function construirComprobanteLocal(data) {
+      return {
+        tipo: "Renovación",
+        correo: data.correoCuenta || datosRenovacionActual?.correoCuenta || "-",
+        fechaRenovacion: formatearFechaActualLocal(),
+        horaRenovacion: formatearHoraActualLocal(),
+        fechaProximoPago: data.fechaVencimiento || "-",
+        ultimos4Tarjeta: data.ultimos4Tarjeta || "-",
+        numeroCliente: data.numeroCliente || datosRenovacionActual?.numeroCliente || ""
+      };
     }
 
-    function mostrarVoucherWhatsapp(texto, numero) {
-      ultimoTextoVoucher = texto;
-      ultimoNumeroWhatsapp = numero;
+    function formatearFechaActualLocal() {
+      return new Date().toLocaleDateString("es-BO", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      });
+    }
 
-      if (voucherWhatsappBox) voucherWhatsappBox.style.display = "block";
+    function formatearHoraActualLocal() {
+      return new Date().toLocaleTimeString("es-BO", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+    }
+
+    function generarTextoComprobanteWhatsapp(datosComprobante) {
+      return [
+        "*CUENTAS PREMIUM BO*",
+        "*COMPROBANTE DE RENOVACIÓN*",
+        "",
+        "*Renovación:* Confirmada",
+        "*Correo:* " + (datosComprobante.correo || "-"),
+        "*Fecha de renovación:* " + (datosComprobante.fechaRenovacion || "-"),
+        "*Hora de renovación:* " + (datosComprobante.horaRenovacion || "-"),
+        "*Fecha de próximo pago:* " + (datosComprobante.fechaProximoPago || "-"),
+        "*Últimos 4 dígitos de tarjeta:* " + (datosComprobante.ultimos4Tarjeta || "-"),
+        "",
+        "Gracias por renovar con *Cuentas Premium BO*."
+      ].join("\n");
+    }
+
+    function mostrarComprobanteRenovacion(datosComprobante) {
+      const numeroCliente = obtenerNumeroWhatsappConMas(datosComprobante.numeroCliente || "");
+      const texto = generarTextoComprobanteWhatsapp(datosComprobante);
+
+      if (compCorreo) compCorreo.textContent = datosComprobante.correo || "-";
+      if (compFechaRenovacion) compFechaRenovacion.textContent = datosComprobante.fechaRenovacion || "-";
+      if (compHoraRenovacion) compHoraRenovacion.textContent = datosComprobante.horaRenovacion || "-";
+      if (compFechaProximoPago) compFechaProximoPago.textContent = datosComprobante.fechaProximoPago || "-";
+      if (compUltimos4Tarjeta) compUltimos4Tarjeta.textContent = datosComprobante.ultimos4Tarjeta || "-";
+
+      ultimoTextoVoucher = texto;
+      ultimoNumeroWhatsapp = numeroCliente;
+
       if (textoVoucherWhatsapp) textoVoucherWhatsapp.value = texto;
+      if (voucherWhatsappBox) voucherWhatsappBox.style.display = "block";
     }
 
     formSolicitudes.addEventListener("submit", function(e) {
