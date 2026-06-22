@@ -520,6 +520,41 @@
       background: linear-gradient(135deg, #dfefff, #ffffff);
     }
 
+
+    .notificacion-familiar {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: linear-gradient(135deg, rgba(30,144,255,0.20), rgba(76,255,155,0.10));
+      border: 1px solid rgba(76,255,155,0.38);
+      color: #ffffff;
+      padding: 16px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.22);
+    }
+
+    .notificacion-icono {
+      font-size: 25px;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .notificacion-familiar strong {
+      display: block;
+      color: #4cff9b;
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+
+    .notificacion-familiar p {
+      margin: 0;
+      color: #eaf3ff;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
     .aviso-seguridad {
       background: rgba(255, 193, 7, 0.14);
       border: 1px solid rgba(255, 193, 7, 0.35);
@@ -963,6 +998,28 @@
 
     <section id="seccionSolicitudes" class="seccion active">
       <form id="formSolicitudes" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
+        <div class="notificacion-familiar">
+          <div class="notificacion-icono">ℹ️</div>
+          <div>
+            <strong>Información importante sobre cuentas individuales unidas a plan familiar</strong>
+            <p>
+              Las cuentas individuales unidas a plan familiar son cuentas bajo nuestro dominio.
+              Te pedimos los accesos del cliente para poder transferir su playlist
+              y datos correspondientes.
+            </p>
+          </div>
+        </div>
+
+        <div class="notificacion-familiar">
+          <div class="notificacion-icono">💡</div>
+          <div>
+            <strong>Recomendación para cuentas familiares</strong>
+            <p>
+              Para cuentas familiares se recomienda utilizar cuentas reposadas que hayan tenido Premium al menos una vez.
+            </p>
+          </div>
+        </div>
 
         <label for="solNombre">Nombre del cliente</label>
         <input type="text" id="solNombre" name="sol_nombre_no_autofill" placeholder="Nombre completo" autocomplete="new-password" required>
