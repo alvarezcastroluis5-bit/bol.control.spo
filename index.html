@@ -1,330 +1,330 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Control de Suscripciones</title>
+<title>Control de Suscripciones</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
+<style>
+* {
+box-sizing: border-box;
+font-family: Arial, sans-serif;
+}
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: #000;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 25px 15px;
-      color: #fff;
-      overflow-x: hidden;
-      position: relative;
-    }
+body {
+margin: 0;
+min-height: 100vh;
+background: #000;
+display: flex;
+justify-content: center;
+align-items: flex-start;
+padding: 25px 15px;
+color: #fff;
+overflow-x: hidden;
+position: relative;
+}
 
-    .video-fondo {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      object-fit: cover;
-      z-index: 0;
-      pointer-events: none;
-    }
+.video-fondo {
+position: fixed;
+top: 0;
+left: 0;
+width: 100vw;
+height: 100vh;
+object-fit: cover;
+z-index: 0;
+pointer-events: none;
+}
 
-    .capa-oscura {
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(4, 21, 47, 0.75));
-      z-index: 1;
-      pointer-events: none;
-    }
+.capa-oscura {
+position: fixed;
+inset: 0;
+background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(4, 21, 47, 0.75));
+z-index: 1;
+pointer-events: none;
+}
 
-    .container {
-      width: 100%;
-      max-width: 760px;
-      background: rgba(255, 255, 255, 0.09);
-      padding: 28px;
-      border-radius: 22px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.35);
-      backdrop-filter: blur(12px);
-      position: relative;
-      z-index: 2;
-    }
+.container {
+width: 100%;
+max-width: 760px;
+background: rgba(255, 255, 255, 0.09);
+padding: 28px;
+border-radius: 22px;
+box-shadow: 0 15px 35px rgba(0,0,0,0.35);
+backdrop-filter: blur(12px);
+position: relative;
+z-index: 2;
+}
 
-    .logo-box {
-      text-align: center;
-      margin-bottom: 14px;
-    }
+.logo-box {
+text-align: center;
+margin-bottom: 14px;
+}
 
-    .logo-principal {
-      width: 155px;
-      max-width: 65%;
-      height: auto;
-      display: block;
-      margin: 0 auto 10px;
-      filter: drop-shadow(0 8px 18px rgba(0,0,0,0.45));
-      border-radius: 12px;
-    }
+.logo-principal {
+width: 155px;
+max-width: 65%;
+height: auto;
+display: block;
+margin: 0 auto 10px;
+filter: drop-shadow(0 8px 18px rgba(0,0,0,0.45));
+border-radius: 12px;
+}
 
-    h1 {
-      text-align: center;
-      margin: 0 0 8px;
-      font-size: 30px;
-    }
+h1 {
+text-align: center;
+margin: 0 0 8px;
+font-size: 30px;
+}
 
-    .subtitulo {
-      text-align: center;
-      color: #d9e3ff;
-      font-size: 15px;
-      margin-bottom: 24px;
-    }
+.subtitulo {
+text-align: center;
+color: #d9e3ff;
+font-size: 15px;
+margin-bottom: 24px;
+}
 
-    .tabs {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 24px;
-    }
+.tabs {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 10px;
+margin-bottom: 24px;
+}
 
-    .tab-btn {
-      padding: 14px;
-      border: none;
-      border-radius: 13px;
-      background: rgba(255,255,255,0.17);
-      color: #fff;
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.25s;
-    }
+.tab-btn {
+padding: 14px;
+border: none;
+border-radius: 13px;
+background: rgba(255,255,255,0.17);
+color: #fff;
+font-size: 15px;
+font-weight: bold;
+cursor: pointer;
+transition: 0.25s;
+}
 
-    .tab-btn.active {
-      background: #1e90ff;
-      box-shadow: 0 0 0 3px rgba(30,144,255,0.25);
-    }
+.tab-btn.active {
+background: #1e90ff;
+box-shadow: 0 0 0 3px rgba(30,144,255,0.25);
+}
 
-    .tab-btn.protegido::after {
-      content: " 🔒";
-      font-size: 12px;
-    }
+.tab-btn.protegido::after {
+content: " 🔒";
+font-size: 12px;
+}
 
-    .seccion {
-      display: none;
-    }
+.seccion {
+display: none;
+}
 
-    .seccion.active {
-      display: block;
-    }
+.seccion.active {
+display: block;
+}
 
-    label {
-      display: block;
-      margin-bottom: 7px;
-      font-weight: bold;
-      font-size: 14px;
-    }
+label {
+display: block;
+margin-bottom: 7px;
+font-weight: bold;
+font-size: 14px;
+}
 
-    input, select, textarea {
-      width: 100%;
-      padding: 13px;
-      border: none;
-      border-radius: 11px;
-      margin-bottom: 17px;
-      font-size: 15px;
-      outline: none;
-      background: #fff;
-      color: #111;
-    }
+input, select, textarea {
+width: 100%;
+padding: 13px;
+border: none;
+border-radius: 11px;
+margin-bottom: 17px;
+font-size: 15px;
+outline: none;
+background: #fff;
+color: #111;
+}
 
-    textarea {
-      min-height: 240px;
-      resize: vertical;
-      line-height: 1.45;
-    }
+textarea {
+min-height: 240px;
+resize: vertical;
+line-height: 1.45;
+}
 
-    input:focus, select:focus, textarea:focus {
-      box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.35);
-    }
+input:focus, select:focus, textarea:focus {
+box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.35);
+}
 
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
+.row {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 14px;
+}
 
-    .resultado {
-      background: linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.08));
-      padding: 18px;
-      border-radius: 18px;
-      margin-bottom: 20px;
-      border: 1px solid rgba(255,255,255,0.18);
-      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
-      backdrop-filter: blur(8px);
-    }
+.resultado {
+background: linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.08));
+padding: 18px;
+border-radius: 18px;
+margin-bottom: 20px;
+border: 1px solid rgba(255,255,255,0.18);
+box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+backdrop-filter: blur(8px);
+}
 
-    .resultado p {
-      margin: 8px 0;
-      font-size: 15px;
-    }
+.resultado p {
+margin: 8px 0;
+font-size: 15px;
+}
 
-    .contador {
-      font-size: 24px;
-      font-weight: bold;
-      color: #4cff9b;
-    }
+.contador {
+font-size: 24px;
+font-weight: bold;
+color: #4cff9b;
+}
 
-    .vencido {
-      color: #ff5f5f !important;
-    }
+.vencido {
+color: #ff5f5f !important;
+}
 
-    .nota {
-      font-size: 12px;
-      color: #d8e2ff;
-      margin-top: -8px;
-      margin-bottom: 17px;
-      line-height: 1.4;
-    }
+.nota {
+font-size: 12px;
+color: #d8e2ff;
+margin-top: -8px;
+margin-bottom: 17px;
+line-height: 1.4;
+}
 
-    button.enviar,
-    button.secundario {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      color: #fff;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-      margin-bottom: 12px;
-    }
+button.enviar,
+button.secundario {
+width: 100%;
+padding: 14px;
+border: none;
+border-radius: 12px;
+color: #fff;
+font-size: 16px;
+font-weight: bold;
+cursor: pointer;
+transition: 0.3s;
+margin-bottom: 12px;
+}
 
-    button.enviar {
-      background: #1e90ff;
-    }
+button.enviar {
+background: #1e90ff;
+}
 
-    button.enviar:hover {
-      background: #0077e6;
-    }
+button.enviar:hover {
+background: #0077e6;
+}
 
-    button.secundario {
-      background: rgba(255,255,255,0.18);
-      border: 1px solid rgba(255,255,255,0.25);
-    }
+button.secundario {
+background: rgba(255,255,255,0.18);
+border: 1px solid rgba(255,255,255,0.25);
+}
 
-    button.secundario:hover {
-      background: rgba(255,255,255,0.28);
-    }
+button.secundario:hover {
+background: rgba(255,255,255,0.28);
+}
 
-    button:disabled {
-      background: #777 !important;
-      cursor: not-allowed;
-    }
+button:disabled {
+background: #777 !important;
+cursor: not-allowed;
+}
 
-    .btn-lapiz {
-      width: auto !important;
-      padding: 4px 9px !important;
-      margin-left: 8px;
-      margin-bottom: 0 !important;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      background: #1e90ff;
-      color: white;
-      font-weight: bold;
-      font-size: 13px;
-    }
+.btn-lapiz {
+width: auto !important;
+padding: 4px 9px !important;
+margin-left: 8px;
+margin-bottom: 0 !important;
+border: none;
+border-radius: 8px;
+cursor: pointer;
+background: #1e90ff;
+color: white;
+font-weight: bold;
+font-size: 13px;
+}
 
-    .mensaje {
-      margin-top: 18px;
-      padding: 13px;
-      border-radius: 12px;
-      text-align: center;
-      display: none;
-      font-weight: bold;
-    }
+.mensaje {
+margin-top: 18px;
+padding: 13px;
+border-radius: 12px;
+text-align: center;
+display: none;
+font-weight: bold;
+}
 
-    .exito {
-      background: #18a058;
-      color: #fff;
-    }
+.exito {
+background: #18a058;
+color: #fff;
+}
 
-    .error {
-      background: #d93025;
-      color: #fff;
-    }
+.error {
+background: #d93025;
+color: #fff;
+}
 
-    .consulta-card {
-      background: linear-gradient(135deg, rgba(10,20,45,0.88), rgba(45,15,30,0.72));
-      border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 20px;
-      padding: 22px;
-      margin-top: 18px;
-      margin-bottom: 18px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.28);
-      backdrop-filter: blur(8px);
-    }
+.consulta-card {
+background: linear-gradient(135deg, rgba(10,20,45,0.88), rgba(45,15,30,0.72));
+border: 1px solid rgba(255,255,255,0.18);
+border-radius: 20px;
+padding: 22px;
+margin-top: 18px;
+margin-bottom: 18px;
+box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+backdrop-filter: blur(8px);
+}
 
-    .consulta-card p {
-      margin: 10px 0;
-      font-size: 16px;
-      line-height: 1.5;
-      color: #ffffff;
-    }
+.consulta-card p {
+margin: 10px 0;
+font-size: 16px;
+line-height: 1.5;
+color: #ffffff;
+}
 
-    .consulta-card strong {
-      color: #ffffff;
-    }
+.consulta-card strong {
+color: #ffffff;
+}
 
-    .detalle-titulo {
-      font-size: 28px;
-      font-weight: 800;
-      color: #4cff9b;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+.detalle-titulo {
+font-size: 28px;
+font-weight: 800;
+color: #4cff9b;
+margin-bottom: 8px;
+display: flex;
+align-items: center;
+gap: 8px;
+}
 
-    .detalle-subtitulo {
-      font-size: 13px;
-      color: #cfe3ff;
-      margin-bottom: 18px;
-    }
+.detalle-subtitulo {
+font-size: 13px;
+color: #cfe3ff;
+margin-bottom: 18px;
+}
 
-    .estado-activo {
-      color: #4cff9b;
-      font-weight: bold;
-    }
+.estado-activo {
+color: #4cff9b;
+font-weight: bold;
+}
 
-    .estado-vencido {
-      color: #ff5f5f;
-      font-weight: bold;
-    }
+.estado-vencido {
+color: #ff5f5f;
+font-weight: bold;
+}
 
-    .bloque-oculto {
-      display: none;
-      background: rgba(255,255,255,0.08);
-      padding: 15px;
-      border-radius: 15px;
-      border: 1px solid rgba(255,255,255,0.18);
-      margin-bottom: 16px;
-    }
+.bloque-oculto {
+display: none;
+background: rgba(255,255,255,0.08);
+padding: 15px;
+border-radius: 15px;
+border: 1px solid rgba(255,255,255,0.18);
+margin-bottom: 16px;
+}
 
-    .voucher-box {
-      background: linear-gradient(135deg, rgba(10,35,30,0.88), rgba(15,25,55,0.82));
-      border: 1px solid rgba(76,255,155,0.35);
-      border-radius: 20px;
-      padding: 20px;
-      margin-top: 18px;
-      margin-bottom: 18px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.28);
-      backdrop-filter: blur(8px);
-    }
+.voucher-box {
+background: linear-gradient(135deg, rgba(10,35,30,0.88), rgba(15,25,55,0.82));
+border: 1px solid rgba(76,255,155,0.35);
+border-radius: 20px;
+padding: 20px;
+margin-top: 18px;
+margin-bottom: 18px;
+box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+backdrop-filter: blur(8px);
+}
 
 
     .comprobante-renovacion-card {
@@ -379,587 +379,21 @@
       color: #0f2f67;
     }
 
-    .comprobante-acciones {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .aviso-imagen-whatsapp {
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.18);
-      color: #eaf2ff;
-      padding: 12px;
-      border-radius: 13px;
-      font-size: 13px;
-      line-height: 1.45;
-      margin: 12px 0 14px;
-    }
-
-    @media (max-width: 560px) {
-      .comprobante-acciones {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .selector-personalizado {
-      position: relative;
-      margin-bottom: 17px;
-    }
-
-    .selector-btn {
-      width: 100%;
-      padding: 13px;
-      border: none;
-      border-radius: 11px;
-      background: #fff;
-      color: #111;
-      font-size: 15px;
-      text-align: left;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .selector-btn::after {
-      content: "▼";
-      font-size: 11px;
-      color: #222;
-    }
-
-    .selector-lista {
-      display: none;
-      position: absolute;
-      top: 50px;
-      left: 0;
-      width: 100%;
-      background: #fff;
-      color: #111;
-      border-radius: 11px;
-      overflow: hidden;
-      z-index: 99;
-      box-shadow: 0 12px 25px rgba(0,0,0,0.35);
-    }
-
-    .selector-lista.active {
-      display: block;
-    }
-
-    .opcion-pais {
-      padding: 12px 13px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 15px;
-    }
-
-    .opcion-pais:hover {
-      background: #e8f2ff;
-    }
-
-    .pais-con-bandera {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .flag {
-      width: 26px;
-      height: 18px;
-      display: inline-block;
-      border-radius: 3px;
-      box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
-      vertical-align: middle;
-      position: relative;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-
-    .flag-ng {
-      background: linear-gradient(90deg, #008751 0 33.33%, #fff 33.33% 66.66%, #008751 66.66% 100%);
-    }
-
-    .flag-eg {
-      background: linear-gradient(180deg, #ce1126 0 33.33%, #fff 33.33% 66.66%, #000 66.66% 100%);
-    }
-
-    .flag-br {
-      background: #009b3a;
-    }
-
-    .flag-br::before {
-      content: "";
-      position: absolute;
-      width: 15px;
-      height: 15px;
-      background: #ffdf00;
-      transform: rotate(45deg);
-      top: 1.5px;
-      left: 5.5px;
-    }
-
-    .flag-br::after {
-      content: "";
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      background: #002776;
-      border-radius: 50%;
-      top: 5px;
-      left: 9px;
-    }
-
-    .flag-bo {
-      background: linear-gradient(180deg, #d52b1e 0 33.33%, #f9e300 33.33% 66.66%, #007934 66.66% 100%);
-    }
-
-    .flag-empty {
-      background: linear-gradient(135deg, #dfefff, #ffffff);
-    }
-
-
-    .notificacion-familiar {
-      display: flex;
-      gap: 14px;
-      align-items: flex-start;
-      background: linear-gradient(135deg, rgba(30,144,255,0.20), rgba(76,255,155,0.10));
-      border: 1px solid rgba(76,255,155,0.38);
-      color: #ffffff;
-      padding: 16px;
-      border-radius: 16px;
-      margin-bottom: 20px;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.22);
-    }
-
-    .notificacion-icono {
-      font-size: 25px;
-      line-height: 1;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    .notificacion-familiar strong {
-      display: block;
-      color: #4cff9b;
-      font-size: 16px;
-      margin-bottom: 6px;
-    }
-
-    .notificacion-familiar p {
-      margin: 0;
-      color: #eaf3ff;
-      font-size: 14px;
-      line-height: 1.45;
-    }
-
-    .aviso-seguridad {
-      background: rgba(255, 193, 7, 0.14);
-      border: 1px solid rgba(255, 193, 7, 0.35);
-      color: #fff3c4;
-      padding: 14px;
-      border-radius: 14px;
-      font-size: 13px;
-      line-height: 1.45;
-      margin-bottom: 16px;
-    }
-
-    .check-line {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(255,255,255,0.08);
-      padding: 12px;
-      border-radius: 12px;
-      margin-bottom: 16px;
-      font-size: 14px;
-    }
-
-    .check-line input {
-      width: auto;
-      margin: 0;
-    }
-
-    .info-box {
-      background: linear-gradient(135deg, rgba(30,144,255,0.16), rgba(76,255,155,0.08));
-      border: 1px solid rgba(255,255,255,0.18);
-      padding: 15px;
-      border-radius: 15px;
-      margin-bottom: 16px;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .qr-pago {
-      width: 100%;
-      max-width: 320px;
-      display: block;
-      margin: 18px auto;
-      border-radius: 16px;
-      background: #fff;
-      padding: 10px;
-    }
-
-    .copy-box {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      margin-bottom: 15px;
-    }
-
-    .copy-box input {
-      margin-bottom: 0;
-      font-size: 13px;
-    }
-
-    .copy-box button {
-      border: none;
-      background: #1e90ff;
-      color: #fff;
-      border-radius: 10px;
-      padding: 0 16px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .aviso-pago {
-      background: rgba(76,255,155,0.12);
-      border: 1px solid rgba(76,255,155,0.28);
-      color: #eafff2;
-      padding: 14px;
-      border-radius: 14px;
-      font-size: 13px;
-      line-height: 1.45;
-      margin-top: 15px;
-    }
-
-    .login-box {
-      background: linear-gradient(135deg, rgba(10,20,45,0.92), rgba(15,35,55,0.88));
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 22px;
-      padding: 24px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
-    }
-
-    .login-box h2 {
-      margin-top: 0;
-      margin-bottom: 10px;
-      font-size: 26px;
-      color: #4cff9b;
-    }
-
-    .login-box p {
-      color: #d9e3ff;
-      font-size: 14px;
-      line-height: 1.45;
-      margin-bottom: 18px;
-    }
-
-    .admin-bar {
-      display: none;
-      background: rgba(76,255,155,0.12);
-      border: 1px solid rgba(76,255,155,0.28);
-      padding: 12px;
-      border-radius: 14px;
-      margin-bottom: 18px;
-      font-size: 13px;
-      color: #eafff2;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .admin-bar button {
-      width: auto;
-      border: none;
-      background: #d93025;
-      color: white;
-      padding: 8px 12px;
-      border-radius: 9px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    @media (max-width: 560px) {
-      .tabs {
-        grid-template-columns: 1fr;
-      }
-
-      .row {
-        grid-template-columns: 1fr;
-        gap: 0;
-      }
-
-      .container {
-        padding: 22px;
-      }
-
-      h1 {
-        font-size: 24px;
-      }
-
-      .logo-principal {
-        width: 130px;
-      }
-
-      .detalle-titulo {
-        font-size: 22px;
-      }
-
-      .copy-box {
-        grid-template-columns: 1fr;
-      }
-
-      .copy-box button {
-        padding: 12px;
-      }
-
-      .admin-bar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .admin-bar button {
-        width: 100%;
-      }
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-</head>
-
-<body>
-
-  <video id="videoFondo" class="video-fondo" autoplay muted loop playsinline preload="auto">
-    <source src="realizame_un_video_de_fondo_do%20%281%29.mp4" type="video/mp4">
-  </video>
-
-  <div class="capa-oscura"></div>
-
-  <div class="container">
-
-    <div class="logo-box">
-      <img src="logocuentas.png" alt="Logo Cuentas Premium BO" class="logo-principal">
-    </div>
-
-    <h1>Control de Suscripciones</h1>
-    <p class="subtitulo">Registra, consulta, renueva y solicita cuentas por correo.</p>
-
-    <div id="adminBar" class="admin-bar">
-      <span>🔐 Sesión administrativa activa</span>
-      <button type="button" id="btnCerrarSesion">Cerrar sesión</button>
-    </div>
-
-    <div class="tabs">
-      <button class="tab-btn active" id="btnSolicitudes" type="button">Solicitudes</button>
-      <button class="tab-btn" id="btnConsulta" type="button">Consulta</button>
-      <button class="tab-btn protegido" id="btnRegistro" type="button">Registro</button>
-      <button class="tab-btn protegido" id="btnRenovacion" type="button">Renovación</button>
-    </div>
-
-    <section id="seccionLogin" class="seccion">
-      <div class="login-box">
-        <h2>🔐 Acceso administrativo</h2>
-        <p>Esta sección es privada. Ingresa tu usuario autorizado para acceder a Registro o Renovación.</p>
-
-        <label for="loginUsuario">Usuario</label>
-        <input type="text" id="loginUsuario" placeholder="Usuario" autocomplete="new-password">
-
-        <label for="loginClave">Contraseña</label>
-        <input type="password" id="loginClave" placeholder="Contraseña" autocomplete="new-password">
-
-        <button type="button" class="enviar" id="btnLoginAdmin">Ingresar</button>
-
-        <div id="mensajeLogin" class="mensaje"></div>
-      </div>
-    </section>
-
-    <section id="seccionRegistro" class="seccion">
-      <form id="formRegistro" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-
-        <label for="correoCuenta">Correo de la cuenta</label>
-        <input type="text" inputmode="email" id="correoCuenta" name="correo_cuenta_no_autofill_9871" placeholder="ejemplo@gmail.com" autocomplete="new-password" required>
-
-        <div class="row">
-          <div>
-            <label for="nombreCliente">Nombre del cliente</label>
-            <input type="text" id="nombreCliente" name="nombre_cliente_no_autofill_8731" placeholder="Nombre completo" autocomplete="new-password" required>
-          </div>
-
-          <div>
-            <label for="numeroCliente">WhatsApp del cliente sin +</label>
-            <input type="text" inputmode="tel" id="numeroCliente" name="numero_cliente_no_autofill_7218" placeholder="591XXXXXXXX" autocomplete="new-password" required>
-          </div>
-        </div>
-
-        <div class="row">
-          <div>
-            <label for="tipoCuenta">Tipo de cuenta</label>
-            <select id="tipoCuenta" autocomplete="off" required>
-              <option value="">Seleccionar</option>
-              <option value="Individual">Individual</option>
-              <option value="Dúo">Dúo</option>
-              <option value="Familiar">Familiar</option>
-            </select>
-          </div>
-
-          <div>
-            <label>País</label>
-            <div class="selector-personalizado" data-input="pais">
-              <button type="button" class="selector-btn">
-                <span class="pais-con-bandera"><span class="flag flag-empty"></span> Seleccionar</span>
-              </button>
-              <div class="selector-lista">
-                <div class="opcion-pais" data-value="Nigeria"><span class="flag flag-ng"></span> Nigeria</div>
-                <div class="opcion-pais" data-value="Egipto"><span class="flag flag-eg"></span> Egipto</div>
-                <div class="opcion-pais" data-value="Brasil"><span class="flag flag-br"></span> Brasil</div>
-                <div class="opcion-pais" data-value="Bolivia"><span class="flag flag-bo"></span> Bolivia</div>
-              </div>
-            </div>
-            <input type="hidden" id="pais">
-          </div>
-        </div>
-
-        <div class="row">
-          <div>
-            <label for="fechaActivacion">Fecha de activación</label>
-            <input type="date" id="fechaActivacion" name="fecha_activacion_no_autofill_3421" autocomplete="off" required>
-          </div>
-
-          <div>
-            <label for="duracion">Tiempo de suscripción</label>
-            <select id="duracion" autocomplete="off" required>
-              <option value="">Seleccionar</option>
-              <option value="30">30 días</option>
-              <option value="60">60 días</option>
-              <option value="90">90 días</option>
-              <option value="180">180 días</option>
-              <option value="365">365 días</option>
-            </select>
-          </div>
-        </div>
-
-        <label for="correoBanca">Correo de la banca</label>
-        <input type="text" inputmode="email" id="correoBanca" name="correo_banca_no_autofill_6549" placeholder="correo asociado a la banca" autocomplete="new-password" required>
-
-        <label for="numeroTarjeta">Número de tarjeta</label>
-        <input type="text" id="numeroTarjeta" name="tarjeta_no_autofill_1122" inputmode="numeric" maxlength="23" placeholder="1234 5678 9012 3456" autocomplete="new-password" required>
-
-        <p class="nota">Por seguridad, se guardarán solo los primeros 6 dígitos y los últimos 4 dígitos de la tarjeta.</p>
-
-        <button type="submit" class="enviar" id="btnGuardar">Guardar registro</button>
-      </form>
-
-      <div id="mensajeRegistro" class="mensaje"></div>
-    </section>
-
-    <section id="seccionConsulta" class="seccion">
-      <form id="formConsulta" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <label for="correoConsulta">Correo de la cuenta</label>
-        <input type="text" inputmode="email" id="correoConsulta" name="correo_consulta_no_autofill_3487" placeholder="ejemplo@gmail.com" autocomplete="new-password" required>
-
-        <button type="submit" class="enviar" id="btnBuscar">Consultar</button>
-      </form>
-
-      <div id="mensajeConsulta" class="mensaje"></div>
-
-      <div id="resumenConsulta" class="resultado" style="display:none;">
-        <p><strong>Día de activación:</strong> <span id="consultaActivacion">-</span></p>
-        <p><strong>Fecha de vencimiento:</strong> <span id="consultaVencimiento">-</span></p>
-        <p><strong>Días faltantes:</strong> <span id="consultaDias" class="contador">-</span></p>
-      </div>
-
-      <div id="resultadoConsulta"></div>
-    </section>
-
-    <section id="seccionRenovacion" class="seccion">
-      <form id="formBuscarRenovacion" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <label for="correoRenovacion">Correo de la cuenta</label>
-        <input type="text" inputmode="email" id="correoRenovacion" name="correo_renovacion_no_autofill_7731" placeholder="ejemplo@gmail.com" autocomplete="new-password" required>
-
-        <button type="submit" class="enviar" id="btnBuscarRenovacion">Buscar cuenta</button>
-      </form>
-
-      <div id="mensajeRenovacion" class="mensaje"></div>
-
-      <div id="panelRenovacion" style="display:none;">
-        <div class="resultado">
-          <p>
-            <strong>Cliente:</strong>
-            <span id="renovacionNombreCliente">-</span>
-            <button type="button" id="btnEditarCliente" class="btn-lapiz">✏️</button>
-          </p>
-          <p><strong>WhatsApp:</strong> <span id="renovacionNumeroCliente">-</span></p>
-          <p><strong>País de la cuenta:</strong> <span id="renovacionPaisCuenta">-</span></p>
-          <p><strong>Fecha en la cual vencía:</strong> <span id="renovacionVencia">-</span></p>
-          <p><strong>Días que le quedan:</strong> <span id="renovacionDias" class="contador">-</span></p>
-        </div>
-
-        <div id="bloqueEditarCliente" class="bloque-oculto">
-          <label for="editarNombreCliente">Nuevo nombre del cliente</label>
-          <input type="text" id="editarNombreCliente" name="editar_nombre_no_autofill_9081" placeholder="Nuevo nombre completo" autocomplete="new-password">
-
-          <label for="editarNumeroCliente">Nuevo WhatsApp del cliente sin +</label>
-          <input type="text" inputmode="tel" id="editarNumeroCliente" name="editar_numero_no_autofill_9082" placeholder="591XXXXXXXX" autocomplete="new-password">
-
-          <p class="nota">Al actualizar, se guardará el dato anterior y el dato nuevo en el historial de cambios.</p>
-        </div>
-
-        <label for="tiempoRenovacion">Ampliar tiempo de renovación</label>
-        <select id="tiempoRenovacion" autocomplete="off">
-          <option value="">Seleccionar tiempo</option>
-          <option value="30">30 días</option>
-          <option value="60">60 días</option>
-          <option value="90">90 días</option>
-          <option value="180">180 días</option>
-          <option value="365">365 días</option>
-        </select>
-
-        <div class="consulta-card">
-          <div class="detalle-titulo">💳 Datos de banca actual</div>
-          <p><strong>Correo de banca:</strong> <span id="renovacionCorreoBanca">-</span></p>
-          <p><strong>Tarjeta:</strong> <span id="renovacionTarjeta">-</span></p>
-        </div>
-
-        <button type="button" class="secundario" id="btnCambiarBanca">Cambiar banca</button>
-
-        <div id="bloqueCambiarBanca" class="bloque-oculto">
-          <label>País de la nueva banca</label>
-
-          <div class="selector-personalizado" data-input="paisBancaNuevo">
-            <button type="button" class="selector-btn">
-              <span class="pais-con-bandera"><span class="flag flag-empty"></span> Seleccionar</span>
-            </button>
-
-            <div class="selector-lista">
-              <div class="opcion-pais" data-value="Nigeria"><span class="flag flag-ng"></span> Nigeria</div>
-              <div class="opcion-pais" data-value="Egipto"><span class="flag flag-eg"></span> Egipto</div>
-              <div class="opcion-pais" data-value="Brasil"><span class="flag flag-br"></span> Brasil</div>
-              <div class="opcion-pais" data-value="Bolivia"><span class="flag flag-bo"></span> Bolivia</div>
-            </div>
-          </div>
-
-          <input type="hidden" id="paisBancaNuevo">
-
-          <label for="nuevoCorreoBanca">Nuevo correo asociado a la banca</label>
-          <input type="text" inputmode="email" id="nuevoCorreoBanca" name="nuevo_correo_banca_no_autofill_9083" placeholder="nuevo correo de banca" autocomplete="new-password">
-
-          <label for="nuevaTarjeta">Nuevo número de tarjeta</label>
-          <input type="text" id="nuevaTarjeta" name="nueva_tarjeta_no_autofill_9084" inputmode="numeric" maxlength="23" placeholder="1234 5678 9012 3456" autocomplete="new-password">
-
-          <p class="nota">No coloques mes, año ni CVV. Se guardarán solo los primeros 6 dígitos y los últimos 4 dígitos.</p>
-        </div>
-
-        <button type="button" class="enviar" id="btnActualizarRenovacion">Actualizar datos de renovación</button>
-
-        <div id="voucherWhatsappBox" class="voucher-box" style="display:none;">
+.selector-personalizado {
+position: relative;
+margin-bottom: 17px;
+@@ -841,12 +894,34 @@
+<button type="button" class="enviar" id="btnActualizarRenovacion">Actualizar datos de renovación</button>
+
+<div id="voucherWhatsappBox" class="voucher-box" style="display:none;">
+          <div class="detalle-titulo">📄 Voucher de renovación</div>
+          <div class="detalle-subtitulo">Mensaje listo para enviar al cliente por WhatsApp</div>
           <div class="detalle-titulo">📄 Comprobante de renovación</div>
           <div class="detalle-subtitulo">Vista previa del comprobante y mensaje listo para enviar al WhatsApp del cliente</div>
 
-          <div id="comprobanteRenovacionCard" class="comprobante-renovacion-card">
+          <div class="comprobante-renovacion-card">
             <div class="comprobante-header">
-              <img src="logocuentas.png" alt="Logo Cuentas Premium BO" class="comprobante-logo" crossorigin="anonymous">
+              <img src="logocuentas.png" alt="Logo Cuentas Premium BO" class="comprobante-logo">
               <div class="comprobante-header-texto">
                 <h3>CUENTAS PREMIUM BO</h3>
                 <p>Comprobante de Renovación</p>
@@ -976,247 +410,19 @@
             </div>
           </div>
 
-          <div class="aviso-imagen-whatsapp">
-            📌 En celular se abrirá el cuadro de compartir para elegir WhatsApp y enviar la imagen con el texto.
-            En computadora se abrirá WhatsApp Web y la imagen se copiará al portapapeles; luego pega con Ctrl + V.
-            Si el navegador no permite copiar, la imagen se abrirá en otra pestaña para copiarla o arrastrarla manualmente. No se descargará automáticamente.
-          </div>
+          <label for="textoVoucherWhatsapp">Mensaje listo para enviar</label>
+<textarea id="textoVoucherWhatsapp" readonly></textarea>
 
-          <label for="textoVoucherWhatsapp">Texto de apoyo para WhatsApp</label>
-          <textarea id="textoVoucherWhatsapp" readonly></textarea>
-
-          <div class="comprobante-acciones">
-            <button type="button" class="enviar" id="btnEnviarVoucherWhatsapp">
-              Enviar comprobante por WhatsApp
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="seccionSolicitudes" class="seccion active">
-      <form id="formSolicitudes" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-
-        <div class="notificacion-familiar">
-          <div class="notificacion-icono">ℹ️</div>
-          <div>
-            <strong>Información importante sobre cuentas individuales unidas a plan familiar</strong>
-            <p>
-              Las cuentas individuales unidas a plan familiar son cuentas bajo nuestro dominio.
-              Te pedimos los accesos del cliente para poder transferir su playlist
-              y datos correspondientes.
-            </p>
-          </div>
-        </div>
-
-        <div class="notificacion-familiar">
-          <div class="notificacion-icono">💡</div>
-          <div>
-            <strong>Recomendación para cuentas familiares</strong>
-            <p>
-              Para cuentas familiares se recomienda utilizar cuentas reposadas que hayan tenido Premium al menos una vez.
-            </p>
-          </div>
-        </div>
-
-        <label for="solNombre">Nombre del cliente</label>
-        <input type="text" id="solNombre" name="sol_nombre_no_autofill" placeholder="Nombre completo" autocomplete="new-password" required>
-
-        <label for="solNumero">Número WhatsApp sin + (ejemplo: 591XXXXXXXX)</label>
-        <input type="text" inputmode="tel" id="solNumero" name="sol_numero_no_autofill" placeholder="591XXXXXXXX" autocomplete="new-password" required>
-
-        <label for="solCorreo">Correo de la cuenta</label>
-        <input type="text" inputmode="email" id="solCorreo" name="sol_correo_no_autofill" placeholder="correo@gmail.com" autocomplete="new-password" required>
-
-        <div class="aviso-seguridad">
-          🔐 <strong>PASS / ACCESOS</strong><br>
-          Por seguridad, no coloques tu contraseña en esta página.
-          Nuestro equipo se contactará contigo para pedirte los accesos necesarios y continuar con la activación.
-          Si no podemos acceder a la cuenta, tu solicitud puede tener demora.
-        </div>
-
-        <label class="check-line">
-          <input type="checkbox" id="solAccesoConfirmado">
-          Confirmo que mi cuenta está disponible y que el equipo puede contactarme para solicitar los accesos.
-        </label>
-
-        <div class="row">
-          <div>
-            <label>País que desea la cuenta</label>
-            <div class="selector-personalizado" data-input="solPais">
-              <button type="button" class="selector-btn">
-                <span class="pais-con-bandera"><span class="flag flag-empty"></span> Seleccionar</span>
-              </button>
-
-              <div class="selector-lista">
-                <div class="opcion-pais" data-value="Nigeria"><span class="flag flag-ng"></span> Nigeria</div>
-                <div class="opcion-pais" data-value="Egipto"><span class="flag flag-eg"></span> Egipto</div>
-                <div class="opcion-pais" data-value="Brasil"><span class="flag flag-br"></span> Brasil</div>
-                <div class="opcion-pais" data-value="Bolivia"><span class="flag flag-bo"></span> Bolivia</div>
-              </div>
-            </div>
-            <input type="hidden" id="solPais">
-          </div>
-
-          <div>
-            <label for="solPlan">Plan</label>
-            <select id="solPlan" required>
-              <option value="">Seleccionar plan</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row">
-          <div>
-            <label for="solTiempo">Tiempo</label>
-            <select id="solTiempo" required>
-              <option value="">Seleccionar tiempo</option>
-              <option value="30">30 días</option>
-              <option value="60">60 días</option>
-              <option value="90">90 días</option>
-              <option value="180">180 días</option>
-              <option value="365">365 días</option>
-            </select>
-          </div>
-
-          <div>
-            <label for="solGarantia">Garantía</label>
-            <select id="solGarantia" required>
-              <option value="">Seleccionar garantía</option>
-              <option value="Garantía de Activación">Garantía de Activación</option>
-              <option value="Garantía Parcial">Garantía Parcial</option>
-              <option value="Garantía Total">Garantía Total</option>
-            </select>
-          </div>
-        </div>
-
-        <div id="descripcionGarantia" class="info-box" style="display:none;"></div>
-
-        <label for="solMetodoPago">Método de pago</label>
-        <select id="solMetodoPago" required>
-          <option value="">Seleccionar método</option>
-          <option value="QR Bolivia">QR Bolivia</option>
-          <option value="Binance">Binance</option>
-        </select>
-
-        <div id="resumenPagoSolicitud" class="consulta-card" style="display:none;">
-          <div class="detalle-titulo">💰 Resumen de pago</div>
-
-          <p><strong>Precio base mensual:</strong> <span id="solPrecioBaseUsd">-</span></p>
-          <p id="lineaSubtotalUsd" style="display:none;"><strong>Subtotal sin descuento:</strong> <span id="solSubtotalUsd">-</span></p>
-          <p id="lineaDescuentoUsd" style="display:none;"><strong>Descuento aplicado:</strong> <span id="solDescuentoUsd">-</span></p>
-          <p><strong>Total a pagar:</strong> <span id="solPrecioUsd">-</span></p>
-
-          <p id="lineaTipoCambio" style="display:none;"><strong>Tipo de cambio:</strong> <span id="solTipoCambio">-</span></p>
-          <p id="lineaMontoBs" style="display:none;"><strong>Monto a pagar en Bs:</strong> <span id="solMontoBs">-</span></p>
-
-          <div id="bloqueQrBolivia" style="display:none;">
-            <img src="qr-bnb.png" alt="QR BNB Bolivia" class="qr-pago">
-          </div>
-
-          <div id="bloqueBinance" style="display:none;">
-            <img src="qr-binance.png" alt="QR Binance" class="qr-pago">
-
-            <label>Dirección de depósito Binance</label>
-            <div class="copy-box">
-              <input type="text" id="direccionBinance" value="0xec75fc8e3f8fb72d8002094b63775cc3ad21c453" readonly>
-              <button type="button" id="btnCopiarBinance">Copiar</button>
-            </div>
-          </div>
-
-          <div class="aviso-pago">
-            📌 Realiza tu pago. Una vez realizado, saca una captura del comprobante, voucher o recibo.
-          </div>
-        </div>
-
-        <button type="submit" class="enviar" id="btnEnviarSolicitud">
-          Presiona aquí para enviar solicitud y comprobante
-        </button>
-      </form>
-
-      <div id="mensajeSolicitud" class="mensaje"></div>
-    </section>
-
-  </div>
-
-  <script>
-    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyKZfZPVDBurIIis9g9PIJVqp0YV_rf7-jOR8CEtmLUdtGiVQde2Z7d9zp_tYkeYA0g2A/exec";
-
-    const videoFondo = document.getElementById("videoFondo");
-    if (videoFondo) {
-      videoFondo.muted = true;
-      videoFondo.play().catch(() => {});
-    }
-
-    const btnRegistro = document.getElementById("btnRegistro");
-    const btnConsulta = document.getElementById("btnConsulta");
-    const btnRenovacion = document.getElementById("btnRenovacion");
-    const btnSolicitudes = document.getElementById("btnSolicitudes");
-    const btnCerrarSesion = document.getElementById("btnCerrarSesion");
-
-    const seccionLogin = document.getElementById("seccionLogin");
-    const seccionRegistro = document.getElementById("seccionRegistro");
-    const seccionConsulta = document.getElementById("seccionConsulta");
-    const seccionRenovacion = document.getElementById("seccionRenovacion");
-    const seccionSolicitudes = document.getElementById("seccionSolicitudes");
-
-    const loginUsuario = document.getElementById("loginUsuario");
-    const loginClave = document.getElementById("loginClave");
-    const btnLoginAdmin = document.getElementById("btnLoginAdmin");
-    const mensajeLogin = document.getElementById("mensajeLogin");
-    const adminBar = document.getElementById("adminBar");
-
-    const formRegistro = document.getElementById("formRegistro");
-    const formConsulta = document.getElementById("formConsulta");
-    const formBuscarRenovacion = document.getElementById("formBuscarRenovacion");
-    const formSolicitudes = document.getElementById("formSolicitudes");
-
-    const mensajeRegistro = document.getElementById("mensajeRegistro");
-    const mensajeConsulta = document.getElementById("mensajeConsulta");
-    const mensajeRenovacion = document.getElementById("mensajeRenovacion");
-    const mensajeSolicitud = document.getElementById("mensajeSolicitud");
-
-    const resultadoConsulta = document.getElementById("resultadoConsulta");
-    const resumenConsulta = document.getElementById("resumenConsulta");
-    const consultaActivacion = document.getElementById("consultaActivacion");
-    const consultaVencimiento = document.getElementById("consultaVencimiento");
-    const consultaDias = document.getElementById("consultaDias");
-
-    const fechaActivacion = document.getElementById("fechaActivacion");
-    const duracion = document.getElementById("duracion");
-    const numeroTarjetaInput = document.getElementById("numeroTarjeta");
-    const nuevaTarjetaInput = document.getElementById("nuevaTarjeta");
-
-    const btnGuardar = document.getElementById("btnGuardar");
-    const btnBuscar = document.getElementById("btnBuscar");
-    const btnBuscarRenovacion = document.getElementById("btnBuscarRenovacion");
-
-    const panelRenovacion = document.getElementById("panelRenovacion");
-    const renovacionNombreCliente = document.getElementById("renovacionNombreCliente");
-    const renovacionNumeroCliente = document.getElementById("renovacionNumeroCliente");
-    const renovacionPaisCuenta = document.getElementById("renovacionPaisCuenta");
-    const renovacionVencia = document.getElementById("renovacionVencia");
-    const renovacionDias = document.getElementById("renovacionDias");
-    const renovacionCorreoBanca = document.getElementById("renovacionCorreoBanca");
-    const renovacionTarjeta = document.getElementById("renovacionTarjeta");
-    const tiempoRenovacion = document.getElementById("tiempoRenovacion");
-
-    const btnEditarCliente = document.getElementById("btnEditarCliente");
-    const bloqueEditarCliente = document.getElementById("bloqueEditarCliente");
-    const editarNombreCliente = document.getElementById("editarNombreCliente");
-    const editarNumeroCliente = document.getElementById("editarNumeroCliente");
-
-    const btnCambiarBanca = document.getElementById("btnCambiarBanca");
-    const bloqueCambiarBanca = document.getElementById("bloqueCambiarBanca");
-    const nuevoCorreoBanca = document.getElementById("nuevoCorreoBanca");
-    const paisBancaNuevo = document.getElementById("paisBancaNuevo");
-    const btnActualizarRenovacion = document.getElementById("btnActualizarRenovacion");
-
-    const voucherWhatsappBox = document.getElementById("voucherWhatsappBox");
-    const textoVoucherWhatsapp = document.getElementById("textoVoucherWhatsapp");
-    const btnEnviarVoucherWhatsapp = document.getElementById("btnEnviarVoucherWhatsapp");
-    const btnDescargarComprobante = document.getElementById("btnDescargarComprobante");
-    const comprobanteRenovacionCard = document.getElementById("comprobanteRenovacionCard");
+          <button type="button" class="enviar" id="btnEnviarVoucherWhatsapp">Enviar voucher por WhatsApp</button>
+          <button type="button" class="enviar" id="btnEnviarVoucherWhatsapp">
+            Enviar comprobante por WhatsApp
+          </button>
+</div>
+</div>
+</section>
+@@ -1051,6 +1126,12 @@
+const textoVoucherWhatsapp = document.getElementById("textoVoucherWhatsapp");
+const btnEnviarVoucherWhatsapp = document.getElementById("btnEnviarVoucherWhatsapp");
 
     const compCorreo = document.getElementById("compCorreo");
     const compFechaRenovacion = document.getElementById("compFechaRenovacion");
@@ -1224,954 +430,106 @@
     const compFechaProximoPago = document.getElementById("compFechaProximoPago");
     const compUltimos4Tarjeta = document.getElementById("compUltimos4Tarjeta");
 
-    const solNombre = document.getElementById("solNombre");
-    const solNumero = document.getElementById("solNumero");
-    const solCorreo = document.getElementById("solCorreo");
-    const solAccesoConfirmado = document.getElementById("solAccesoConfirmado");
-    const solPais = document.getElementById("solPais");
-    const solPlan = document.getElementById("solPlan");
-    const solTiempo = document.getElementById("solTiempo");
-    const solGarantia = document.getElementById("solGarantia");
-    const solMetodoPago = document.getElementById("solMetodoPago");
+const solNombre = document.getElementById("solNombre");
+const solNumero = document.getElementById("solNumero");
+const solCorreo = document.getElementById("solCorreo");
+@@ -1187,10 +1268,16 @@
+});
 
-    const descripcionGarantia = document.getElementById("descripcionGarantia");
-    const resumenPagoSolicitud = document.getElementById("resumenPagoSolicitud");
-    const solPrecioBaseUsd = document.getElementById("solPrecioBaseUsd");
-    const solPrecioUsd = document.getElementById("solPrecioUsd");
+btnEnviarVoucherWhatsapp.addEventListener("click", function() {
+      if (!ultimoTextoVoucher || !ultimoNumeroWhatsapp) {
+        mostrarMensaje(mensajeRenovacion, "Primero actualiza una renovación para generar el voucher.", "error");
+      if (!ultimoTextoVoucher) {
+        mostrarMensaje(mensajeRenovacion, "Primero genera el comprobante de renovación.", "error");
+return;
+}
 
-    const lineaSubtotalUsd = document.getElementById("lineaSubtotalUsd");
-    const lineaDescuentoUsd = document.getElementById("lineaDescuentoUsd");
-    const solSubtotalUsd = document.getElementById("solSubtotalUsd");
-    const solDescuentoUsd = document.getElementById("solDescuentoUsd");
-
-    const solTipoCambio = document.getElementById("solTipoCambio");
-    const solMontoBs = document.getElementById("solMontoBs");
-    const lineaTipoCambio = document.getElementById("lineaTipoCambio");
-    const lineaMontoBs = document.getElementById("lineaMontoBs");
-    const bloqueQrBolivia = document.getElementById("bloqueQrBolivia");
-    const bloqueBinance = document.getElementById("bloqueBinance");
-    const direccionBinance = document.getElementById("direccionBinance");
-    const btnCopiarBinance = document.getElementById("btnCopiarBinance");
-    const btnEnviarSolicitud = document.getElementById("btnEnviarSolicitud");
-
-    let datosRenovacionActual = null;
-    let seccionActual = "solicitudes";
-    let ultimoTextoVoucher = "";
-    let ultimoNumeroWhatsapp = "";
-    let ultimoComprobanteDatos = null;
-    let solicitudPrecioActual = 0;
-    let solicitudPrecioBaseActual = 0;
-    let solicitudTipoCambioActual = "";
-    let solicitudMontoBsActual = "";
-    let solicitudSubtotalActual = 0;
-    let solicitudDescuentoPorcentajeActual = 0;
-    let solicitudDescuentoUsdActual = 0;
-
-    let adminToken = sessionStorage.getItem("adminToken") || "";
-    let adminNombre = sessionStorage.getItem("adminNombre") || "";
-    let adminUsuario = sessionStorage.getItem("adminUsuario") || "";
-    let adminRol = sessionStorage.getItem("adminRol") || "";
-    let adminAutenticado = !!adminToken;
-    let seccionProtegidaPendiente = "";
-
-    const PRECIOS_SOLICITUDES = {
-      Nigeria: {
-        "Individual unido a plan familiar": {
-          "Garantía de Activación": 1.5,
-          "Garantía Parcial": 1.8,
-          "Garantía Total": 2
-        },
-        "Dúo": {
-          "Garantía de Activación": 3,
-          "Garantía Parcial": 3.5,
-          "Garantía Total": 4
-        },
-        "Familiar": {
-          "Garantía de Activación": 4,
-          "Garantía Parcial": 5.5,
-          "Garantía Total": 8
-        }
-      },
-      Egipto: {
-        "Individual": {
-          "Garantía de Activación": 1.8,
-          "Garantía Parcial": 2.2,
-          "Garantía Total": 2.5
-        },
-        "Dúo": {
-          "Garantía de Activación": 3,
-          "Garantía Parcial": 3.5,
-          "Garantía Total": 4
-        },
-        "Familiar": {
-          "Garantía de Activación": 4,
-          "Garantía Parcial": 5.5,
-          "Garantía Total": 8
-        }
-      },
-      Brasil: {
-        "Individual unido a plan familiar": {
-          "Garantía de Activación": 1.8,
-          "Garantía Parcial": 2.2,
-          "Garantía Total": 2.5
-        }
-      },
-      Bolivia: {
-        "Individual unido a plan familiar": {
-          "Garantía de Activación": 1.8,
-          "Garantía Parcial": 2.2,
-          "Garantía Total": 2.5
-        }
-      }
-    };
-
-    iniciarSelectoresPais();
-    actualizarEstadoAdmin();
-
-    window.addEventListener("load", function() {
-      limpiarRegistro();
-      limpiarConsulta();
-      limpiarRenovacion();
-      limpiarSolicitudes();
-      cambiarSeccion("solicitudes", true);
-      actualizarEstadoAdmin();
-    });
-
-    window.addEventListener("pageshow", function() {
-      actualizarEstadoAdmin();
-    });
-
-    btnSolicitudes.addEventListener("click", () => cambiarSeccion("solicitudes"));
-    btnConsulta.addEventListener("click", () => cambiarSeccion("consulta"));
-    btnRegistro.addEventListener("click", () => cambiarSeccion("registro"));
-    btnRenovacion.addEventListener("click", () => cambiarSeccion("renovacion"));
-
-    btnLoginAdmin.addEventListener("click", iniciarSesionAdmin);
-
-    loginClave.addEventListener("keydown", function(e) {
-      if (e.key === "Enter") iniciarSesionAdmin();
-    });
-
-    btnCerrarSesion.addEventListener("click", function() {
-      cerrarSesionLocal();
-      seccionProtegidaPendiente = "";
-      limpiarRegistro();
-      limpiarRenovacion();
-      cambiarSeccion("solicitudes", true);
-    });
-
-    btnEnviarVoucherWhatsapp.addEventListener("click", function() {
-      enviarComprobanteImagenWhatsapp();
-    });
-
-    if (btnDescargarComprobante) {
-      btnDescargarComprobante.addEventListener("click", function() {
-        descargarComprobanteRenovacion();
-      });
-    }
-
-    solPais.addEventListener("change", actualizarPlanesSolicitud);
-    solPlan.addEventListener("change", actualizarPagoSolicitud);
-    solTiempo.addEventListener("change", actualizarPagoSolicitud);
-    solGarantia.addEventListener("change", function() {
-      actualizarDescripcionGarantia();
-      actualizarPagoSolicitud();
-    });
-    solMetodoPago.addEventListener("change", actualizarPagoSolicitud);
-
-    btnCopiarBinance.addEventListener("click", function() {
-      direccionBinance.select();
-      direccionBinance.setSelectionRange(0, 99999);
-      document.execCommand("copy");
-      mostrarMensaje(mensajeSolicitud, "Dirección de Binance copiada.", "exito");
-    });
-
-    function obtenerMesesPorTiempo(dias) {
-      if (dias === 30) return 1;
-      if (dias === 60) return 2;
-      if (dias === 90) return 3;
-      if (dias === 180) return 6;
-      if (dias === 365) return 12;
-      return dias / 30;
-    }
-
-    function iniciarSesionAdmin() {
-      const usuario = loginUsuario.value.trim();
-      const clave = loginClave.value.trim();
-
-      if (!usuario || !clave) {
-        mostrarMensaje(mensajeLogin, "Coloca usuario y contraseña.", "error");
+      if (!ultimoNumeroWhatsapp) {
+        mostrarMensaje(mensajeRenovacion, "No se encontró el WhatsApp del cliente en la base de datos.", "error");
         return;
       }
 
-      btnLoginAdmin.disabled = true;
-      btnLoginAdmin.textContent = "Verificando...";
+abrirWhatsapp(ultimoNumeroWhatsapp, ultimoTextoVoucher);
+});
 
-      enviarJSONP({
-        action: "login",
-        usuario: usuario,
-        clave: clave
-      }, function(respuesta) {
-        btnLoginAdmin.disabled = false;
-        btnLoginAdmin.textContent = "Ingresar";
+@@ -1423,6 +1510,11 @@
 
-        if (respuesta.status !== "success") {
-          mostrarMensaje(mensajeLogin, respuesta.message || "Acceso incorrecto.", "error");
-          return;
-        }
-
-        adminToken = respuesta.token;
-        adminNombre = respuesta.nombre || usuario;
-        adminUsuario = respuesta.usuario || usuario;
-        adminRol = respuesta.rol || "";
-
-        sessionStorage.setItem("adminToken", adminToken);
-        sessionStorage.setItem("adminNombre", adminNombre);
-        sessionStorage.setItem("adminUsuario", adminUsuario);
-        sessionStorage.setItem("adminRol", adminRol);
-
-        adminAutenticado = true;
-
-        loginUsuario.value = "";
-        loginClave.value = "";
-        ocultarMensaje(mensajeLogin);
-        actualizarEstadoAdmin();
-
-        const destino = seccionProtegidaPendiente || "registro";
-        seccionProtegidaPendiente = "";
-        cambiarSeccion(destino, true);
-      });
-    }
-
-    function actualizarEstadoAdmin() {
-      if (adminAutenticado) {
-        adminBar.style.display = "flex";
-        adminBar.querySelector("span").textContent = "🔐 Sesión activa: " + (adminNombre || adminUsuario || "Administrador");
-        btnRegistro.classList.remove("protegido");
-        btnRenovacion.classList.remove("protegido");
-      } else {
-        adminBar.style.display = "none";
-        btnRegistro.classList.add("protegido");
-        btnRenovacion.classList.add("protegido");
-      }
-    }
-
-    function cambiarSeccion(seccion, forzar) {
-      const esProtegida = seccion === "registro" || seccion === "renovacion";
-
-      if (esProtegida && !adminAutenticado && !forzar) {
-        seccionProtegidaPendiente = seccion;
-        mostrarLogin();
-        return;
-      }
-
-      limpiarRegistro();
-      limpiarConsulta();
-      limpiarRenovacion();
-      limpiarSolicitudes();
-
-      btnSolicitudes.classList.remove("active");
-      btnConsulta.classList.remove("active");
-      btnRegistro.classList.remove("active");
-      btnRenovacion.classList.remove("active");
-
-      seccionLogin.classList.remove("active");
-      seccionRegistro.classList.remove("active");
-      seccionConsulta.classList.remove("active");
-      seccionRenovacion.classList.remove("active");
-      seccionSolicitudes.classList.remove("active");
-
-      if (seccion === "solicitudes") {
-        btnSolicitudes.classList.add("active");
-        seccionSolicitudes.classList.add("active");
-      }
-
-      if (seccion === "consulta") {
-        btnConsulta.classList.add("active");
-        seccionConsulta.classList.add("active");
-      }
-
-      if (seccion === "registro") {
-        btnRegistro.classList.add("active");
-        seccionRegistro.classList.add("active");
-      }
-
-      if (seccion === "renovacion") {
-        btnRenovacion.classList.add("active");
-        seccionRenovacion.classList.add("active");
-      }
-
-      seccionActual = seccion;
-    }
-
-    function mostrarLogin() {
-      limpiarRegistro();
-      limpiarConsulta();
-      limpiarRenovacion();
-      limpiarSolicitudes();
-
-      btnSolicitudes.classList.remove("active");
-      btnConsulta.classList.remove("active");
-      btnRegistro.classList.remove("active");
-      btnRenovacion.classList.remove("active");
-
-      seccionRegistro.classList.remove("active");
-      seccionConsulta.classList.remove("active");
-      seccionRenovacion.classList.remove("active");
-      seccionSolicitudes.classList.remove("active");
-
-      seccionLogin.classList.add("active");
-
-      if (seccionProtegidaPendiente === "registro") btnRegistro.classList.add("active");
-      if (seccionProtegidaPendiente === "renovacion") btnRenovacion.classList.add("active");
-
-      seccionActual = "login";
-
-      setTimeout(() => loginUsuario.focus(), 100);
-    }
-
-    function limpiarRegistro() {
-      if (formRegistro) formRegistro.reset();
-      resetearSelectorPais("pais");
-      ocultarMensaje(mensajeRegistro);
-
-      if (btnGuardar) {
-        btnGuardar.disabled = false;
-        btnGuardar.textContent = "Guardar registro";
-      }
-    }
-
-    function limpiarConsulta() {
-      if (formConsulta) formConsulta.reset();
-      if (resultadoConsulta) resultadoConsulta.innerHTML = "";
-      if (resumenConsulta) resumenConsulta.style.display = "none";
-      ocultarMensaje(mensajeConsulta);
-
-      if (consultaActivacion) consultaActivacion.textContent = "-";
-      if (consultaVencimiento) consultaVencimiento.textContent = "-";
-
-      if (consultaDias) {
-        consultaDias.textContent = "-";
-        consultaDias.classList.remove("vencido");
-      }
-
-      if (btnBuscar) {
-        btnBuscar.disabled = false;
-        btnBuscar.textContent = "Consultar";
-      }
-    }
-
-    function limpiarRenovacion() {
-      if (formBuscarRenovacion) formBuscarRenovacion.reset();
-
-      datosRenovacionActual = null;
-
-      if (panelRenovacion) panelRenovacion.style.display = "none";
-      ocultarMensaje(mensajeRenovacion);
-
-      if (renovacionNombreCliente) renovacionNombreCliente.textContent = "-";
-      if (renovacionNumeroCliente) renovacionNumeroCliente.textContent = "-";
-      if (renovacionPaisCuenta) renovacionPaisCuenta.textContent = "-";
-      if (renovacionVencia) renovacionVencia.textContent = "-";
-
-      if (renovacionDias) {
-        renovacionDias.textContent = "-";
-        renovacionDias.classList.remove("vencido");
-      }
-
-      if (renovacionCorreoBanca) renovacionCorreoBanca.textContent = "-";
-      if (renovacionTarjeta) renovacionTarjeta.textContent = "-";
-
-      if (tiempoRenovacion) tiempoRenovacion.value = "";
-      if (nuevoCorreoBanca) nuevoCorreoBanca.value = "";
-      if (nuevaTarjetaInput) nuevaTarjetaInput.value = "";
-
-      if (editarNombreCliente) editarNombreCliente.value = "";
-      if (editarNumeroCliente) editarNumeroCliente.value = "";
-
-      if (bloqueEditarCliente) bloqueEditarCliente.style.display = "none";
-      if (btnEditarCliente) btnEditarCliente.textContent = "✏️";
-
-      if (bloqueCambiarBanca) bloqueCambiarBanca.style.display = "none";
-      if (btnCambiarBanca) btnCambiarBanca.textContent = "Cambiar banca";
-
-      resetearSelectorPais("paisBancaNuevo");
-
-      if (voucherWhatsappBox) voucherWhatsappBox.style.display = "none";
-      if (textoVoucherWhatsapp) textoVoucherWhatsapp.value = "";
+if (voucherWhatsappBox) voucherWhatsappBox.style.display = "none";
+if (textoVoucherWhatsapp) textoVoucherWhatsapp.value = "";
       if (compCorreo) compCorreo.textContent = "-";
       if (compFechaRenovacion) compFechaRenovacion.textContent = "-";
       if (compHoraRenovacion) compHoraRenovacion.textContent = "-";
       if (compFechaProximoPago) compFechaProximoPago.textContent = "-";
       if (compUltimos4Tarjeta) compUltimos4Tarjeta.textContent = "-";
 
-      ultimoTextoVoucher = "";
-      ultimoNumeroWhatsapp = "";
-      ultimoComprobanteDatos = null;
-
-      if (btnBuscarRenovacion) {
-        btnBuscarRenovacion.disabled = false;
-        btnBuscarRenovacion.textContent = "Buscar cuenta";
-      }
-
-      if (btnActualizarRenovacion) {
-        btnActualizarRenovacion.disabled = false;
-        btnActualizarRenovacion.textContent = "Actualizar datos de renovación";
-      }
-    }
-
-    function limpiarSolicitudes() {
-      if (formSolicitudes) formSolicitudes.reset();
-
-      resetearSelectorPais("solPais");
-
-      if (solPlan) solPlan.innerHTML = `<option value="">Seleccionar plan</option>`;
-
-      if (descripcionGarantia) {
-        descripcionGarantia.innerHTML = "";
-        descripcionGarantia.style.display = "none";
-      }
-
-      if (resumenPagoSolicitud) resumenPagoSolicitud.style.display = "none";
-      if (bloqueQrBolivia) bloqueQrBolivia.style.display = "none";
-      if (bloqueBinance) bloqueBinance.style.display = "none";
-      if (lineaTipoCambio) lineaTipoCambio.style.display = "none";
-      if (lineaMontoBs) lineaMontoBs.style.display = "none";
-      if (lineaSubtotalUsd) lineaSubtotalUsd.style.display = "none";
-      if (lineaDescuentoUsd) lineaDescuentoUsd.style.display = "none";
-
-      solicitudPrecioActual = 0;
-      solicitudPrecioBaseActual = 0;
-      solicitudTipoCambioActual = "";
-      solicitudMontoBsActual = "";
-      solicitudSubtotalActual = 0;
-      solicitudDescuentoPorcentajeActual = 0;
-      solicitudDescuentoUsdActual = 0;
-
-      ocultarMensaje(mensajeSolicitud);
-
-      if (btnEnviarSolicitud) {
-        btnEnviarSolicitud.disabled = false;
-        btnEnviarSolicitud.textContent = "Presiona aquí para enviar solicitud y comprobante";
-      }
-    }
-
-    function iniciarSelectoresPais() {
-      const selectores = document.querySelectorAll(".selector-personalizado");
-
-      selectores.forEach(selector => {
-        const boton = selector.querySelector(".selector-btn");
-        const lista = selector.querySelector(".selector-lista");
-        const inputId = selector.dataset.input;
-        const inputHidden = document.getElementById(inputId);
-
-        boton.addEventListener("click", function(e) {
-          e.stopPropagation();
-
-          document.querySelectorAll(".selector-lista").forEach(l => {
-            if (l !== lista) l.classList.remove("active");
-          });
-
-          lista.classList.toggle("active");
-        });
-
-        selector.querySelectorAll(".opcion-pais").forEach(opcion => {
-          opcion.addEventListener("click", function() {
-            const valor = this.dataset.value;
-            inputHidden.value = valor;
-
-            boton.innerHTML = `<span class="pais-con-bandera">${obtenerBanderaHTML(valor)} ${valor}</span>`;
-            lista.classList.remove("active");
-
-            inputHidden.dispatchEvent(new Event("change"));
-          });
-        });
-      });
-
-      document.addEventListener("click", function() {
-        document.querySelectorAll(".selector-lista").forEach(lista => {
-          lista.classList.remove("active");
-        });
-      });
-    }
-
-    function resetearSelectorPais(inputId) {
-      const input = document.getElementById(inputId);
-      const selector = document.querySelector(`.selector-personalizado[data-input="${inputId}"]`);
-      if (!selector || !input) return;
-
-      input.value = "";
-      const boton = selector.querySelector(".selector-btn");
-      boton.innerHTML = `<span class="pais-con-bandera"><span class="flag flag-empty"></span> Seleccionar</span>`;
-    }
-
-    formatearInputTarjeta(numeroTarjetaInput);
-    formatearInputTarjeta(nuevaTarjetaInput);
-
-    function formatearInputTarjeta(input) {
-      if (!input) return;
-
-      input.addEventListener("input", () => {
-        let valor = input.value.replace(/\D/g, "");
-        valor = valor.substring(0, 19);
-        input.value = valor.replace(/(.{4})/g, "$1 ").trim();
-      });
-    }
-
-    function calcularFechasRegistro() {
-      if (!fechaActivacion.value || !duracion.value) return null;
-
-      const fechaInicio = new Date(fechaActivacion.value + "T00:00:00");
-      const diasPlan = parseInt(duracion.value);
-
-      const fechaVencimiento = new Date(fechaInicio);
-      fechaVencimiento.setDate(fechaVencimiento.getDate() + diasPlan);
-
-      const hoy = new Date();
-      hoy.setHours(0, 0, 0, 0);
-
-      const diferencia = fechaVencimiento - hoy;
-      const diasRestantes = Math.ceil(diferencia / (1000 * 60 * 60 * 24));
-
-      let textoDias = "";
-
-      if (diasRestantes > 0) textoDias = diasRestantes + " días";
-      else if (diasRestantes === 0) textoDias = "Vence hoy";
-      else textoDias = "Vencida hace " + Math.abs(diasRestantes) + " días";
-
-      return {
-        fechaVencimiento: formatearFecha(fechaVencimiento),
-        diasRestantes: textoDias
-      };
-    }
-
-    function formatearFecha(fecha) {
-      return fecha.toLocaleDateString("es-BO", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-      });
-    }
-
-    function obtenerTarjetaSegura(input) {
-      const numeroLimpio = input.value.replace(/\D/g, "");
-
-      if (numeroLimpio.length < 13 || numeroLimpio.length > 19) return null;
-
-      const primeros6 = numeroLimpio.slice(0, 6);
-      const ultimos4 = numeroLimpio.slice(-4);
-      const tarjetaEnmascarada = primeros6 + " ****** " + ultimos4;
-
-      return {
-        primeros6Tarjeta: primeros6,
-        ultimos4Tarjeta: ultimos4,
-        tarjetaEnmascarada: tarjetaEnmascarada
-      };
-    }
-
-    function mostrarTarjeta(item) {
-      const tarjeta = String(item.tarjetaEnmascarada || "").trim();
-      const ultimos4 = String(item.ultimos4Tarjeta || "").trim();
-
-      if (tarjeta && !tarjeta.startsWith("****")) return escaparHTML(tarjeta);
-
-      if (ultimos4) return "Primeros 6 no registrados ****** " + escaparHTML(ultimos4);
-
-      return "-";
-    }
-
-    formRegistro.addEventListener("submit", function(e) {
-      e.preventDefault();
-
-      if (!adminAutenticado) {
-        mostrarLogin();
-        return;
-      }
-
-      const correoCuenta = document.getElementById("correoCuenta").value.trim();
-      const nombreCliente = document.getElementById("nombreCliente").value.trim();
-      const numeroCliente = obtenerNumeroWhatsappConMas(document.getElementById("numeroCliente").value.trim());
-      const tipoCuenta = document.getElementById("tipoCuenta").value;
-      const pais = document.getElementById("pais").value;
-      const fechaAct = fechaActivacion.value;
-      const tiempoSuscripcion = duracion.value;
-      const correoBanca = document.getElementById("correoBanca").value.trim();
-
-      const tarjetaSegura = obtenerTarjetaSegura(numeroTarjetaInput);
-      const fechasCalculadas = calcularFechasRegistro();
-
-      if (!correoCuenta || !nombreCliente || !numeroCliente || !tipoCuenta || !pais || !fechaAct || !tiempoSuscripcion || !correoBanca) {
-        mostrarMensaje(mensajeRegistro, "Completa todos los campos.", "error");
-        return;
-      }
-
-      if (!fechasCalculadas) {
-        mostrarMensaje(mensajeRegistro, "Selecciona fecha de activación y tiempo de suscripción.", "error");
-        return;
-      }
-
-      if (!tarjetaSegura) {
-        mostrarMensaje(mensajeRegistro, "Coloca un número de tarjeta válido.", "error");
-        return;
-      }
-
-      const datos = {
-        action: "registro",
-        tokenAdmin: adminToken,
-        correoCuenta,
-        nombreCliente,
-        numeroCliente,
-        tipoCuenta,
-        pais,
-        fechaActivacion: fechaAct,
-        tiempoSuscripcion,
-        fechaVencimiento: fechasCalculadas.fechaVencimiento,
-        diasRestantes: fechasCalculadas.diasRestantes,
-        correoBanca,
-        tarjetaEnmascarada: tarjetaSegura.tarjetaEnmascarada,
-        ultimos4Tarjeta: tarjetaSegura.ultimos4Tarjeta
-      };
-
-      btnGuardar.disabled = true;
-      btnGuardar.textContent = "Guardando...";
-
-      enviarJSONP(datos, function(respuesta) {
-        btnGuardar.disabled = false;
-        btnGuardar.textContent = "Guardar registro";
-
-        if (respuesta.status === "success") {
-          mostrarMensaje(mensajeRegistro, "Registro guardado correctamente.", "exito");
-          formRegistro.reset();
-          resetearSelectorPais("pais");
-        } else {
-          mostrarMensaje(mensajeRegistro, "Error al guardar: " + respuesta.message, "error");
-        }
-      });
-    });
-
-    formConsulta.addEventListener("submit", function(e) {
-      e.preventDefault();
-
-      const correoConsulta = document.getElementById("correoConsulta").value.trim();
-
-      if (!correoConsulta) {
-        mostrarMensaje(mensajeConsulta, "Coloca el correo para consultar.", "error");
-        return;
-      }
-
-      resultadoConsulta.innerHTML = "";
-      resumenConsulta.style.display = "none";
-
-      btnBuscar.disabled = true;
-      btnBuscar.textContent = "Consultando...";
-
-      enviarJSONP({
-        action: "consulta",
-        correoCuenta: correoConsulta
-      }, function(respuesta) {
-        btnBuscar.disabled = false;
-        btnBuscar.textContent = "Consultar";
-
-        if (respuesta.status !== "success") {
-          mostrarMensaje(mensajeConsulta, "Error al consultar: " + respuesta.message, "error");
-          return;
-        }
-
-        if (!respuesta.data || respuesta.data.length === 0) {
-          mostrarMensaje(mensajeConsulta, "No se encontraron registros con ese correo.", "error");
-          resumenConsulta.style.display = "none";
-          return;
-        }
-
-        mostrarMensaje(mensajeConsulta, "Consulta realizada correctamente.", "exito");
-        mostrarResumenConsulta(respuesta.data[0]);
-        mostrarResultadosConsulta(respuesta.data);
-      });
-    });
-
-    function mostrarResumenConsulta(item) {
-      consultaActivacion.textContent = item.fechaActivacion || "-";
-      consultaVencimiento.textContent = item.fechaVencimiento || "-";
-      consultaDias.textContent = item.diasRestantes || "-";
-
-      consultaDias.classList.remove("vencido");
-
-      if (item.estado === "Vencida") consultaDias.classList.add("vencido");
-
-      resumenConsulta.style.display = "block";
-    }
-
-    function mostrarResultadosConsulta(registros) {
-      resultadoConsulta.innerHTML = "";
-
-      registros.forEach((item) => {
-        const estadoClase = item.estado === "Vencida" ? "estado-vencido" : "estado-activo";
-
-        const card = document.createElement("div");
-        card.className = "consulta-card";
-
-        card.innerHTML = `
-          <div class="detalle-titulo">✨ Detalles de la cuenta</div>
-          <div class="detalle-subtitulo">Información completa del registro consultado</div>
-
-          <p><strong>Correo de la cuenta:</strong> ${escaparHTML(item.correoCuenta)}</p>
-          <p><strong>Nombre del cliente:</strong> ${escaparHTML(item.nombreCliente)}</p>
-          <p><strong>WhatsApp del cliente:</strong> ${escaparHTML(item.numeroCliente)}</p>
-
-          <p><strong>Tipo de cuenta:</strong> ${escaparHTML(item.tipoCuenta)}</p>
-          <p><strong>País de la cuenta:</strong> ${obtenerBanderaHTML(item.pais)} ${escaparHTML(item.pais)}</p>
-
-          <p><strong>Fecha de activación:</strong> ${escaparHTML(item.fechaActivacion)}</p>
-          <p><strong>Tiempo de suscripción:</strong> ${escaparHTML(item.tiempoSuscripcion)} días</p>
-          <p><strong>Fecha de vencimiento:</strong> ${escaparHTML(item.fechaVencimiento)}</p>
-          <p><strong>Días restantes:</strong> ${escaparHTML(item.diasRestantes)}</p>
-
-          <p><strong>Estado:</strong> <span class="${estadoClase}">${escaparHTML(item.estado)}</span></p>
-
-          <p><strong>Correo de banca:</strong> ${escaparHTML(item.correoBanca)}</p>
-          <p><strong>Tarjeta:</strong> ${mostrarTarjeta(item)}</p>
-          <p><strong>Últimos 4 dígitos:</strong> ${escaparHTML(item.ultimos4Tarjeta)}</p>
-        `;
-
-        resultadoConsulta.appendChild(card);
-      });
-    }
-
-    formBuscarRenovacion.addEventListener("submit", function(e) {
-      e.preventDefault();
-
-      if (!adminAutenticado) {
-        mostrarLogin();
-        return;
-      }
-
-      const correo = document.getElementById("correoRenovacion").value.trim();
-
-      if (!correo) {
-        mostrarMensaje(mensajeRenovacion, "Coloca el correo de la cuenta.", "error");
-        return;
-      }
-
-      panelRenovacion.style.display = "none";
-      datosRenovacionActual = null;
-      ultimoTextoVoucher = "";
-      ultimoNumeroWhatsapp = "";
-      ultimoComprobanteDatos = null;
-      if (voucherWhatsappBox) voucherWhatsappBox.style.display = "none";
-
-      btnBuscarRenovacion.disabled = true;
-      btnBuscarRenovacion.textContent = "Buscando...";
-
-      enviarJSONP({
-        action: "renovacionBuscar",
-        tokenAdmin: adminToken,
-        correoCuenta: correo
-      }, function(respuesta) {
-        btnBuscarRenovacion.disabled = false;
-        btnBuscarRenovacion.textContent = "Buscar cuenta";
-
-        if (respuesta.status !== "success") {
-          mostrarMensaje(mensajeRenovacion, "Error: " + respuesta.message, "error");
-
-          if (String(respuesta.message || "").toLowerCase().includes("sesión")) {
-            cerrarSesionLocal();
-            mostrarLogin();
-          }
-
-          return;
-        }
-
-        if (!respuesta.data) {
-          mostrarMensaje(mensajeRenovacion, "No se encontró una cuenta con ese correo.", "error");
-          return;
-        }
-
-        datosRenovacionActual = respuesta.data;
-        mostrarPanelRenovacion(respuesta.data, respuesta.comprobanteExistente || null);
-        mostrarMensaje(mensajeRenovacion, "Cuenta encontrada correctamente. Si la cuenta ya está renovada, puedes enviar el comprobante por WhatsApp.", "exito");
-      });
-    });
-
-    function mostrarPanelRenovacion(item, comprobanteGuardado) {
-      renovacionNombreCliente.textContent = item.nombreCliente || "-";
-      renovacionNumeroCliente.textContent = item.numeroCliente || "-";
-      renovacionPaisCuenta.innerHTML = `${obtenerBanderaHTML(item.pais)} ${escaparHTML(item.pais || "-")}`;
-
-      renovacionVencia.textContent = item.fechaVencimiento || "-";
-      renovacionDias.textContent = item.diasRestantes || "-";
-      renovacionCorreoBanca.textContent = item.correoBanca || "-";
-      renovacionTarjeta.textContent = mostrarTarjeta(item);
-
-      renovacionDias.classList.remove("vencido");
-
-      if (item.estado === "Vencida") renovacionDias.classList.add("vencido");
-
-      tiempoRenovacion.value = "";
-      nuevoCorreoBanca.value = "";
-      nuevaTarjetaInput.value = "";
-
-      editarNombreCliente.value = "";
-      editarNumeroCliente.value = "";
-      bloqueEditarCliente.style.display = "none";
-      btnEditarCliente.textContent = "✏️";
-
-      resetearSelectorPais("paisBancaNuevo");
-
-      bloqueCambiarBanca.style.display = "none";
-      btnCambiarBanca.textContent = "Cambiar banca";
-
-      panelRenovacion.style.display = "block";
-
-      const comprobanteParaMostrar = comprobanteGuardado || construirComprobanteDesdeRegistro(item);
-
-      if (comprobanteParaMostrar && comprobanteParaMostrar.numeroCliente) {
-        mostrarComprobanteRenovacion(comprobanteParaMostrar);
-      }
-    }
-
-    btnEditarCliente.addEventListener("click", function() {
-      const visible = bloqueEditarCliente.style.display === "block";
-
-      if (visible) {
-        bloqueEditarCliente.style.display = "none";
-        btnEditarCliente.textContent = "✏️";
-      } else {
-        bloqueEditarCliente.style.display = "block";
-        btnEditarCliente.textContent = "❌";
-
-        editarNombreCliente.value = datosRenovacionActual?.nombreCliente || "";
-        editarNumeroCliente.value = datosRenovacionActual?.numeroCliente || "";
-      }
-    });
-
-    btnCambiarBanca.addEventListener("click", function() {
-      const visible = bloqueCambiarBanca.style.display === "block";
-
-      if (visible) {
-        bloqueCambiarBanca.style.display = "none";
-        btnCambiarBanca.textContent = "Cambiar banca";
-      } else {
-        bloqueCambiarBanca.style.display = "block";
-        btnCambiarBanca.textContent = "No cambiar banca";
-      }
-    });
-
-    btnActualizarRenovacion.addEventListener("click", function() {
-      if (!adminAutenticado) {
-        mostrarLogin();
-        return;
-      }
-
-      if (!datosRenovacionActual) {
-        mostrarMensaje(mensajeRenovacion, "Primero busca una cuenta.", "error");
-        return;
-      }
-
-      const tiempo = tiempoRenovacion.value;
-      const cambiarBanca = bloqueCambiarBanca.style.display === "block";
-      const cambiarCliente = bloqueEditarCliente.style.display === "block";
-
-      if (!tiempo && !cambiarBanca && !cambiarCliente) {
-        mostrarMensaje(mensajeRenovacion, "Selecciona tiempo de renovación o cambia algún dato.", "error");
-        return;
-      }
-
-      let datos = {
-        action: "renovacionActualizar",
-        tokenAdmin: adminToken,
-        correoCuenta: datosRenovacionActual.correoCuenta,
-        tiempoRenovacion: tiempo,
-        cambiarBanca: cambiarBanca ? "si" : "no",
-        cambiarCliente: cambiarCliente ? "si" : "no"
-      };
-
-      if (cambiarCliente) {
-        const nombreNuevo = editarNombreCliente.value.trim();
-        const numeroNuevo = obtenerNumeroWhatsappConMas(editarNumeroCliente.value.trim());
-
-        if (!nombreNuevo) {
-          mostrarMensaje(mensajeRenovacion, "Coloca el nuevo nombre del cliente.", "error");
-          return;
-        }
-
-        if (!numeroNuevo) {
+ultimoTextoVoucher = "";
+ultimoNumeroWhatsapp = "";
+@@ -1903,7 +1995,7 @@
+}
+
+if (!numeroNuevo) {
+          mostrarMensaje(mensajeRenovacion, "Coloca el nuevo WhatsApp del cliente.", "error");
           mostrarMensaje(mensajeRenovacion, "Coloca el nuevo WhatsApp del cliente sin +. Ejemplo: 591XXXXXXXX.", "error");
-          return;
-        }
+return;
+}
 
-        datos.nombreClienteAnterior = datosRenovacionActual.nombreCliente || "";
-        datos.numeroClienteAnterior = datosRenovacionActual.numeroCliente || "";
-        datos.nombreClienteNuevo = nombreNuevo;
-        datos.numeroClienteNuevo = numeroNuevo;
-      }
+@@ -1939,8 +2031,6 @@
+datos.ultimos4Tarjeta = tarjetaNueva.ultimos4Tarjeta;
+}
 
-      if (cambiarBanca) {
-        const correoNuevo = nuevoCorreoBanca.value.trim();
-        const paisBanca = paisBancaNuevo.value;
-        const tarjetaNueva = obtenerTarjetaSegura(nuevaTarjetaInput);
+      const datosAntesDeActualizar = { ...datosRenovacionActual };
 
-        if (!paisBanca) {
-          mostrarMensaje(mensajeRenovacion, "Selecciona el país de la nueva banca.", "error");
-          return;
-        }
+btnActualizarRenovacion.disabled = true;
+btnActualizarRenovacion.textContent = "Actualizando...";
 
-        if (!correoNuevo) {
-          mostrarMensaje(mensajeRenovacion, "Coloca el nuevo correo de banca.", "error");
-          return;
-        }
+@@ -1949,7 +2039,7 @@
+btnActualizarRenovacion.textContent = "Actualizar datos de renovación";
 
-        if (!tarjetaNueva) {
-          mostrarMensaje(mensajeRenovacion, "Coloca un nuevo número de tarjeta válido.", "error");
-          return;
-        }
-
-        datos.paisBanca = paisBanca;
-        datos.correoBanca = correoNuevo;
-        datos.tarjetaEnmascarada = tarjetaNueva.tarjetaEnmascarada;
-        datos.ultimos4Tarjeta = tarjetaNueva.ultimos4Tarjeta;
-      }
-
-      btnActualizarRenovacion.disabled = true;
-      btnActualizarRenovacion.textContent = "Actualizando...";
-
-      enviarJSONP(datos, function(respuesta) {
-        btnActualizarRenovacion.disabled = false;
-        btnActualizarRenovacion.textContent = "Actualizar datos de renovación";
-
-        if (respuesta.status !== "success") {
+if (respuesta.status !== "success") {
+          mostrarMensaje(mensajeRenovacion, "Error al actualizar: " + respuesta.message, "error");
           mostrarMensaje(mensajeRenovacion, "Error al actualizar: " + (respuesta.message || "No se pudo actualizar"), "error");
 
-          if (String(respuesta.message || "").toLowerCase().includes("sesión")) {
-            cerrarSesionLocal();
-            mostrarLogin();
-          }
+if (String(respuesta.message || "").toLowerCase().includes("sesión")) {
+cerrarSesionLocal();
+@@ -1961,50 +2051,72 @@
 
-          return;
-        }
+datosRenovacionActual = respuesta.data;
+mostrarPanelRenovacion(respuesta.data);
+        mostrarMensaje(mensajeRenovacion, "Datos actualizados correctamente.", "exito");
 
-        datosRenovacionActual = respuesta.data;
-        mostrarPanelRenovacion(respuesta.data);
+        if (tiempo) {
+          const textoVoucher = construirVoucherRenovacion(datosAntesDeActualizar, respuesta.data);
+          const numeroCliente = obtenerNumeroWhatsappConMas(respuesta.data.numeroCliente || datosAntesDeActualizar.numeroCliente);
         mostrarMensaje(mensajeRenovacion, "Renovación actualizada correctamente. Ya puedes enviar el comprobante por WhatsApp.", "exito");
 
+          mostrarVoucherWhatsapp(textoVoucher, numeroCliente);
+          abrirWhatsapp(numeroCliente, textoVoucher);
+        }
         const comprobante = respuesta.comprobante || construirComprobanteLocal(respuesta.data);
         mostrarComprobanteRenovacion(comprobante);
-      });
-    });
+});
+});
 
-    function construirComprobanteDesdeRegistro(item) {
-      if (!item || !item.fechaVencimiento || !item.numeroCliente) return null;
+    function construirVoucherRenovacion(datosAntes, datosDespues) {
+      const nombreCliente = datosDespues.nombreCliente || datosAntes.nombreCliente || "-";
+      const correoRenovado = datosDespues.correoCuenta || datosAntes.correoCuenta || "-";
+      const fechaInicial = datosAntes.fechaActivacion || datosDespues.fechaActivacion || "-";
+      const fechaTocabaRenovar = datosAntes.fechaVencimiento || "-";
+      const nuevaFechaRenovar = datosDespues.fechaVencimiento || "-";
+      const tarjeta = mostrarTarjeta(datosDespues);
 
-      return {
-        tipo: "Renovación",
-        correo: item.correoCuenta || "-",
-        fechaRenovacion: formatearFechaActualLocal(),
-        horaRenovacion: formatearHoraActualLocal(),
-        fechaProximoPago: item.fechaVencimiento || "-",
-        ultimos4Tarjeta: item.ultimos4Tarjeta || "-",
-        numeroCliente: item.numeroCliente || ""
-      };
-    }
+      return `✨ Hola ${nombreCliente}, muchas gracias por confiar en nuestros servicios.
 
+✅ Tu renovación fue actualizada correctamente.
+
+📌 DETALLE DE RENOVACIÓN
+
+👤 Cliente: ${nombreCliente}
+📧 Correo renovado: ${correoRenovado}
+
+📅 Fecha inicial de activación: ${fechaInicial}
+📅 Fecha que tocaba renovar: ${fechaTocabaRenovar}
+📅 Nueva fecha que toca renovar: ${nuevaFechaRenovar}
     function construirComprobanteLocal(data) {
       return {
         tipo: "Renovación",
@@ -2184,6 +542,7 @@
       };
     }
 
+💳 Tarjeta utilizada: ${tarjeta}
     function formatearFechaActualLocal() {
       return new Date().toLocaleDateString("es-BO", {
         day: "2-digit",
@@ -2192,14 +551,16 @@
       });
     }
 
+Gracias por tu preferencia.`;
     function formatearHoraActualLocal() {
       return new Date().toLocaleTimeString("es-BO", {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit"
       });
-    }
+}
 
+    function mostrarVoucherWhatsapp(texto, numero) {
     function generarTextoComprobanteWhatsapp(datosComprobante) {
       return [
         "*CUENTAS PREMIUM BO*",
@@ -2226,669 +587,13 @@
       if (compFechaProximoPago) compFechaProximoPago.textContent = datosComprobante.fechaProximoPago || "-";
       if (compUltimos4Tarjeta) compUltimos4Tarjeta.textContent = datosComprobante.ultimos4Tarjeta || "-";
 
-      ultimoTextoVoucher = texto;
+ultimoTextoVoucher = texto;
+      ultimoNumeroWhatsapp = numero;
       ultimoNumeroWhatsapp = numeroCliente;
-      ultimoComprobanteDatos = datosComprobante;
 
-      if (textoVoucherWhatsapp) textoVoucherWhatsapp.value = texto;
       if (voucherWhatsappBox) voucherWhatsappBox.style.display = "block";
-    }
-
-    async function obtenerBlobComprobanteRenovacion() {
-      if (!comprobanteRenovacionCard) {
-        throw new Error("No se encontró la vista previa del comprobante.");
-      }
-
-      if (typeof html2canvas === "undefined") {
-        throw new Error("No se cargó la librería para generar la imagen. Revisa tu conexión a internet y vuelve a intentar.");
-      }
-
-      const canvas = await html2canvas(comprobanteRenovacionCard, {
-        backgroundColor: "#ffffff",
-        scale: Math.min(window.devicePixelRatio || 2, 3),
-        useCORS: true,
-        allowTaint: true,
-        logging: false
-      });
-
-      return new Promise((resolve, reject) => {
-        canvas.toBlob(blob => {
-          if (blob) resolve(blob);
-          else reject(new Error("No se pudo generar la imagen del comprobante."));
-        }, "image/png", 1);
-      });
-    }
-
-    function descargarBlob(blob, nombreArchivo) {
-      const url = URL.createObjectURL(blob);
-      const enlace = document.createElement("a");
-      enlace.href = url;
-      enlace.download = nombreArchivo;
-      document.body.appendChild(enlace);
-      enlace.click();
-      enlace.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 1500);
-    }
-
-    function obtenerNombreArchivoComprobante() {
-      const correo = String(ultimoComprobanteDatos?.correo || "cuenta")
-        .replace(/[^a-zA-Z0-9]/g, "_")
-        .substring(0, 40);
-      const fecha = new Date().toISOString().slice(0, 10);
-      return "comprobante_renovacion_" + correo + "_" + fecha + ".png";
-    }
-
-    async function descargarComprobanteRenovacion() {
-      if (!ultimoComprobanteDatos) {
-        mostrarMensaje(mensajeRenovacion, "Primero busca o actualiza una cuenta para generar el comprobante.", "error");
-        return;
-      }
-
-      try {
-        if (btnDescargarComprobante) {
-          btnDescargarComprobante.disabled = true;
-          btnDescargarComprobante.textContent = "Generando imagen...";
-        }
-
-        const blob = await obtenerBlobComprobanteRenovacion();
-        descargarBlob(blob, obtenerNombreArchivoComprobante());
-        mostrarMensaje(mensajeRenovacion, "Comprobante descargado como imagen PNG.", "exito");
-
-      } catch (error) {
-        mostrarMensaje(mensajeRenovacion, error.message || "No se pudo generar la imagen.", "error");
-      } finally {
-        if (btnDescargarComprobante) {
-          btnDescargarComprobante.disabled = false;
-          btnDescargarComprobante.textContent = "Descargar comprobante PNG";
-        }
-      }
-    }
-
-    async function copiarImagenAlPortapapeles(blob) {
-      try {
-        if (!navigator.clipboard || typeof ClipboardItem === "undefined") return false;
-        await navigator.clipboard.write([
-          new ClipboardItem({ "image/png": blob })
-        ]);
-        return true;
-      } catch (error) {
-        return false;
-      }
-    }
-
-    async function compartirImagenSistema(blob, nombreArchivo, textoCompartir) {
-      try {
-        const archivo = new File([blob], nombreArchivo, { type: "image/png" });
-
-        if (
-          navigator.share &&
-          navigator.canShare &&
-          navigator.canShare({ files: [archivo] })
-        ) {
-          await navigator.share({
-            title: "Comprobante de renovación",
-            text: textoCompartir,
-            files: [archivo]
-          });
-
-          return true;
-        }
-
-        return false;
-      } catch (error) {
-        if (error && error.name === "AbortError") {
-          throw error;
-        }
-
-        return false;
-      }
-    }
-
-    function esDispositivoMovil() {
-      return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "");
-    }
-
-    function abrirWhatsappSegunDispositivo(numero, mensaje) {
-      const numeroParaUrl = String(numero || "").replace(/\D/g, "");
-
-      if (!numeroParaUrl) {
-        throw new Error("No se encontró un número de WhatsApp válido.");
-      }
-
-      const texto = encodeURIComponent(mensaje || "");
-      const url = esDispositivoMovil()
-        ? "https://wa.me/" + numeroParaUrl + "?text=" + texto
-        : "https://web.whatsapp.com/send?phone=" + numeroParaUrl + "&text=" + texto;
-
-      const ventana = window.open(url, "_blank");
-
-      if (!ventana) {
-        window.location.href = url;
-      }
-    }
-
-    function abrirImagenEnNuevaPestana(blob) {
-      try {
-        const url = URL.createObjectURL(blob);
-        const ventana = window.open(url, "_blank");
-
-        if (ventana) {
-          setTimeout(() => URL.revokeObjectURL(url), 60000);
-          return true;
-        }
-
-        URL.revokeObjectURL(url);
-        return false;
-      } catch (error) {
-        return false;
-      }
-    }
-
-    async function enviarComprobanteImagenWhatsapp() {
-      if (!ultimoComprobanteDatos) {
-        mostrarMensaje(mensajeRenovacion, "Primero genera el comprobante de renovación.", "error");
-        return;
-      }
-
-      if (!ultimoNumeroWhatsapp) {
-        mostrarMensaje(mensajeRenovacion, "No se encontró el WhatsApp del cliente en la base de datos.", "error");
-        return;
-      }
-
-      try {
-        btnEnviarVoucherWhatsapp.disabled = true;
-        btnEnviarVoucherWhatsapp.textContent = "Preparando comprobante...";
-
-        const blob = await obtenerBlobComprobanteRenovacion();
-        const nombreArchivo = obtenerNombreArchivoComprobante();
-        const textoWhatsApp = "Hola, te enviamos tu comprobante de renovación.\n\n" + ultimoTextoVoucher;
-
-        const compartido = await compartirImagenSistema(blob, nombreArchivo, textoWhatsApp);
-
-        if (compartido) {
-          mostrarMensaje(
-            mensajeRenovacion,
-            "Se abrió el cuadro de compartir. Elige WhatsApp y envía la imagen con el texto.",
-            "exito"
-          );
-          return;
-        }
-
-        const copiado = await copiarImagenAlPortapapeles(blob);
-        abrirWhatsappSegunDispositivo(ultimoNumeroWhatsapp, textoWhatsApp);
-
-        if (copiado) {
-          mostrarMensaje(
-            mensajeRenovacion,
-            "Se abrió WhatsApp Web con el texto y la imagen fue copiada. Entra al chat y presiona Ctrl + V para pegar el comprobante.",
-            "exito"
-          );
-
-          alert("Imagen copiada. Cuando se abra WhatsApp Web, entra al chat y presiona Ctrl + V para pegar el comprobante.");
-          return;
-        }
-
-        const imagenAbierta = abrirImagenEnNuevaPestana(blob);
-
-        if (imagenAbierta) {
-          mostrarMensaje(
-            mensajeRenovacion,
-            "Se abrió WhatsApp con el texto. Tu navegador no permitió copiar la imagen, por eso se abrió la imagen en otra pestaña para copiarla o arrastrarla al chat.",
-            "exito"
-          );
-
-          alert("Tu navegador no permitió copiar automáticamente la imagen. Se abrió en otra pestaña: cópiala o arrástrala al chat de WhatsApp Web.");
-        } else {
-          mostrarMensaje(
-            mensajeRenovacion,
-            "Se abrió WhatsApp con el texto, pero el navegador no permitió compartir ni copiar la imagen. Prueba en celular o usa HTTPS.",
-            "error"
-          );
-        }
-
-      } catch (error) {
-        if (error && error.name === "AbortError") {
-          mostrarMensaje(mensajeRenovacion, "Compartir cancelado.", "error");
-        } else {
-          mostrarMensaje(mensajeRenovacion, error.message || "No se pudo generar el comprobante como imagen.", "error");
-        }
-      } finally {
-        btnEnviarVoucherWhatsapp.disabled = false;
-        btnEnviarVoucherWhatsapp.textContent = "Enviar comprobante por WhatsApp";
-      }
-    }
-
-    formSolicitudes.addEventListener("submit", function(e) {
-      e.preventDefault();
-
-      const nombre = solNombre.value.trim();
-      const numero = obtenerNumeroWhatsappConMas(solNumero.value.trim());
-      const correo = solCorreo.value.trim();
-      const accesoConfirmado = solAccesoConfirmado.checked ? "Sí" : "No";
-      const pais = solPais.value;
-      const plan = solPlan.value;
-      const tiempo = solTiempo.value;
-      const garantia = solGarantia.value;
-      const metodoPago = solMetodoPago.value;
-
-      const calculoSolicitud = calcularPrecioSolicitudConDescuento();
-      const precio = calculoSolicitud.total;
-
-      if (!nombre || !numero || !correo || !pais || !plan || !tiempo || !garantia || !metodoPago) {
-        mostrarMensaje(mensajeSolicitud, "Completa todos los campos de la solicitud.", "error");
-        return;
-      }
-
-      if (!solAccesoConfirmado.checked) {
-        mostrarMensaje(mensajeSolicitud, "Debes confirmar que tu cuenta está disponible y que el equipo puede contactarte para solicitar los accesos.", "error");
-        return;
-      }
-
-      if (!precio) {
-        mostrarMensaje(mensajeSolicitud, "No se pudo calcular el precio. Revisa país, plan y garantía.", "error");
-        return;
-      }
-
-      if (metodoPago === "QR Bolivia" && !solicitudMontoBsActual) {
-        mostrarMensaje(mensajeSolicitud, "Espera a que se cargue el monto en Bs.", "error");
-        return;
-      }
-
-      const codigoSeguimiento = generarCodigoSeguimiento();
-
-      const datos = {
-        action: "solicitud",
-        codigoSeguimiento,
-        nombre,
-        numero,
-        correo,
-        accesoConfirmado,
-        pais,
-        plan,
-        tiempo,
-        garantia,
-        precioBaseUsd: solicitudPrecioBaseActual.toFixed(2),
-        subtotalUsd: calculoSolicitud.subtotal.toFixed(2),
-        descuentoPorcentaje: calculoSolicitud.descuentoPorcentaje.toFixed(0),
-        descuentoUsd: calculoSolicitud.descuentoUsd.toFixed(2),
-        precioUsd: precio.toFixed(2),
-        metodoPago,
-        tipoCambio: solicitudTipoCambioActual,
-        montoBs: solicitudMontoBsActual
-      };
-
-      btnEnviarSolicitud.disabled = true;
-      btnEnviarSolicitud.textContent = "Enviando solicitud...";
-
-      enviarJSONP(datos, function(respuesta) {
-        btnEnviarSolicitud.disabled = false;
-        btnEnviarSolicitud.textContent = "Presiona aquí para enviar solicitud y comprobante";
-
-        if (respuesta.status !== "success") {
-          mostrarMensaje(mensajeSolicitud, "Error al guardar solicitud: " + respuesta.message, "error");
-          return;
-        }
-
-        mostrarMensaje(mensajeSolicitud, "Solicitud enviada correctamente. Código: " + codigoSeguimiento, "exito");
-
-        abrirWhatsappComprobante(codigoSeguimiento);
-
-        formSolicitudes.reset();
-        resetearSelectorPais("solPais");
-        actualizarPlanesSolicitud();
-        actualizarPagoSolicitud();
-      });
-    });
-
-    function actualizarPlanesSolicitud() {
-      const pais = solPais.value;
-      solPlan.innerHTML = `<option value="">Seleccionar plan</option>`;
-
-      if (!pais || !PRECIOS_SOLICITUDES[pais]) {
-        actualizarPagoSolicitud();
-        return;
-      }
-
-      Object.keys(PRECIOS_SOLICITUDES[pais]).forEach(plan => {
-        const option = document.createElement("option");
-        option.value = plan;
-        option.textContent = plan;
-        solPlan.appendChild(option);
-      });
-
-      actualizarPagoSolicitud();
-    }
-
-    function actualizarDescripcionGarantia() {
-      const garantia = solGarantia.value;
-      let texto = "";
-
-      if (garantia === "Garantía de Activación") {
-        texto = `<strong>Garantía de Activación:</strong><br>
-        La garantía solo tiene validez por 30 días luego de la activación. Se revisa la activación inicial del servicio.`;
-      }
-
-      if (garantia === "Garantía Parcial") {
-        texto = `<strong>Garantía Parcial:</strong><br>
-        Desde el momento de activación, si la cuenta cae o presenta algún incidente, el cliente paga la mitad del monto para levantar nuevamente el servicio.`;
-      }
-
-      if (garantia === "Garantía Total") {
-        texto = `<strong>Garantía Total:</strong><br>
-        Si la cuenta cae desde el día 1 hasta el día 30, se levanta una vez sin costo. Si vuelve a caer, el cliente selecciona nuevamente el tipo de plan que desea.`;
-      }
-
-      if (texto) {
-        descripcionGarantia.innerHTML = texto;
-        descripcionGarantia.style.display = "block";
-      } else {
-        descripcionGarantia.innerHTML = "";
-        descripcionGarantia.style.display = "none";
-      }
-    }
-
-    function obtenerPrecioBaseSolicitud() {
-      const pais = solPais.value;
-      const plan = solPlan.value;
-      const garantia = solGarantia.value;
-
-      if (!pais || !plan || !garantia) return 0;
-
-      return PRECIOS_SOLICITUDES?.[pais]?.[plan]?.[garantia] || 0;
-    }
-
-    function obtenerPrecioTotalSolicitud() {
-      const calculo = calcularPrecioSolicitudConDescuento();
-      return calculo.total;
-    }
-
-    function obtenerMesesPorTiempo(dias) {
-      if (dias === 30) return 1;
-      if (dias === 60) return 2;
-      if (dias === 90) return 3;
-      if (dias === 180) return 6;
-      if (dias === 365) return 12;
-      return dias / 30;
-    }
-
-    function calcularPrecioSolicitudConDescuento() {
-      const precioBase = obtenerPrecioBaseSolicitud();
-      const dias = parseInt(solTiempo.value || "0", 10);
-      const plan = solPlan.value;
-      const garantia = solGarantia.value;
-
-      if (!precioBase || !dias) {
-        return {
-          precioBase: 0,
-          dias: 0,
-          meses: 0,
-          subtotal: 0,
-          descuentoPorcentaje: 0,
-          descuentoUsd: 0,
-          total: 0
-        };
-      }
-
-      const meses = obtenerMesesPorTiempo(dias);
-      const subtotal = precioBase * meses;
-      const descuentoPorcentaje = obtenerDescuentoSolicitud(plan, garantia, dias);
-      const descuentoUsd = subtotal * (descuentoPorcentaje / 100);
-      const total = subtotal - descuentoUsd;
-
-      return {
-        precioBase: precioBase,
-        dias: dias,
-        meses: meses,
-        subtotal: subtotal,
-        descuentoPorcentaje: descuentoPorcentaje,
-        descuentoUsd: descuentoUsd,
-        total: total
-      };
-    }
-
-    function obtenerDescuentoSolicitud(plan, garantia, dias) {
-      if (garantia !== "Garantía Total") return 0;
-
-      const planTexto = String(plan || "").toLowerCase();
-
-      const esIndividual = planTexto.includes("individual");
-      const esDuo = planTexto.includes("dúo") || planTexto.includes("duo");
-      const esFamiliar = planTexto.includes("familiar") && !planTexto.includes("individual");
-
-      if (esIndividual || esDuo) {
-        if (dias === 60) return 5;
-        if (dias === 90) return 10;
-        if (dias === 180) return 15;
-        if (dias === 365) return 20;
-      }
-
-      if (esFamiliar) {
-        if (dias === 60) return 3;
-        if (dias === 90) return 5;
-        if (dias === 180) return 10;
-        if (dias === 365) return 15;
-      }
-
-      return 0;
-    }
-
-    function actualizarPagoSolicitud() {
-      const calculo = calcularPrecioSolicitudConDescuento();
-      const metodo = solMetodoPago.value;
-
-      const precioBase = calculo.precioBase;
-      const precioTotal = calculo.total;
-
-      solicitudPrecioBaseActual = precioBase;
-      solicitudPrecioActual = precioTotal;
-      solicitudSubtotalActual = calculo.subtotal;
-      solicitudDescuentoPorcentajeActual = calculo.descuentoPorcentaje;
-      solicitudDescuentoUsdActual = calculo.descuentoUsd;
-      solicitudTipoCambioActual = "";
-      solicitudMontoBsActual = "";
-
-      if (!precioTotal || !metodo) {
-        resumenPagoSolicitud.style.display = "none";
-        return;
-      }
-
-      resumenPagoSolicitud.style.display = "block";
-
-      solPrecioBaseUsd.textContent = precioBase.toFixed(2) + " USDT";
-      solPrecioUsd.textContent = precioTotal.toFixed(2) + " USDT";
-
-      if (calculo.descuentoPorcentaje > 0) {
-        lineaSubtotalUsd.style.display = "block";
-        lineaDescuentoUsd.style.display = "block";
-
-        solSubtotalUsd.textContent = calculo.subtotal.toFixed(2) + " USDT";
-        solDescuentoUsd.textContent = calculo.descuentoPorcentaje + "% (-" + calculo.descuentoUsd.toFixed(2) + " USDT)";
-      } else {
-        lineaSubtotalUsd.style.display = "none";
-        lineaDescuentoUsd.style.display = "none";
-
-        solSubtotalUsd.textContent = "-";
-        solDescuentoUsd.textContent = "-";
-      }
-
-      bloqueQrBolivia.style.display = "none";
-      bloqueBinance.style.display = "none";
-      lineaTipoCambio.style.display = "none";
-      lineaMontoBs.style.display = "none";
-
-      if (metodo === "Binance") {
-        bloqueBinance.style.display = "block";
-        return;
-      }
-
-      if (metodo === "QR Bolivia") {
-        bloqueQrBolivia.style.display = "block";
-        lineaTipoCambio.style.display = "block";
-        lineaMontoBs.style.display = "block";
-
-        solTipoCambio.textContent = "Consultando...";
-        solMontoBs.textContent = "Consultando...";
-
-        enviarJSONP({ action: "cotizacion" }, function(respuesta) {
-          if (respuesta.status !== "success") {
-            solTipoCambio.textContent = "No disponible";
-            solMontoBs.textContent = "No disponible";
-            mostrarMensaje(mensajeSolicitud, "No se pudo obtener el tipo de cambio desde la base.", "error");
-            return;
-          }
-
-          const tc = parseFloat(respuesta.tipoCambio);
-
-          if (!tc) {
-            solTipoCambio.textContent = "No disponible";
-            solMontoBs.textContent = "No disponible";
-            return;
-          }
-
-          const montoBs = precioTotal * tc;
-
-          solicitudTipoCambioActual = tc.toFixed(2);
-          solicitudMontoBsActual = montoBs.toFixed(2);
-
-          solTipoCambio.textContent = tc.toFixed(2) + " Bs";
-          solMontoBs.textContent = montoBs.toFixed(2) + " Bs";
-        });
-      }
-    }
-
-    function generarCodigoSeguimiento() {
-      const fecha = new Date();
-      const y = fecha.getFullYear();
-      const m = String(fecha.getMonth() + 1).padStart(2, "0");
-      const d = String(fecha.getDate()).padStart(2, "0");
-      const random = Math.floor(1000 + Math.random() * 9000);
-
-      return `SPO-${y}${m}${d}-${random}`;
-    }
-
-    function abrirWhatsappComprobante(codigo) {
-      const numeroDestino = "59162212956";
-
-      const mensaje = `Hola, quiero enviar el comprobante de pago.
-
-Código de activación / seguimiento: ${codigo}
-
-📌 Coloca aquí el comprobante, voucher o recibo de pago.
-
-🔐 PASS / ACCESOS:
-Mi cuenta está disponible para activación.
-El equipo puede contactarme para solicitar los accesos necesarios.`;
-
-      const url = "https://wa.me/" + numeroDestino + "?text=" + encodeURIComponent(mensaje);
-      window.open(url, "_blank");
-    }
-
-    function obtenerNumeroWhatsappConMas(numero) {
-      let limpio = String(numero || "").trim();
-      limpio = limpio.replace(/\D/g, "");
-      return limpio;
-    }
-
-    function abrirWhatsapp(numeroConMas, mensaje) {
-      if (!numeroConMas) {
-        mostrarMensaje(mensajeRenovacion, "No se encontró número de WhatsApp del cliente.", "error");
-        return;
-      }
-
-      const numeroParaUrl = numeroConMas.replace(/\D/g, "");
-
-      if (!numeroParaUrl) {
-        mostrarMensaje(mensajeRenovacion, "El número de WhatsApp no es válido.", "error");
-        return;
-      }
-
-      const url = "https://wa.me/" + numeroParaUrl + "?text=" + encodeURIComponent(mensaje);
-      window.open(url, "_blank");
-    }
-
-    function cerrarSesionLocal() {
-      sessionStorage.removeItem("adminToken");
-      sessionStorage.removeItem("adminNombre");
-      sessionStorage.removeItem("adminUsuario");
-      sessionStorage.removeItem("adminRol");
-
-      adminToken = "";
-      adminNombre = "";
-      adminUsuario = "";
-      adminRol = "";
-      adminAutenticado = false;
-
-      actualizarEstadoAdmin();
-    }
-
-    function obtenerBanderaHTML(pais) {
-      const nombre = String(pais || "").trim().toLowerCase();
-
-      if (nombre === "nigeria") return '<span class="flag flag-ng"></span>';
-      if (nombre === "egipto") return '<span class="flag flag-eg"></span>';
-      if (nombre === "brasil") return '<span class="flag flag-br"></span>';
-      if (nombre === "bolivia") return '<span class="flag flag-bo"></span>';
-
-      return '<span class="flag flag-empty"></span>';
-    }
-
-    function enviarJSONP(parametros, callback) {
-      const callbackName = "callback_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
-
-      window[callbackName] = function(respuesta) {
-        callback(respuesta);
-        delete window[callbackName];
-        script.remove();
-      };
-
-      const query = new URLSearchParams({
-        ...parametros,
-        callback: callbackName
-      });
-
-      const script = document.createElement("script");
-      script.src = URL_APPS_SCRIPT + "?" + query.toString();
-
-      script.onerror = function() {
-        callback({
-          status: "error",
-          message: "No se pudo conectar con Apps Script."
-        });
-
-        delete window[callbackName];
-        script.remove();
-      };
-
-      document.body.appendChild(script);
-    }
-
-    function mostrarMensaje(elemento, texto, tipo) {
-      elemento.textContent = texto;
-      elemento.className = "mensaje " + tipo;
-      elemento.style.display = "block";
-
-      setTimeout(() => {
-        elemento.style.display = "none";
-      }, 4500);
-    }
-
-    function ocultarMensaje(elemento) {
-      if (!elemento) return;
-      elemento.style.display = "none";
-      elemento.textContent = "";
-    }
-
-    function escaparHTML(texto) {
-      if (texto === null || texto === undefined) return "";
-
-      return String(texto)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-  </script>
-
-</body>
-</html>
+if (textoVoucherWhatsapp) textoVoucherWhatsapp.value = texto;
+      if (voucherWhatsappBox) voucherWhatsappBox.style.display = "block";
+}
+
+formSolicitudes.addEventListener("submit", function(e) {
