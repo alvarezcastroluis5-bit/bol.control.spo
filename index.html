@@ -977,7 +977,7 @@
           </div>
 
           <div class="aviso-imagen-whatsapp">
-            📌 El comprobante se generará como imagen con el mismo diseño de la vista previa. Al presionar el botón se abrirá el cuadro de compartir de tu dispositivo para elegir WhatsApp u otra aplicación, junto con el texto del comprobante. No se descargará la imagen.
+            📌 El comprobante se generará como imagen con el mismo diseño de la vista previa. Al presionar el botón se abrirá el cuadro nativo de compartir de tu dispositivo para elegir WhatsApp u otra aplicación. Se enviará la imagen junto con el texto y no se descargará automáticamente.
           </div>
 
           <label for="textoVoucherWhatsapp">Texto de apoyo para WhatsApp</label>
@@ -985,8 +985,10 @@
 
           <div class="comprobante-acciones">
             <button type="button" class="enviar" id="btnEnviarVoucherWhatsapp">
-              Compartir comprobante como imagen
+              Enviar comprobante por WhatsApp
             </button>
+
+
           </div>
         </div>
       </div>
@@ -2315,29 +2317,49 @@
     }
 
     async function compartirImagenSistema(blob, nombreArchivo, textoCompartir) {
-      const archivo = new File([blob], nombreArchivo, { type: "image/png" });
+      try {
+        const archivo = new File([blob], nombreArchivo, { type: "image/png" });
 
-      if (!navigator.share || !navigator.canShare || !navigator.canShare({ files: [archivo] })) {
+        if (
+          navigator.share &&
+          navigator.canShare &&
+          navigator.canShare({ files: [archivo] })
+        ) {
+          await navigator.share({
+            title: "Comprobante de renovación",
+            text: textoCompartir,
+            files: [archivo]
+          });
+
+          return true;
+        }
+
+        return false;
+      } catch (error) {
+        if (error && error.name === "AbortError") {
+          throw error;
+        }
+
         return false;
       }
-
-      await navigator.share({
-        title: "Comprobante de renovación",
-        text: textoCompartir,
-        files: [archivo]
-      });
-
-      return true;
     }
 
     async function enviarComprobanteImagenWhatsapp() {
       if (!ultimoComprobanteDatos) {
-        mostrarMensaje(mensajeRenovacion, "Primero genera el comprobante de renovación.", "error");
+        mostrarMensaje(
+          mensajeRenovacion,
+          "Primero genera el comprobante de renovación.",
+          "error"
+        );
         return;
       }
 
       if (!ultimoTextoVoucher) {
-        mostrarMensaje(mensajeRenovacion, "No se encontró el texto del comprobante.", "error");
+        mostrarMensaje(
+          mensajeRenovacion,
+          "No se encontró el texto del comprobante.",
+          "error"
+        );
         return;
       }
 
@@ -2347,34 +2369,61 @@
 
         const blob = await obtenerBlobComprobanteRenovacion();
         const nombreArchivo = obtenerNombreArchivoComprobante();
-        const textoCompartir = "Hola, te enviamos tu comprobante de renovación.\n\n" + ultimoTextoVoucher;
 
-        const compartido = await compartirImagenSistema(blob, nombreArchivo, textoCompartir);
+        const textoCompartir =
+          "Hola, te enviamos tu comprobante de renovación.\n\n" +
+          ultimoTextoVoucher;
 
-        if (!compartido) {
+        const compartido = await compartirImagenSistema(
+          blob,
+          nombreArchivo,
+          textoCompartir
+        );
+
+        if (compartido) {
           mostrarMensaje(
             mensajeRenovacion,
-            "Este navegador no permite compartir imágenes directamente. Usa un celular con Chrome, Edge o Safari actualizado y abre la página en HTTPS.",
-            "error"
+            "Se abrió el cuadro de compartir. Elige WhatsApp y envía la imagen con el texto.",
+            "exito"
+          );
+          return;
+        }
+
+        const copiado = await copiarImagenAlPortapapeles(blob);
+
+        if (copiado && ultimoNumeroWhatsapp) {
+          abrirWhatsapp(ultimoNumeroWhatsapp, textoCompartir);
+          mostrarMensaje(
+            mensajeRenovacion,
+            "Tu navegador no abrió el cuadro de compartir. La imagen fue copiada; se abrió WhatsApp con el texto. Pega la imagen con Ctrl+V.",
+            "exito"
           );
           return;
         }
 
         mostrarMensaje(
           mensajeRenovacion,
-          "Se abrió el cuadro de compartir. Selecciona WhatsApp u otra aplicación para enviar la imagen con el texto.",
-          "exito"
+          "Este navegador no permite compartir imágenes directamente. Prueba desde celular o desde Chrome/Edge actualizado con la página en HTTPS.",
+          "error"
         );
 
       } catch (error) {
         if (error && error.name === "AbortError") {
-          mostrarMensaje(mensajeRenovacion, "Compartir cancelado.", "error");
+          mostrarMensaje(
+            mensajeRenovacion,
+            "Compartir cancelado.",
+            "error"
+          );
         } else {
-          mostrarMensaje(mensajeRenovacion, error.message || "No se pudo compartir el comprobante como imagen.", "error");
+          mostrarMensaje(
+            mensajeRenovacion,
+            error.message || "No se pudo compartir el comprobante.",
+            "error"
+          );
         }
       } finally {
         btnEnviarVoucherWhatsapp.disabled = false;
-        btnEnviarVoucherWhatsapp.textContent = "Compartir comprobante como imagen";
+        btnEnviarVoucherWhatsapp.textContent = "Enviar comprobante por WhatsApp";
       }
     }
 
