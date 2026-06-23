@@ -2337,51 +2337,88 @@
       }
     }
 
-    async function enviarComprobanteImagenWhatsapp() {
-      if (!ultimoComprobanteDatos) {
-        mostrarMensaje(mensajeRenovacion, "Primero genera el comprobante de renovación.", "error");
-        return;
-      }
+   async function enviarComprobanteImagenWhatsapp() {
 
-      if (!ultimoNumeroWhatsapp) {
-        mostrarMensaje(mensajeRenovacion, "No se encontró el WhatsApp del cliente en la base de datos.", "error");
-        return;
-      }
+  if (!ultimoComprobanteDatos) {
+    mostrarMensaje(
+      mensajeRenovacion,
+      "Primero genera el comprobante de renovación.",
+      "error"
+    );
+    return;
+  }
 
-      try {
-        btnEnviarVoucherWhatsapp.disabled = true;
-        btnEnviarVoucherWhatsapp.textContent = "Generando imagen...";
+  if (!ultimoNumeroWhatsapp) {
+    mostrarMensaje(
+      mensajeRenovacion,
+      "No se encontró el WhatsApp del cliente en la base de datos.",
+      "error"
+    );
+    return;
+  }
 
-        const blob = await obtenerBlobComprobanteRenovacion();
-        const nombreArchivo = obtenerNombreArchivoComprobante();
+  let popup = window.open("", "_blank");
 
-        const compartido = await compartirImagenSistema(blob, nombreArchivo);
+  try {
 
-        if (compartido) {
-          mostrarMensaje(mensajeRenovacion, "Comprobante compartido como imagen. Selecciona WhatsApp y envíalo al cliente.", "exito");
-          return;
-        }
+    btnEnviarVoucherWhatsapp.disabled = true;
+    btnEnviarVoucherWhatsapp.textContent = "Generando imagen...";
 
-        const copiado = await copiarImagenAlPortapapeles(blob);
-        descargarBlob(blob, nombreArchivo);
+    const blob = await obtenerBlobComprobanteRenovacion();
+    const nombreArchivo = obtenerNombreArchivoComprobante();
 
-        const textoWhatsApp = "Hola, te enviamos tu comprobante de renovación.\n\n" + ultimoTextoVoucher;
-        abrirWhatsapp(ultimoNumeroWhatsapp, textoWhatsApp);
+    descargarBlob(blob, nombreArchivo);
 
-        if (copiado) {
-          mostrarMensaje(mensajeRenovacion, "Se descargó y copió la imagen. Se abrió el WhatsApp del cliente; pega o adjunta el comprobante PNG.", "exito");
-        } else {
-          mostrarMensaje(mensajeRenovacion, "Se descargó la imagen PNG y se abrió el WhatsApp del cliente. Adjunta el comprobante descargado.", "exito");
-        }
+    try {
+      await copiarImagenAlPortapapeles(blob);
+    } catch(e) {}
 
-      } catch (error) {
-        mostrarMensaje(mensajeRenovacion, error.message || "No se pudo generar el comprobante como imagen.", "error");
-      } finally {
-        btnEnviarVoucherWhatsapp.disabled = false;
-        btnEnviarVoucherWhatsapp.textContent = "Enviar comprobante por WhatsApp";
-      }
+    const numeroParaUrl =
+      String(ultimoNumeroWhatsapp).replace(/\D/g, "");
+
+    const textoWhatsApp =
+      "Hola, te enviamos tu comprobante de renovación.\n\n" +
+      (ultimoTextoVoucher || "");
+
+    const whatsappUrl =
+      "https://wa.me/" +
+      numeroParaUrl +
+      "?text=" +
+      encodeURIComponent(textoWhatsApp);
+
+    if (popup && !popup.closed) {
+      popup.location.href = whatsappUrl;
+    } else {
+      window.location.href = whatsappUrl;
     }
 
+    mostrarMensaje(
+      mensajeRenovacion,
+      "WhatsApp abierto. Adjunta el PNG descargado al chat.",
+      "exito"
+    );
+
+  } catch (error) {
+
+    if (popup && !popup.closed) {
+      popup.close();
+    }
+
+    mostrarMensaje(
+      mensajeRenovacion,
+      error.message ||
+      "No se pudo generar el comprobante como imagen.",
+      "error"
+    );
+
+  } finally {
+
+    btnEnviarVoucherWhatsapp.disabled = false;
+    btnEnviarVoucherWhatsapp.textContent =
+      "Enviar comprobante por WhatsApp";
+   
+  }
+}
     formSolicitudes.addEventListener("submit", function(e) {
       e.preventDefault();
 
