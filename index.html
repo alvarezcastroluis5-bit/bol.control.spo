@@ -977,7 +977,7 @@
           </div>
 
           <div class="aviso-imagen-whatsapp">
-            📌 En celular se abrirá el cuadro de compartir para elegir WhatsApp y enviar la imagen con el texto. En computadora la imagen se copiará automáticamente al portapapeles y se abrirá WhatsApp Web con el cliente y el texto. Luego pega con Ctrl + V y presiona Enviar. No se descargará automáticamente.
+            📌 En celular se abrirá el cuadro de compartir para elegir WhatsApp y enviar la imagen con el texto. En computadora la imagen se copia automáticamente al portapapeles y se abre WhatsApp Web con el texto. Luego presiona Ctrl + V en el chat y da Enviar. Para que copie en PC debe estar en HTTPS o localhost.
           </div>
 
           <label for="textoVoucherWhatsapp">Texto de apoyo para WhatsApp</label>
@@ -1257,6 +1257,10 @@
     let ultimoTextoVoucher = "";
     let ultimoNumeroWhatsapp = "";
     let ultimoComprobanteDatos = null;
+    let ultimoBlobComprobante = null;
+    let ultimoBlobNombreComprobante = "";
+    let ultimoBlobClaveComprobante = "";
+    let precargaComprobanteEnProceso = null;
     let solicitudPrecioActual = 0;
     let solicitudPrecioBaseActual = 0;
     let solicitudTipoCambioActual = "";
@@ -1606,6 +1610,10 @@
       ultimoTextoVoucher = "";
       ultimoNumeroWhatsapp = "";
       ultimoComprobanteDatos = null;
+      ultimoBlobComprobante = null;
+      ultimoBlobNombreComprobante = "";
+      ultimoBlobClaveComprobante = "";
+      precargaComprobanteEnProceso = null;
 
       if (btnBuscarRenovacion) {
         btnBuscarRenovacion.disabled = false;
@@ -1955,6 +1963,10 @@
       ultimoTextoVoucher = "";
       ultimoNumeroWhatsapp = "";
       ultimoComprobanteDatos = null;
+      ultimoBlobComprobante = null;
+      ultimoBlobNombreComprobante = "";
+      ultimoBlobClaveComprobante = "";
+      precargaComprobanteEnProceso = null;
       if (voucherWhatsappBox) voucherWhatsappBox.style.display = "none";
 
       btnBuscarRenovacion.disabled = true;
@@ -2227,9 +2239,15 @@
       ultimoTextoVoucher = texto;
       ultimoNumeroWhatsapp = numeroCliente;
       ultimoComprobanteDatos = datosComprobante;
+      ultimoBlobComprobante = null;
+      ultimoBlobNombreComprobante = "";
+      ultimoBlobClaveComprobante = "";
+      precargaComprobanteEnProceso = null;
 
       if (textoVoucherWhatsapp) textoVoucherWhatsapp.value = texto;
       if (voucherWhatsappBox) voucherWhatsappBox.style.display = "block";
+
+      precargarComprobanteParaPortapapeles();
     }
 
     async function obtenerBlobComprobanteRenovacion() {
@@ -2310,6 +2328,59 @@
       return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "");
     }
 
+    function crearClaveComprobante() {
+      return JSON.stringify({
+        correo: ultimoComprobanteDatos?.correo || "",
+        fechaRenovacion: ultimoComprobanteDatos?.fechaRenovacion || "",
+        horaRenovacion: ultimoComprobanteDatos?.horaRenovacion || "",
+        fechaProximoPago: ultimoComprobanteDatos?.fechaProximoPago || "",
+        ultimos4Tarjeta: ultimoComprobanteDatos?.ultimos4Tarjeta || ""
+      });
+    }
+
+    function esperarRenderComprobante() {
+      return new Promise(resolve => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(resolve);
+        });
+      });
+    }
+
+    async function generarBlobComprobanteYGuardar() {
+      if (!ultimoComprobanteDatos) {
+        throw new Error("Primero genera el comprobante de renovación.");
+      }
+
+      const claveActual = crearClaveComprobante();
+
+      if (
+        ultimoBlobComprobante &&
+        ultimoBlobClaveComprobante === claveActual &&
+        ultimoBlobNombreComprobante
+      ) {
+        return ultimoBlobComprobante;
+      }
+
+      await esperarRenderComprobante();
+
+      const blob = await obtenerBlobComprobanteRenovacion();
+      ultimoBlobComprobante = blob;
+      ultimoBlobNombreComprobante = obtenerNombreArchivoComprobante();
+      ultimoBlobClaveComprobante = claveActual;
+
+      return blob;
+    }
+
+    function precargarComprobanteParaPortapapeles() {
+      if (!ultimoComprobanteDatos) return;
+
+      precargaComprobanteEnProceso = generarBlobComprobanteYGuardar()
+        .catch(error => {
+          console.error("No se pudo precargar el comprobante:", error);
+          return null;
+        });
+    }
+
     function crearUrlWhatsapp(numero, mensaje) {
       const numeroParaUrl = String(numero || "").replace(/\D/g, "");
 
@@ -2375,21 +2446,42 @@
       }
     }
 
-    async function copiarComprobanteAlPortapapelesAutomatico(blobPromesa) {
-      try {
-        if (!window.isSecureContext) return false;
-        if (!navigator.clipboard || typeof ClipboardItem === "undefined") return false;
-
-        const item = new ClipboardItem({
-          "image/png": blobPromesa
-        });
-
-        await navigator.clipboard.write([item]);
-        return true;
-      } catch (error) {
-        console.error("No se pudo copiar la imagen automáticamente:", error);
-        return false;
+    function obtenerMensajeRequisitoPortapapeles() {
+      if (location.protocol === "file:") {
+        return "La copia automática no funciona abriendo el archivo como file:///C:/... Debes subir la página a HTTPS o abrirla desde http://localhost.";
       }
+
+      if (!window.isSecureContext) {
+        return "La copia automática requiere HTTPS o localhost. El navegador bloqueó el portapapeles por seguridad.";
+      }
+
+      if (!navigator.clipboard || !navigator.clipboard.write) {
+        return "Este navegador no permite copiar imágenes al portapapeles. Usa Chrome o Edge actualizado.";
+      }
+
+      if (typeof ClipboardItem === "undefined") {
+        return "Este navegador no soporta ClipboardItem para copiar imágenes. Usa Chrome o Edge actualizado.";
+      }
+
+      return "";
+    }
+
+    async function copiarBlobImagenAlPortapapeles(blob) {
+      const requisito = obtenerMensajeRequisitoPortapapeles();
+      if (requisito) {
+        throw new Error(requisito);
+      }
+
+      if (!blob || blob.type !== "image/png") {
+        blob = new Blob([blob], { type: "image/png" });
+      }
+
+      const item = new ClipboardItem({
+        "image/png": blob
+      });
+
+      await navigator.clipboard.write([item]);
+      return true;
     }
 
     async function compartirImagenSistema(blob, nombreArchivo, textoCompartir) {
@@ -2411,6 +2503,7 @@
         return true;
       } catch (error) {
         if (error && error.name === "AbortError") throw error;
+        console.error("No se pudo abrir compartir:", error);
         return false;
       }
     }
@@ -2426,7 +2519,7 @@
         caja.className = "aviso-imagen-whatsapp";
         caja.innerHTML = `
           <strong>Imagen generada correctamente.</strong><br>
-          Tu navegador no dejó copiar la imagen automáticamente. Haz clic derecho sobre la imagen y selecciona <strong>Copiar imagen</strong>, o arrástrala al chat de WhatsApp Web.<br><br>
+          El navegador no permitió copiarla automáticamente. Haz clic derecho sobre la imagen y selecciona <strong>Copiar imagen</strong>, o arrástrala al chat de WhatsApp Web.<br><br>
           <img src="${url}" alt="${escaparHTML(nombreArchivo)}" style="width:100%;max-width:420px;display:block;margin:10px auto;border-radius:12px;background:#fff;">
         `;
 
@@ -2456,18 +2549,14 @@
 
       try {
         btnEnviarVoucherWhatsapp.disabled = true;
-        btnEnviarVoucherWhatsapp.textContent = "Preparando comprobante...";
+        btnEnviarVoucherWhatsapp.textContent = movil ? "Abriendo compartir..." : "Copiando imagen...";
 
-        if (!movil) {
-          ventanaWhatsapp = prepararVentanaWhatsapp();
-        }
-
-        const blobPromesa = obtenerBlobComprobanteRenovacion();
+        const anterior = document.getElementById("previewComprobanteFallback");
+        if (anterior) anterior.remove();
 
         if (movil) {
-          btnEnviarVoucherWhatsapp.textContent = "Abriendo compartir...";
-          const blob = await blobPromesa;
-          const compartido = await compartirImagenSistema(blob, nombreArchivo, textoWhatsApp);
+          const blobMovil = await generarBlobComprobanteYGuardar();
+          const compartido = await compartirImagenSistema(blobMovil, nombreArchivo, textoWhatsApp);
 
           if (compartido) {
             mostrarMensaje(mensajeRenovacion, "Se abrió el cuadro de compartir. Elige WhatsApp y envía la imagen con el texto.", "exito");
@@ -2475,34 +2564,70 @@
           }
 
           abrirWhatsapp(ultimoNumeroWhatsapp, textoWhatsApp, null);
-          mostrarMensaje(mensajeRenovacion, "Tu navegador no permitió compartir la imagen. Se abrió WhatsApp con el texto. Prueba desde Chrome/Safari actualizado y con la página en HTTPS.", "error");
+          mostrarMensaje(mensajeRenovacion, "Tu navegador no permitió compartir la imagen. Se abrió WhatsApp con el texto. Prueba con Chrome/Safari actualizado y con la página en HTTPS.", "error");
           return;
         }
 
-        btnEnviarVoucherWhatsapp.textContent = "Copiando imagen...";
-        const copiado = await copiarComprobanteAlPortapapelesAutomatico(blobPromesa);
+        ventanaWhatsapp = prepararVentanaWhatsapp();
+
+        let blobPC = ultimoBlobComprobante;
+        const claveActual = crearClaveComprobante();
+
+        if (!blobPC || ultimoBlobClaveComprobante !== claveActual) {
+          if (precargaComprobanteEnProceso) {
+            blobPC = await precargaComprobanteEnProceso;
+          }
+
+          if (!blobPC) {
+            blobPC = await generarBlobComprobanteYGuardar();
+          }
+        }
+
+        await copiarBlobImagenAlPortapapeles(blobPC);
 
         abrirWhatsapp(ultimoNumeroWhatsapp, textoWhatsApp, ventanaWhatsapp);
 
-        if (copiado) {
-          mostrarMensaje(mensajeRenovacion, "Imagen copiada automáticamente. Se abrió WhatsApp Web con el texto. En el chat presiona Ctrl + V y luego Enviar.", "exito");
-          alert("Imagen copiada automáticamente.\n\nSe abrió WhatsApp Web con el texto. En el chat presiona Ctrl + V y luego Enviar.");
-          return;
-        }
+        mostrarMensaje(
+          mensajeRenovacion,
+          "Imagen copiada automáticamente. Se abrió WhatsApp Web con el texto. En el chat presiona Ctrl + V y luego Enviar.",
+          "exito"
+        );
 
-        const blob = await blobPromesa;
-        mostrarImagenComprobanteEnPantalla(blob, nombreArchivo);
-        mostrarMensaje(mensajeRenovacion, "Se abrió WhatsApp Web con el texto, pero el navegador no permitió copiar la imagen automáticamente. Usa Chrome/Edge con la página en HTTPS, o copia la imagen de abajo manualmente.", "error");
-        alert("No se pudo copiar la imagen automáticamente.\n\nPara que funcione en PC usa Chrome o Edge y abre la página en HTTPS. También puedes copiar la imagen que apareció abajo.");
+        alert("Imagen copiada automáticamente.\n\nSe abrió WhatsApp Web con el texto. En el chat presiona Ctrl + V y luego Enviar.");
 
       } catch (error) {
-        if (ventanaWhatsapp && !ventanaWhatsapp.closed) ventanaWhatsapp.close();
+        console.error("Error al copiar/enviar comprobante:", error);
+
+        if (ventanaWhatsapp && !ventanaWhatsapp.closed) {
+          try {
+            abrirWhatsapp(ultimoNumeroWhatsapp, textoWhatsApp, ventanaWhatsapp);
+          } catch (_) {
+            ventanaWhatsapp.close();
+          }
+        }
 
         if (error && error.name === "AbortError") {
           mostrarMensaje(mensajeRenovacion, "Compartir cancelado.", "error");
-        } else {
-          mostrarMensaje(mensajeRenovacion, error.message || "No se pudo preparar el comprobante.", "error");
+          return;
         }
+
+        try {
+          const blobFallback = ultimoBlobComprobante || await generarBlobComprobanteYGuardar();
+          mostrarImagenComprobanteEnPantalla(blobFallback, nombreArchivo);
+        } catch (_) {}
+
+        mostrarMensaje(
+          mensajeRenovacion,
+          (error.message || "No se pudo copiar la imagen automáticamente.") + " WhatsApp Web se abrió con el texto; copia la imagen manualmente desde la vista previa de abajo.",
+          "error"
+        );
+
+        alert(
+          "No se pudo copiar la imagen automáticamente.\n\n" +
+          "Causa: " + (error.message || "bloqueo del navegador") + "\n\n" +
+          "Para que funcione en PC usa Chrome/Edge y abre la página en HTTPS o localhost."
+        );
+
       } finally {
         btnEnviarVoucherWhatsapp.disabled = false;
         btnEnviarVoucherWhatsapp.textContent = "Enviar comprobante por WhatsApp";
