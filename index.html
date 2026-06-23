@@ -381,7 +381,7 @@
 
     .comprobante-acciones {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 10px;
       margin-top: 12px;
     }
@@ -977,7 +977,7 @@
           </div>
 
           <div class="aviso-imagen-whatsapp">
-            📌 El comprobante se generará como imagen con el mismo diseño de la vista previa. En celular podrás compartirlo como imagen. En computadora se descargará el PNG y se abrirá el WhatsApp del cliente para adjuntarlo.
+            📌 El comprobante se generará como imagen con el mismo diseño de la vista previa. Al presionar el botón se abrirá el cuadro de compartir de tu dispositivo para elegir WhatsApp u otra aplicación, junto con el texto del comprobante. No se descargará la imagen.
           </div>
 
           <label for="textoVoucherWhatsapp">Texto de apoyo para WhatsApp</label>
@@ -985,11 +985,7 @@
 
           <div class="comprobante-acciones">
             <button type="button" class="enviar" id="btnEnviarVoucherWhatsapp">
-              Enviar comprobante por WhatsApp
-            </button>
-
-            <button type="button" class="secundario" id="btnDescargarComprobante">
-              Descargar comprobante PNG
+              Compartir comprobante como imagen
             </button>
           </div>
         </div>
@@ -2318,107 +2314,70 @@
       }
     }
 
-    async function compartirImagenSistema(blob, nombreArchivo) {
-      try {
-        const archivo = new File([blob], nombreArchivo, { type: "image/png" });
+    async function compartirImagenSistema(blob, nombreArchivo, textoCompartir) {
+      const archivo = new File([blob], nombreArchivo, { type: "image/png" });
 
-        if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
-          await navigator.share({
-            files: [archivo],
-            title: "Comprobante de renovación",
-            text: "Comprobante de renovación - Cuentas Premium BO"
-          });
-          return true;
+      if (!navigator.share || !navigator.canShare || !navigator.canShare({ files: [archivo] })) {
+        return false;
+      }
+
+      await navigator.share({
+        title: "Comprobante de renovación",
+        text: textoCompartir,
+        files: [archivo]
+      });
+
+      return true;
+    }
+
+    async function enviarComprobanteImagenWhatsapp() {
+      if (!ultimoComprobanteDatos) {
+        mostrarMensaje(mensajeRenovacion, "Primero genera el comprobante de renovación.", "error");
+        return;
+      }
+
+      if (!ultimoTextoVoucher) {
+        mostrarMensaje(mensajeRenovacion, "No se encontró el texto del comprobante.", "error");
+        return;
+      }
+
+      try {
+        btnEnviarVoucherWhatsapp.disabled = true;
+        btnEnviarVoucherWhatsapp.textContent = "Preparando imagen...";
+
+        const blob = await obtenerBlobComprobanteRenovacion();
+        const nombreArchivo = obtenerNombreArchivoComprobante();
+        const textoCompartir = "Hola, te enviamos tu comprobante de renovación.\n\n" + ultimoTextoVoucher;
+
+        const compartido = await compartirImagenSistema(blob, nombreArchivo, textoCompartir);
+
+        if (!compartido) {
+          mostrarMensaje(
+            mensajeRenovacion,
+            "Este navegador no permite compartir imágenes directamente. Usa un celular con Chrome, Edge o Safari actualizado y abre la página en HTTPS.",
+            "error"
+          );
+          return;
         }
 
-        return false;
+        mostrarMensaje(
+          mensajeRenovacion,
+          "Se abrió el cuadro de compartir. Selecciona WhatsApp u otra aplicación para enviar la imagen con el texto.",
+          "exito"
+        );
+
       } catch (error) {
-        return false;
+        if (error && error.name === "AbortError") {
+          mostrarMensaje(mensajeRenovacion, "Compartir cancelado.", "error");
+        } else {
+          mostrarMensaje(mensajeRenovacion, error.message || "No se pudo compartir el comprobante como imagen.", "error");
+        }
+      } finally {
+        btnEnviarVoucherWhatsapp.disabled = false;
+        btnEnviarVoucherWhatsapp.textContent = "Compartir comprobante como imagen";
       }
     }
 
-   async function enviarComprobanteImagenWhatsapp() {
-
-  if (!ultimoComprobanteDatos) {
-    mostrarMensaje(
-      mensajeRenovacion,
-      "Primero genera el comprobante de renovación.",
-      "error"
-    );
-    return;
-  }
-
-  if (!ultimoNumeroWhatsapp) {
-    mostrarMensaje(
-      mensajeRenovacion,
-      "No se encontró el WhatsApp del cliente en la base de datos.",
-      "error"
-    );
-    return;
-  }
-
-  let popup = window.open("", "_blank");
-
-  try {
-
-    btnEnviarVoucherWhatsapp.disabled = true;
-    btnEnviarVoucherWhatsapp.textContent = "Generando imagen...";
-
-    const blob = await obtenerBlobComprobanteRenovacion();
-    const nombreArchivo = obtenerNombreArchivoComprobante();
-
-    descargarBlob(blob, nombreArchivo);
-
-    try {
-      await copiarImagenAlPortapapeles(blob);
-    } catch(e) {}
-
-    const numeroParaUrl =
-      String(ultimoNumeroWhatsapp).replace(/\D/g, "");
-
-    const textoWhatsApp =
-      "Hola, te enviamos tu comprobante de renovación.\n\n" +
-      (ultimoTextoVoucher || "");
-
-    const whatsappUrl =
-      "https://wa.me/" +
-      numeroParaUrl +
-      "?text=" +
-      encodeURIComponent(textoWhatsApp);
-
-    if (popup && !popup.closed) {
-      popup.location.href = whatsappUrl;
-    } else {
-      window.location.href = whatsappUrl;
-    }
-
-    mostrarMensaje(
-      mensajeRenovacion,
-      "WhatsApp abierto. Adjunta el PNG descargado al chat.",
-      "exito"
-    );
-
-  } catch (error) {
-
-    if (popup && !popup.closed) {
-      popup.close();
-    }
-
-    mostrarMensaje(
-      mensajeRenovacion,
-      error.message ||
-      "No se pudo generar el comprobante como imagen.",
-      "error"
-    );
-
-  } finally {
-
-    btnEnviarVoucherWhatsapp.disabled = false;
-    btnEnviarVoucherWhatsapp.textContent =
-      "Enviar comprobante por WhatsApp";
-   
-  }
-}
     formSolicitudes.addEventListener("submit", function(e) {
       e.preventDefault();
 
