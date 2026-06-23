@@ -977,7 +977,7 @@
           </div>
 
           <div class="aviso-imagen-whatsapp">
-            📌 En celular se abrirá el cuadro de compartir para elegir WhatsApp y enviar la imagen con el texto. En computadora se abrirá WhatsApp Web y se intentará copiar la imagen al portapapeles para pegarla con Ctrl + V. No se descargará automáticamente.
+            📌 En celular se abrirá el cuadro de compartir para elegir WhatsApp y enviar la imagen con el texto. En computadora la imagen se copiará automáticamente al portapapeles y se abrirá WhatsApp Web con el cliente y el texto. Luego pega con Ctrl + V y presiona Enviar. No se descargará automáticamente.
           </div>
 
           <label for="textoVoucherWhatsapp">Texto de apoyo para WhatsApp</label>
@@ -2302,49 +2302,15 @@
       }
     }
 
-    async function copiarImagenAlPortapapeles(blob) {
-      try {
-        if (!window.isSecureContext) return false;
-        if (!navigator.clipboard || typeof ClipboardItem === "undefined") return false;
-
-        await navigator.clipboard.write([
-          new ClipboardItem({ "image/png": blob })
-        ]);
-
-        return true;
-      } catch (error) {
-        return false;
-      }
-    }
-
-    async function compartirImagenSistema(blob, nombreArchivo, textoCompartir) {
-      try {
-        if (!navigator.share) return false;
-
-        const archivo = new File([blob], nombreArchivo, { type: "image/png" });
-        const datosCompartir = {
-          title: "Comprobante de renovación",
-          text: textoCompartir,
-          files: [archivo]
-        };
-
-        if (navigator.canShare && !navigator.canShare(datosCompartir)) {
-          return false;
-        }
-
-        await navigator.share(datosCompartir);
-        return true;
-      } catch (error) {
-        if (error && error.name === "AbortError") throw error;
-        return false;
-      }
+    function crearTextoCompartirComprobante() {
+      return "Hola, te enviamos tu comprobante de renovación.\n\n" + (ultimoTextoVoucher || "");
     }
 
     function esDispositivoMovil() {
       return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "");
     }
 
-    function obtenerUrlWhatsapp(numero, mensaje) {
+    function crearUrlWhatsapp(numero, mensaje) {
       const numeroParaUrl = String(numero || "").replace(/\D/g, "");
 
       if (!numeroParaUrl) {
@@ -2390,7 +2356,7 @@
     }
 
     function abrirWhatsapp(numero, mensaje, ventanaPreparada) {
-      const url = obtenerUrlWhatsapp(numero, mensaje);
+      const url = crearUrlWhatsapp(numero, mensaje);
 
       if (ventanaPreparada && !ventanaPreparada.closed) {
         ventanaPreparada.location.href = url;
@@ -2409,6 +2375,46 @@
       }
     }
 
+    async function copiarComprobanteAlPortapapelesAutomatico(blobPromesa) {
+      try {
+        if (!window.isSecureContext) return false;
+        if (!navigator.clipboard || typeof ClipboardItem === "undefined") return false;
+
+        const item = new ClipboardItem({
+          "image/png": blobPromesa
+        });
+
+        await navigator.clipboard.write([item]);
+        return true;
+      } catch (error) {
+        console.error("No se pudo copiar la imagen automáticamente:", error);
+        return false;
+      }
+    }
+
+    async function compartirImagenSistema(blob, nombreArchivo, textoCompartir) {
+      try {
+        if (!navigator.share) return false;
+
+        const archivo = new File([blob], nombreArchivo, { type: "image/png" });
+        const datosCompartir = {
+          title: "Comprobante de renovación",
+          text: textoCompartir,
+          files: [archivo]
+        };
+
+        if (navigator.canShare && !navigator.canShare(datosCompartir)) {
+          return false;
+        }
+
+        await navigator.share(datosCompartir);
+        return true;
+      } catch (error) {
+        if (error && error.name === "AbortError") throw error;
+        return false;
+      }
+    }
+
     function mostrarImagenComprobanteEnPantalla(blob, nombreArchivo) {
       try {
         const anterior = document.getElementById("previewComprobanteFallback");
@@ -2420,7 +2426,7 @@
         caja.className = "aviso-imagen-whatsapp";
         caja.innerHTML = `
           <strong>Imagen generada correctamente.</strong><br>
-          Si tu navegador no dejó copiar la imagen automáticamente, haz clic derecho sobre la imagen y selecciona <strong>Copiar imagen</strong>, o arrástrala al chat de WhatsApp Web.<br><br>
+          Tu navegador no dejó copiar la imagen automáticamente. Haz clic derecho sobre la imagen y selecciona <strong>Copiar imagen</strong>, o arrástrala al chat de WhatsApp Web.<br><br>
           <img src="${url}" alt="${escaparHTML(nombreArchivo)}" style="width:100%;max-width:420px;display:block;margin:10px auto;border-radius:12px;background:#fff;">
         `;
 
@@ -2443,17 +2449,24 @@
         return;
       }
 
-      const textoWhatsApp = "Hola, te enviamos tu comprobante de renovación.\n\n" + (ultimoTextoVoucher || "");
-      const ventanaWhatsapp = prepararVentanaWhatsapp();
+      const textoWhatsApp = crearTextoCompartirComprobante();
+      const nombreArchivo = obtenerNombreArchivoComprobante();
+      const movil = esDispositivoMovil();
+      let ventanaWhatsapp = null;
 
       try {
         btnEnviarVoucherWhatsapp.disabled = true;
-        btnEnviarVoucherWhatsapp.textContent = "Generando imagen...";
+        btnEnviarVoucherWhatsapp.textContent = "Preparando comprobante...";
 
-        const blob = await obtenerBlobComprobanteRenovacion();
-        const nombreArchivo = obtenerNombreArchivoComprobante();
+        if (!movil) {
+          ventanaWhatsapp = prepararVentanaWhatsapp();
+        }
 
-        if (esDispositivoMovil()) {
+        const blobPromesa = obtenerBlobComprobanteRenovacion();
+
+        if (movil) {
+          btnEnviarVoucherWhatsapp.textContent = "Abriendo compartir...";
+          const blob = await blobPromesa;
           const compartido = await compartirImagenSistema(blob, nombreArchivo, textoWhatsApp);
 
           if (compartido) {
@@ -2466,18 +2479,21 @@
           return;
         }
 
-        const copiado = await copiarImagenAlPortapapeles(blob);
+        btnEnviarVoucherWhatsapp.textContent = "Copiando imagen...";
+        const copiado = await copiarComprobanteAlPortapapelesAutomatico(blobPromesa);
+
         abrirWhatsapp(ultimoNumeroWhatsapp, textoWhatsApp, ventanaWhatsapp);
 
         if (copiado) {
-          mostrarMensaje(mensajeRenovacion, "Se abrió WhatsApp Web con el texto y la imagen fue copiada. Entra al chat y presiona Ctrl + V para pegar el comprobante.", "exito");
-          alert("Imagen copiada. Cuando cargue WhatsApp Web, entra al chat y presiona Ctrl + V para pegar el comprobante.");
+          mostrarMensaje(mensajeRenovacion, "Imagen copiada automáticamente. Se abrió WhatsApp Web con el texto. En el chat presiona Ctrl + V y luego Enviar.", "exito");
+          alert("Imagen copiada automáticamente.\n\nSe abrió WhatsApp Web con el texto. En el chat presiona Ctrl + V y luego Enviar.");
           return;
         }
 
+        const blob = await blobPromesa;
         mostrarImagenComprobanteEnPantalla(blob, nombreArchivo);
-        mostrarMensaje(mensajeRenovacion, "Se abrió WhatsApp Web con el texto. Tu navegador no permitió copiar la imagen automáticamente; copia la imagen que apareció abajo y pégala en el chat.", "exito");
-        alert("WhatsApp Web se abrió con el texto. Copia la imagen que apareció abajo y pégala en el chat.");
+        mostrarMensaje(mensajeRenovacion, "Se abrió WhatsApp Web con el texto, pero el navegador no permitió copiar la imagen automáticamente. Usa Chrome/Edge con la página en HTTPS, o copia la imagen de abajo manualmente.", "error");
+        alert("No se pudo copiar la imagen automáticamente.\n\nPara que funcione en PC usa Chrome o Edge y abre la página en HTTPS. También puedes copiar la imagen que apareció abajo.");
 
       } catch (error) {
         if (ventanaWhatsapp && !ventanaWhatsapp.closed) ventanaWhatsapp.close();
@@ -2485,7 +2501,7 @@
         if (error && error.name === "AbortError") {
           mostrarMensaje(mensajeRenovacion, "Compartir cancelado.", "error");
         } else {
-          mostrarMensaje(mensajeRenovacion, error.message || "No se pudo generar el comprobante como imagen.", "error");
+          mostrarMensaje(mensajeRenovacion, error.message || "No se pudo preparar el comprobante.", "error");
         }
       } finally {
         btnEnviarVoucherWhatsapp.disabled = false;
