@@ -977,7 +977,9 @@
           </div>
 
           <div class="aviso-imagen-whatsapp">
-            📌 El comprobante se generará como imagen con el mismo diseño de la vista previa. Al presionar el botón se abrirá el cuadro nativo de compartir de tu dispositivo para elegir WhatsApp u otra aplicación. Se enviará la imagen junto con el texto y no se descargará automáticamente.
+            📌 En celular se abrirá el cuadro de compartir para elegir WhatsApp y enviar la imagen con el texto.
+            En computadora se abrirá WhatsApp Web y la imagen se copiará al portapapeles; luego pega con Ctrl + V.
+            Si el navegador no permite copiar, la imagen se abrirá en otra pestaña para copiarla o arrastrarla manualmente. No se descargará automáticamente.
           </div>
 
           <label for="textoVoucherWhatsapp">Texto de apoyo para WhatsApp</label>
@@ -987,8 +989,6 @@
             <button type="button" class="enviar" id="btnEnviarVoucherWhatsapp">
               Enviar comprobante por WhatsApp
             </button>
-
-
           </div>
         </div>
       </div>
@@ -2344,41 +2344,66 @@
       }
     }
 
+    function esDispositivoMovil() {
+      return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "");
+    }
+
+    function abrirWhatsappSegunDispositivo(numero, mensaje) {
+      const numeroParaUrl = String(numero || "").replace(/\D/g, "");
+
+      if (!numeroParaUrl) {
+        throw new Error("No se encontró un número de WhatsApp válido.");
+      }
+
+      const texto = encodeURIComponent(mensaje || "");
+      const url = esDispositivoMovil()
+        ? "https://wa.me/" + numeroParaUrl + "?text=" + texto
+        : "https://web.whatsapp.com/send?phone=" + numeroParaUrl + "&text=" + texto;
+
+      const ventana = window.open(url, "_blank");
+
+      if (!ventana) {
+        window.location.href = url;
+      }
+    }
+
+    function abrirImagenEnNuevaPestana(blob) {
+      try {
+        const url = URL.createObjectURL(blob);
+        const ventana = window.open(url, "_blank");
+
+        if (ventana) {
+          setTimeout(() => URL.revokeObjectURL(url), 60000);
+          return true;
+        }
+
+        URL.revokeObjectURL(url);
+        return false;
+      } catch (error) {
+        return false;
+      }
+    }
+
     async function enviarComprobanteImagenWhatsapp() {
       if (!ultimoComprobanteDatos) {
-        mostrarMensaje(
-          mensajeRenovacion,
-          "Primero genera el comprobante de renovación.",
-          "error"
-        );
+        mostrarMensaje(mensajeRenovacion, "Primero genera el comprobante de renovación.", "error");
         return;
       }
 
-      if (!ultimoTextoVoucher) {
-        mostrarMensaje(
-          mensajeRenovacion,
-          "No se encontró el texto del comprobante.",
-          "error"
-        );
+      if (!ultimoNumeroWhatsapp) {
+        mostrarMensaje(mensajeRenovacion, "No se encontró el WhatsApp del cliente en la base de datos.", "error");
         return;
       }
 
       try {
         btnEnviarVoucherWhatsapp.disabled = true;
-        btnEnviarVoucherWhatsapp.textContent = "Preparando imagen...";
+        btnEnviarVoucherWhatsapp.textContent = "Preparando comprobante...";
 
         const blob = await obtenerBlobComprobanteRenovacion();
         const nombreArchivo = obtenerNombreArchivoComprobante();
+        const textoWhatsApp = "Hola, te enviamos tu comprobante de renovación.\n\n" + ultimoTextoVoucher;
 
-        const textoCompartir =
-          "Hola, te enviamos tu comprobante de renovación.\n\n" +
-          ultimoTextoVoucher;
-
-        const compartido = await compartirImagenSistema(
-          blob,
-          nombreArchivo,
-          textoCompartir
-        );
+        const compartido = await compartirImagenSistema(blob, nombreArchivo, textoWhatsApp);
 
         if (compartido) {
           mostrarMensaje(
@@ -2390,36 +2415,42 @@
         }
 
         const copiado = await copiarImagenAlPortapapeles(blob);
+        abrirWhatsappSegunDispositivo(ultimoNumeroWhatsapp, textoWhatsApp);
 
-        if (copiado && ultimoNumeroWhatsapp) {
-          abrirWhatsapp(ultimoNumeroWhatsapp, textoCompartir);
+        if (copiado) {
           mostrarMensaje(
             mensajeRenovacion,
-            "Tu navegador no abrió el cuadro de compartir. La imagen fue copiada; se abrió WhatsApp con el texto. Pega la imagen con Ctrl+V.",
+            "Se abrió WhatsApp Web con el texto y la imagen fue copiada. Entra al chat y presiona Ctrl + V para pegar el comprobante.",
             "exito"
           );
+
+          alert("Imagen copiada. Cuando se abra WhatsApp Web, entra al chat y presiona Ctrl + V para pegar el comprobante.");
           return;
         }
 
-        mostrarMensaje(
-          mensajeRenovacion,
-          "Este navegador no permite compartir imágenes directamente. Prueba desde celular o desde Chrome/Edge actualizado con la página en HTTPS.",
-          "error"
-        );
+        const imagenAbierta = abrirImagenEnNuevaPestana(blob);
 
-      } catch (error) {
-        if (error && error.name === "AbortError") {
+        if (imagenAbierta) {
           mostrarMensaje(
             mensajeRenovacion,
-            "Compartir cancelado.",
-            "error"
+            "Se abrió WhatsApp con el texto. Tu navegador no permitió copiar la imagen, por eso se abrió la imagen en otra pestaña para copiarla o arrastrarla al chat.",
+            "exito"
           );
+
+          alert("Tu navegador no permitió copiar automáticamente la imagen. Se abrió en otra pestaña: cópiala o arrástrala al chat de WhatsApp Web.");
         } else {
           mostrarMensaje(
             mensajeRenovacion,
-            error.message || "No se pudo compartir el comprobante.",
+            "Se abrió WhatsApp con el texto, pero el navegador no permitió compartir ni copiar la imagen. Prueba en celular o usa HTTPS.",
             "error"
           );
+        }
+
+      } catch (error) {
+        if (error && error.name === "AbortError") {
+          mostrarMensaje(mensajeRenovacion, "Compartir cancelado.", "error");
+        } else {
+          mostrarMensaje(mensajeRenovacion, error.message || "No se pudo generar el comprobante como imagen.", "error");
         }
       } finally {
         btnEnviarVoucherWhatsapp.disabled = false;
