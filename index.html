@@ -3708,7 +3708,7 @@ El equipo puede contactarme para solicitar los accesos necesarios.`;
       function opcionesPaises() {
         return Object.keys(PRECIOS_SOLICITUDES || {}).map(pais => {
           return `<option value="${escaparHTML(pais)}">${escaparHTML(pais)}</option>`;
-        }).join("");
+        }).join("\n");
       }
 
       function actualizarPlanesDominio(index) {
@@ -4222,8 +4222,7 @@ El equipo puede contactarme para solicitar los accesos necesarios.`;
         if (!validarPagoListo(pago.total)) return;
 
         const codigoSeguimiento = generarCodigoSeguimiento();
-        const detalle = cuentas.map(c => `${c.numero}. ${c.correo} | País: ${c.pais} | Plan: ${c.plan} | Tiempo: ${c.tiempo} días | Garantía: ${c.garantia}`).join("
-");
+        const detalle = cuentas.map(c => `${c.numero}. ${c.correo} | País: ${c.pais} | Plan: ${c.plan} | Tiempo: ${c.tiempo} días | Garantía: ${c.garantia}`).join("\n");
         const paises = Array.from(new Set(cuentas.map(c => c.pais))).join(", ");
         const planes = Array.from(new Set(cuentas.map(c => c.plan))).join(", ");
         const tiempos = Array.from(new Set(cuentas.map(c => c.tiempo))).join(", ");
@@ -4283,8 +4282,7 @@ El equipo puede contactarme para solicitar los accesos necesarios.`;
         const codigoSeguimiento = generarCodigoSeguimiento();
         const cuentasTexto = seleccionadas.map((cuenta, i) => {
           return `${i + 1}. ${cuenta.correo} | País: ${cuenta.pais || "-"} | Activación: ${cuenta.fechaActivacion || "-"} | Vencía: ${cuenta.fechaVencimiento || "-"}`;
-        }).join("
-");
+        }).join("\n");
 
         const paises = Array.from(new Set(seleccionadas.map(c => c.pais).filter(Boolean))).join(", ");
         const planes = Array.from(new Set(seleccionadas.map(c => normalizarPlanParaPrecio(c.pais, c.plan || c.tipoCuenta || "")).filter(Boolean))).join(", ");
@@ -4342,8 +4340,7 @@ El equipo puede contactarme para solicitar los accesos necesarios.`;
 
       function textoPagoComun(pago, metodoPago) {
         return `Método de pago: ${metodoPago}
-Total a pagar: ${pago.total.toFixed(2)} USDT${solicitudMontoBsActual ? "
-Monto en Bs: " + solicitudMontoBsActual + " Bs" : ""}`;
+Total a pagar: ${pago.total.toFixed(2)} USDT${solicitudMontoBsActual ? "\nMonto en Bs: " + solicitudMontoBsActual + " Bs" : ""}`;
       }
 
       function crearMensajeCuentaAsignada(info) {
@@ -4480,10 +4477,8 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
             <p><strong>Total:</strong> ${escaparHTML(item.precioUsd || "-")} USDT</p>
             <p><strong>Monto Bs:</strong> ${escaparHTML(item.montoBs || "-")}</p>
             <p><strong>Estado:</strong> <span class="estado-activo">${escaparHTML(item.estado || "Pendiente")}</span></p>
-            ${item.detalleDominio ? `<p><strong>Detalle:</strong><br>${escaparHTML(item.detalleDominio).replaceAll("
-", "<br>")}</p>` : ""}
-            ${item.detalleRenovacion ? `<p><strong>Detalle renovación:</strong><br>${escaparHTML(item.detalleRenovacion).replaceAll("
-", "<br>")}</p>` : ""}
+            ${item.detalleDominio ? `<p><strong>Detalle:</strong><br>${escaparHTML(item.detalleDominio).replaceAll("\n", "<br>")}</p>` : ""}
+            ${item.detalleRenovacion ? `<p><strong>Detalle renovación:</strong><br>${escaparHTML(item.detalleRenovacion).replaceAll("\n", "<br>")}</p>` : ""}
             <p><strong>Nota:</strong> Nuestro personal se contactará contigo en caso de algún percance.</p>
           `;
           resultadoConsulta.appendChild(card);
