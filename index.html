@@ -725,6 +725,175 @@
         width: 100%;
       }
     }
+
+
+    /* =========================================================
+       Solicitudes: Cuenta nueva / Renovación de varias cuentas
+    ========================================================= */
+    .tipo-solicitud-box,
+    .renovacion-solicitud-box,
+    .seguimiento-box {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(76,255,155,0.28);
+      border-radius: 16px;
+      padding: 15px;
+      margin-bottom: 17px;
+    }
+
+    .tipo-solicitud-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .tipo-solicitud-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 13px;
+      padding: 12px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .tipo-solicitud-option input {
+      width: auto;
+      margin: 0;
+    }
+
+    .renovacion-solicitud-box {
+      display: none;
+    }
+
+    .renovacion-correos-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .renovacion-card {
+      background: linear-gradient(135deg, rgba(10,20,45,0.84), rgba(20,45,60,0.70));
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 15px;
+      padding: 13px;
+      margin-top: 10px;
+      color: #fff;
+    }
+
+    .renovacion-card.ok {
+      border-color: rgba(76,255,155,0.48);
+      background: linear-gradient(135deg, rgba(15,45,35,0.86), rgba(15,25,55,0.72));
+    }
+
+    .renovacion-card.error-card {
+      border-color: rgba(255,95,95,0.55);
+      background: linear-gradient(135deg, rgba(60,20,20,0.86), rgba(25,20,45,0.72));
+    }
+
+    .renovacion-card p {
+      margin: 7px 0;
+      line-height: 1.45;
+    }
+
+    .renovacion-card label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      background: rgba(255,255,255,0.08);
+      padding: 10px;
+      border-radius: 11px;
+    }
+
+    .renovacion-card input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+
+    .aviso-renovacion-final {
+      background: rgba(76,255,155,0.12);
+      border: 1px solid rgba(76,255,155,0.35);
+      color: #eafff2;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.45;
+      margin-top: 14px;
+      display: none;
+    }
+
+    @media (max-width: 560px) {
+      .tipo-solicitud-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+
+
+    /* =========================================================
+       Solicitudes: Cuenta asignada / Dominio seguro
+    ========================================================= */
+    .cuenta-nueva-box,
+    .cuenta-asignada-box,
+    .dominio-box {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(76,255,155,0.28);
+      border-radius: 16px;
+      padding: 15px;
+      margin-bottom: 17px;
+    }
+
+    .cuenta-asignada-box,
+    .dominio-box {
+      display: none;
+      margin-top: 12px;
+    }
+
+    .cantidad-mini {
+      max-width: 220px;
+    }
+
+    .dominio-cuentas-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 13px;
+      margin-top: 12px;
+      margin-bottom: 12px;
+    }
+
+    .dominio-cuenta-card {
+      background: linear-gradient(135deg, rgba(10,20,45,0.84), rgba(20,45,60,0.70));
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 15px;
+      padding: 14px;
+      color: #fff;
+    }
+
+    .dominio-cuenta-card h4 {
+      margin: 0 0 12px;
+      color: #4cff9b;
+      font-size: 16px;
+    }
+
+    .dominio-cuenta-card .row {
+      margin-bottom: 0;
+    }
+
+    .mini-resumen-cantidad {
+      background: rgba(76,255,155,0.12);
+      border: 1px solid rgba(76,255,155,0.28);
+      color: #eafff2;
+      padding: 12px;
+      border-radius: 13px;
+      font-size: 13px;
+      line-height: 1.45;
+      margin: 8px 0 14px;
+    }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
@@ -2441,7 +2610,69 @@
             <style>
               body { font-family: Arial, sans-serif; padding: 30px; text-align: center; }
               h2 { color: #128c7e; }
-            </style>
+          
+
+    /* =========================================================
+       Solicitudes: Cuenta asignada / Dominio seguro
+    ========================================================= */
+    .cuenta-nueva-box,
+    .cuenta-asignada-box,
+    .dominio-box {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(76,255,155,0.28);
+      border-radius: 16px;
+      padding: 15px;
+      margin-bottom: 17px;
+    }
+
+    .cuenta-asignada-box,
+    .dominio-box {
+      display: none;
+      margin-top: 12px;
+    }
+
+    .cantidad-mini {
+      max-width: 220px;
+    }
+
+    .dominio-cuentas-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 13px;
+      margin-top: 12px;
+      margin-bottom: 12px;
+    }
+
+    .dominio-cuenta-card {
+      background: linear-gradient(135deg, rgba(10,20,45,0.84), rgba(20,45,60,0.70));
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 15px;
+      padding: 14px;
+      color: #fff;
+    }
+
+    .dominio-cuenta-card h4 {
+      margin: 0 0 12px;
+      color: #4cff9b;
+      font-size: 16px;
+    }
+
+    .dominio-cuenta-card .row {
+      margin-bottom: 0;
+    }
+
+    .mini-resumen-cantidad {
+      background: rgba(76,255,155,0.12);
+      border: 1px solid rgba(76,255,155,0.28);
+      color: #eafff2;
+      padding: 12px;
+      border-radius: 13px;
+      font-size: 13px;
+      line-height: 1.45;
+      margin: 8px 0 14px;
+    }
+
+  </style>
           </head>
           <body>
             <h2>Preparando WhatsApp...</h2>
@@ -3093,6 +3324,1174 @@ El equipo puede contactarme para solicitar los accesos necesarios.`;
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
     }
+
+
+
+    /* =========================================================
+       NUEVO FLUJO SOLICITUDES
+       - Cuenta nueva: Cuenta asignada / Dominio seguro.
+       - Renovación: verifica varios correos y calcula solo seleccionados.
+       - No se guardan claves en la web; los accesos se coordinan por WhatsApp.
+    ========================================================= */
+    (function() {
+      const NUMERO_SOPORTE_SOLICITUDES = "59162212956";
+
+      if (!formSolicitudes || !solNombre || !solNumero || !solCorreo) return;
+
+      let cuentasRenovacionVerificadas = [];
+      let totalRenovacionUsdActual = 0;
+      let subtotalRenovacionUsdActual = 0;
+      let descuentoRenovacionUsdActual = 0;
+      let tipoCambioRenovacionActual = "";
+      let montoBsRenovacionActual = "";
+
+      insertarPanelTipoSolicitud();
+      configurarConsultaPorCodigoSeguimiento();
+      configurarEventosFlujoSolicitudes();
+      actualizarModoTipoSolicitud();
+
+      function insertarPanelTipoSolicitud() {
+        const html = `
+          <div class="tipo-solicitud-box" id="tipoSolicitudBox">
+            <label for="solTipoSolicitud">Tipo de solicitud</label>
+            <div class="tipo-solicitud-grid">
+              <label class="tipo-solicitud-option">
+                <input type="radio" name="solTipoSolicitud" value="Cuenta Nueva">
+                Cuenta nueva
+              </label>
+              <label class="tipo-solicitud-option">
+                <input type="radio" name="solTipoSolicitud" value="Renovación">
+                Renovación
+              </label>
+            </div>
+          </div>
+
+          <div class="cuenta-nueva-box" id="cuentaNuevaBox" style="display:none;">
+            <label>Tipo de cuenta nueva</label>
+            <div class="tipo-solicitud-grid">
+              <label class="tipo-solicitud-option">
+                <input type="radio" name="solTipoCuentaNueva" value="Cuenta Asignada">
+                Cuenta asignada
+              </label>
+              <label class="tipo-solicitud-option">
+                <input type="radio" name="solTipoCuentaNueva" value="Dominio">
+                Dominio
+              </label>
+            </div>
+
+            <div class="cuenta-asignada-box" id="cuentaAsignadaBox">
+              <div class="detalle-titulo" style="font-size:22px;">✅ Cuenta asignada</div>
+              <p class="nota" style="margin-top:0; color:#eaf3ff;">
+                Solo coloca la cantidad que necesitas. Luego selecciona país, plan, tiempo, garantía y método de pago.
+              </p>
+              <label for="cantidadCuentaAsignada">Cantidad de cuentas asignadas</label>
+              <select id="cantidadCuentaAsignada" class="cantidad-mini">
+                <option value="">Seleccionar cantidad</option>
+                ${opcionesCantidad(20)}
+              </select>
+              <div class="mini-resumen-cantidad" id="resumenCuentaAsignada" style="display:none;"></div>
+            </div>
+
+            <div class="dominio-box" id="dominioBox">
+              <div class="detalle-titulo" style="font-size:22px;">🌐 Dominio</div>
+              <p class="nota" style="margin-top:0; color:#eaf3ff;">
+                Coloca la cantidad de cuentas. Se abrirá un espacio para cada correo y podrás seleccionar país, plan, tiempo y garantía por cuenta.
+              </p>
+              <div class="aviso-seguridad" style="margin-bottom:14px;">
+                🔐 Por seguridad, esta página no guarda claves ni contraseñas. Nuestro personal coordinará los accesos por WhatsApp si son necesarios.
+              </div>
+              <label for="cantidadDominioSolicitud">Cantidad de cuentas dominio</label>
+              <select id="cantidadDominioSolicitud" class="cantidad-mini">
+                <option value="">Seleccionar cantidad</option>
+                ${opcionesCantidad(20)}
+              </select>
+              <div id="contenedorCuentasDominio" class="dominio-cuentas-grid"></div>
+            </div>
+          </div>
+
+          <div class="renovacion-solicitud-box" id="renovacionSolicitudBox">
+            <div class="detalle-titulo" style="font-size:22px;">🔁 Renovación de cuentas</div>
+            <p class="nota" style="margin-top:0; color:#eaf3ff;">
+              Selecciona cuántas cuentas deseas renovar. Verificaremos los correos en nuestra base y solo mostraremos fecha y país de activación.
+            </p>
+
+            <label for="cantidadRenovarSolicitud">Cantidad que deseas renovar</label>
+            <select id="cantidadRenovarSolicitud">
+              <option value="">Seleccionar cantidad</option>
+              ${opcionesCantidad(20)}
+            </select>
+
+            <div id="contenedorCorreosRenovacion" class="renovacion-correos-grid"></div>
+
+            <button type="button" class="secundario" id="btnVerificarCorreosRenovacion">
+              Verificar correos en la base de datos
+            </button>
+
+            <div id="resultadoCorreosRenovacion"></div>
+
+            <div class="aviso-renovacion-final" id="avisoRenovacionFinal">
+              📌 Luego de realizar el pago, presiona <strong>Enviar solicitud de renovación y comprobante</strong>.
+              Se abrirá WhatsApp directo a nuestro número. Adjunta tu comprobante en ese chat.
+              Abajo se mostrará tu código de seguimiento para consultarlo en la sección Consulta.
+              Nuestro personal se contactará contigo en caso de algún percance.
+            </div>
+          </div>
+        `;
+
+        solCorreo.insertAdjacentHTML("afterend", html);
+      }
+
+      function opcionesCantidad(max) {
+        let html = "";
+        for (let i = 1; i <= max; i++) {
+          html += `<option value="${i}">${i} cuenta${i === 1 ? "" : "s"}</option>`;
+        }
+        return html;
+      }
+
+      function configurarEventosFlujoSolicitudes() {
+        document.querySelectorAll('input[name="solTipoSolicitud"]').forEach(input => {
+          input.addEventListener("change", function() {
+            // Al cambiar entre Cuenta nueva y Renovación, no dejamos ninguna opción secundaria marcada.
+            // Así el cliente debe presionar la opción y recién aparece lo demás.
+            document.querySelectorAll('input[name="solTipoCuentaNueva"]').forEach(opcion => {
+              opcion.checked = false;
+            });
+            actualizarModoTipoSolicitud();
+            actualizarPagoFlujoSolicitudes();
+          });
+        });
+
+        document.querySelectorAll('input[name="solTipoCuentaNueva"]').forEach(input => {
+          input.addEventListener("change", function() {
+            actualizarModoTipoSolicitud();
+            actualizarPagoFlujoSolicitudes();
+          });
+        });
+
+        const cantidadAsignada = document.getElementById("cantidadCuentaAsignada");
+        if (cantidadAsignada) {
+          cantidadAsignada.addEventListener("change", actualizarPagoFlujoSolicitudes);
+        }
+
+        const cantidadDominio = document.getElementById("cantidadDominioSolicitud");
+        if (cantidadDominio) {
+          cantidadDominio.addEventListener("change", function() {
+            crearCamposDominioSolicitud();
+            actualizarPagoFlujoSolicitudes();
+          });
+        }
+
+        const cantidadRenovacion = document.getElementById("cantidadRenovarSolicitud");
+        const btnVerificar = document.getElementById("btnVerificarCorreosRenovacion");
+
+        if (cantidadRenovacion) {
+          cantidadRenovacion.addEventListener("change", function() {
+            crearCamposCorreoRenovacion();
+            limpiarResultadoRenovacionSolicitud();
+          });
+        }
+
+        if (btnVerificar) {
+          btnVerificar.addEventListener("click", verificarCorreosRenovacionSolicitud);
+        }
+
+        [solPais, solPlan, solTiempo, solGarantia, solMetodoPago].forEach(el => {
+          if (!el) return;
+          el.addEventListener("change", function() {
+            setTimeout(actualizarPagoFlujoSolicitudes, 0);
+          });
+        });
+
+        formSolicitudes.addEventListener("submit", function(e) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          if (esModoRenovacionSolicitud()) {
+            enviarSolicitudRenovacionCliente();
+            return;
+          }
+
+          if (esCuentaNuevaDominio()) {
+            enviarSolicitudDominioCliente();
+            return;
+          }
+
+          enviarSolicitudCuentaAsignadaCliente();
+        }, true);
+      }
+
+      function esModoRenovacionSolicitud() {
+        const seleccionado = document.querySelector('input[name="solTipoSolicitud"]:checked');
+        return seleccionado && seleccionado.value === "Renovación";
+      }
+
+      function obtenerTipoCuentaNueva() {
+        const seleccionado = document.querySelector('input[name="solTipoCuentaNueva"]:checked');
+        return seleccionado ? seleccionado.value : "";
+      }
+
+      function esCuentaNuevaDominio() {
+        return !esModoRenovacionSolicitud() && obtenerTipoCuentaNueva() === "Dominio";
+      }
+
+      function esCuentaNuevaAsignada() {
+        return !esModoRenovacionSolicitud() && obtenerTipoCuentaNueva() === "Cuenta Asignada";
+      }
+
+      function setRequired(elemento, requerido) {
+        if (!elemento) return;
+        elemento.required = !!requerido;
+      }
+
+      function actualizarModoTipoSolicitud() {
+        const seleccionadoSolicitud = document.querySelector('input[name="solTipoSolicitud"]:checked');
+        const modoCuentaNueva = seleccionadoSolicitud && seleccionadoSolicitud.value === "Cuenta Nueva";
+        const modoRenovacion = seleccionadoSolicitud && seleccionadoSolicitud.value === "Renovación";
+        const tipoCuentaNueva = obtenerTipoCuentaNueva();
+        const modoDominio = modoCuentaNueva && tipoCuentaNueva === "Dominio";
+        const modoAsignada = modoCuentaNueva && tipoCuentaNueva === "Cuenta Asignada";
+        const hayFlujoActivo = modoRenovacion || modoDominio || modoAsignada;
+
+        const boxCuentaNueva = document.getElementById("cuentaNuevaBox");
+        const boxAsignada = document.getElementById("cuentaAsignadaBox");
+        const boxDominio = document.getElementById("dominioBox");
+        const boxRenovacion = document.getElementById("renovacionSolicitudBox");
+        const labelCorreo = document.querySelector('label[for="solCorreo"]');
+        const filaPaisPlan = solPais ? solPais.closest(".row") : null;
+        const filaTiempoGarantia = solTiempo ? solTiempo.closest(".row") : null;
+        const avisoSeguridad = document.querySelector("#formSolicitudes .aviso-seguridad");
+        const checkAcceso = solAccesoConfirmado ? solAccesoConfirmado.closest(".check-line") : null;
+        const labelMetodoPago = document.querySelector('label[for="solMetodoPago"]');
+
+        if (boxCuentaNueva) boxCuentaNueva.style.display = modoCuentaNueva ? "block" : "none";
+        if (boxAsignada) boxAsignada.style.display = modoAsignada ? "block" : "none";
+        if (boxDominio) boxDominio.style.display = modoDominio ? "block" : "none";
+        if (boxRenovacion) boxRenovacion.style.display = modoRenovacion ? "block" : "none";
+
+        if (labelCorreo) labelCorreo.style.display = "none";
+        solCorreo.style.display = "none";
+        setRequired(solCorreo, false);
+
+        if (avisoSeguridad) avisoSeguridad.style.display = "none";
+        if (checkAcceso) checkAcceso.style.display = "none";
+        if (solAccesoConfirmado) solAccesoConfirmado.required = false;
+
+        if (filaPaisPlan) filaPaisPlan.style.display = modoAsignada ? "grid" : "none";
+        if (filaTiempoGarantia) filaTiempoGarantia.style.display = (modoAsignada || modoRenovacion) ? "grid" : "none";
+
+        if (labelMetodoPago) labelMetodoPago.style.display = hayFlujoActivo ? "block" : "none";
+        if (solMetodoPago) {
+          solMetodoPago.style.display = hayFlujoActivo ? "block" : "none";
+          setRequired(solMetodoPago, hayFlujoActivo);
+        }
+
+        if (resumenPagoSolicitud && !hayFlujoActivo) resumenPagoSolicitud.style.display = "none";
+        if (btnEnviarSolicitud) btnEnviarSolicitud.style.display = hayFlujoActivo ? "block" : "none";
+
+        setRequired(solPlan, modoAsignada);
+        setRequired(solTiempo, modoAsignada || modoRenovacion);
+        setRequired(solGarantia, modoAsignada || modoRenovacion);
+
+        if (!seleccionadoSolicitud) {
+          limpiarResultadoRenovacionSolicitud();
+          return;
+        }
+
+        if (modoCuentaNueva && !tipoCuentaNueva) {
+          limpiarResultadoRenovacionSolicitud();
+          return;
+        }
+
+        if (modoRenovacion) {
+          btnEnviarSolicitud.textContent = "Enviar solicitud de renovación y comprobante";
+          solPais.value = "";
+          solPlan.innerHTML = `<option value="">Se seleccionará automáticamente</option>`;
+          actualizarPagoRenovacionSolicitud();
+          return;
+        }
+
+        if (modoDominio) {
+          btnEnviarSolicitud.textContent = "Enviar solicitud de dominio y comprobante";
+          solPais.value = "";
+          solPlan.innerHTML = `<option value="">Se selecciona por cuenta</option>`;
+          actualizarPagoDominioSolicitud();
+          return;
+        }
+
+        btnEnviarSolicitud.textContent = "Enviar solicitud de cuenta asignada y comprobante";
+        limpiarResultadoRenovacionSolicitud();
+        actualizarPlanesSolicitud();
+        actualizarPagoCuentaAsignadaSolicitud();
+      }
+
+      function actualizarPagoFlujoSolicitudes() {
+        if (esModoRenovacionSolicitud()) {
+          actualizarPagoRenovacionSolicitud();
+          return;
+        }
+        if (esCuentaNuevaDominio()) {
+          actualizarPagoDominioSolicitud();
+          return;
+        }
+        actualizarPagoCuentaAsignadaSolicitud();
+      }
+
+      function crearCamposDominioSolicitud() {
+        const cantidad = parseInt(document.getElementById("cantidadDominioSolicitud")?.value || "0", 10);
+        const contenedor = document.getElementById("contenedorCuentasDominio");
+        if (!contenedor) return;
+
+        contenedor.innerHTML = "";
+
+        for (let i = 1; i <= cantidad; i++) {
+          const card = document.createElement("div");
+          card.className = "dominio-cuenta-card";
+          card.innerHTML = `
+            <h4>Cuenta dominio ${i}</h4>
+            <label for="dominioCorreo_${i}">Correo de la cuenta</label>
+            <input type="text" inputmode="email" id="dominioCorreo_${i}" class="dominio-correo" placeholder="correo${i}@gmail.com" autocomplete="new-password">
+
+            <div class="row">
+              <div>
+                <label for="dominioPais_${i}">País</label>
+                <select id="dominioPais_${i}" class="dominio-pais" data-index="${i}">
+                  <option value="">Seleccionar país</option>
+                  ${opcionesPaises()}
+                </select>
+              </div>
+              <div>
+                <label for="dominioPlan_${i}">Plan</label>
+                <select id="dominioPlan_${i}" class="dominio-plan" data-index="${i}">
+                  <option value="">Seleccionar plan</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div>
+                <label for="dominioTiempo_${i}">Tiempo</label>
+                <select id="dominioTiempo_${i}" class="dominio-tiempo">
+                  <option value="">Seleccionar tiempo</option>
+                  <option value="30">30 días</option>
+                  <option value="60">60 días</option>
+                  <option value="90">90 días</option>
+                  <option value="180">180 días</option>
+                  <option value="365">365 días</option>
+                </select>
+              </div>
+              <div>
+                <label for="dominioGarantia_${i}">Garantía</label>
+                <select id="dominioGarantia_${i}" class="dominio-garantia">
+                  <option value="">Seleccionar garantía</option>
+                  <option value="Garantía de Activación">Garantía de Activación</option>
+                  <option value="Garantía Parcial">Garantía Parcial</option>
+                  <option value="Garantía Total">Garantía Total</option>
+                </select>
+              </div>
+            </div>
+          `;
+          contenedor.appendChild(card);
+        }
+
+        contenedor.querySelectorAll("select, input").forEach(el => {
+          el.addEventListener("change", function() {
+            if (el.classList.contains("dominio-pais")) {
+              actualizarPlanesDominio(el.dataset.index);
+            }
+            actualizarPagoDominioSolicitud();
+          });
+          el.addEventListener("input", actualizarPagoDominioSolicitud);
+        });
+      }
+
+      function opcionesPaises() {
+        return Object.keys(PRECIOS_SOLICITUDES || {}).map(pais => {
+          return `<option value="${escaparHTML(pais)}">${escaparHTML(pais)}</option>`;
+        }).join("");
+      }
+
+      function actualizarPlanesDominio(index) {
+        const pais = document.getElementById(`dominioPais_${index}`)?.value || "";
+        const planSelect = document.getElementById(`dominioPlan_${index}`);
+        if (!planSelect) return;
+
+        planSelect.innerHTML = `<option value="">Seleccionar plan</option>`;
+        if (!pais || !PRECIOS_SOLICITUDES[pais]) return;
+
+        Object.keys(PRECIOS_SOLICITUDES[pais]).forEach(plan => {
+          const option = document.createElement("option");
+          option.value = plan;
+          option.textContent = plan;
+          planSelect.appendChild(option);
+        });
+      }
+
+      function obtenerCuentasDominio() {
+        const cantidad = parseInt(document.getElementById("cantidadDominioSolicitud")?.value || "0", 10);
+        const cuentas = [];
+
+        for (let i = 1; i <= cantidad; i++) {
+          cuentas.push({
+            numero: i,
+            correo: document.getElementById(`dominioCorreo_${i}`)?.value.trim().toLowerCase() || "",
+            pais: document.getElementById(`dominioPais_${i}`)?.value || "",
+            plan: document.getElementById(`dominioPlan_${i}`)?.value || "",
+            tiempo: document.getElementById(`dominioTiempo_${i}`)?.value || "",
+            garantia: document.getElementById(`dominioGarantia_${i}`)?.value || ""
+          });
+        }
+
+        return cuentas;
+      }
+
+      function normalizarPlanParaPrecio(pais, planOriginal) {
+        const preciosPais = PRECIOS_SOLICITUDES[pais] || {};
+        const plan = String(planOriginal || "").trim();
+
+        if (preciosPais[plan]) return plan;
+
+        const claves = Object.keys(preciosPais);
+        const planLower = plan.toLowerCase();
+
+        if (planLower.includes("dúo") || planLower.includes("duo")) {
+          const encontrado = claves.find(p => p.toLowerCase().includes("dúo") || p.toLowerCase().includes("duo"));
+          if (encontrado) return encontrado;
+        }
+
+        if (planLower.includes("familiar") && !planLower.includes("individual")) {
+          const encontrado = claves.find(p => p.toLowerCase().includes("familiar") && !p.toLowerCase().includes("individual"));
+          if (encontrado) return encontrado;
+        }
+
+        if (planLower.includes("individual")) {
+          const encontrado = claves.find(p => p.toLowerCase().includes("individual"));
+          if (encontrado) return encontrado;
+        }
+
+        return claves[0] || plan;
+      }
+
+      function calcularPrecioUnitario(pais, plan, garantia, dias) {
+        if (!pais || !plan || !garantia || !dias) {
+          return { precioBase: 0, subtotal: 0, descuentoPorcentaje: 0, descuentoUsd: 0, total: 0 };
+        }
+        const planNormalizado = normalizarPlanParaPrecio(pais, plan);
+        const precioBase = PRECIOS_SOLICITUDES?.[pais]?.[planNormalizado]?.[garantia] || 0;
+        const meses = obtenerMesesPorTiempo(parseInt(dias, 10));
+        const subtotal = precioBase * meses;
+        const descuentoPorcentaje = obtenerDescuentoSolicitud(planNormalizado, garantia, parseInt(dias, 10));
+        const descuentoUsd = subtotal * (descuentoPorcentaje / 100);
+        const total = subtotal - descuentoUsd;
+        return { precioBase, subtotal, descuentoPorcentaje, descuentoUsd, total, planNormalizado };
+      }
+
+      function calcularPagoCuentaAsignada() {
+        const cantidad = parseInt(document.getElementById("cantidadCuentaAsignada")?.value || "0", 10);
+        const pais = solPais.value;
+        const plan = solPlan.value;
+        const garantia = solGarantia.value;
+        const dias = parseInt(solTiempo.value || "0", 10);
+        const unitario = calcularPrecioUnitario(pais, plan, garantia, dias);
+
+        return {
+          cantidad,
+          precioBase: unitario.precioBase * cantidad,
+          subtotal: unitario.subtotal * cantidad,
+          descuentoPorcentaje: unitario.descuentoPorcentaje,
+          descuentoUsd: unitario.descuentoUsd * cantidad,
+          total: unitario.total * cantidad,
+          unitario
+        };
+      }
+
+      function calcularPagoDominio() {
+        const cuentas = obtenerCuentasDominio();
+        let precioBase = 0;
+        let subtotal = 0;
+        let descuentoUsd = 0;
+        let total = 0;
+        let descuentoPorcentajeMax = 0;
+
+        cuentas.forEach(cuenta => {
+          const calculo = calcularPrecioUnitario(cuenta.pais, cuenta.plan, cuenta.garantia, cuenta.tiempo);
+          precioBase += calculo.precioBase;
+          subtotal += calculo.subtotal;
+          descuentoUsd += calculo.descuentoUsd;
+          total += calculo.total;
+          descuentoPorcentajeMax = Math.max(descuentoPorcentajeMax, calculo.descuentoPorcentaje);
+        });
+
+        return { cantidad: cuentas.length, precioBase, subtotal, descuentoUsd, descuentoPorcentaje: descuentoPorcentajeMax, total };
+      }
+
+      function actualizarResumenPago(calculo, etiquetaBase) {
+        const metodo = solMetodoPago.value;
+
+        solicitudPrecioActual = calculo.total;
+        solicitudPrecioBaseActual = calculo.precioBase;
+        solicitudSubtotalActual = calculo.subtotal;
+        solicitudDescuentoPorcentajeActual = calculo.descuentoPorcentaje;
+        solicitudDescuentoUsdActual = calculo.descuentoUsd;
+        solicitudTipoCambioActual = "";
+        solicitudMontoBsActual = "";
+
+        if (!calculo.total || !metodo) {
+          resumenPagoSolicitud.style.display = "none";
+          return;
+        }
+
+        resumenPagoSolicitud.style.display = "block";
+        solPrecioBaseUsd.textContent = etiquetaBase || (calculo.precioBase.toFixed(2) + " USDT / mes total");
+        solPrecioUsd.textContent = calculo.total.toFixed(2) + " USDT";
+
+        if (calculo.descuentoUsd > 0) {
+          lineaSubtotalUsd.style.display = "block";
+          lineaDescuentoUsd.style.display = "block";
+          solSubtotalUsd.textContent = calculo.subtotal.toFixed(2) + " USDT";
+          solDescuentoUsd.textContent = "-" + calculo.descuentoUsd.toFixed(2) + " USDT";
+        } else {
+          lineaSubtotalUsd.style.display = "none";
+          lineaDescuentoUsd.style.display = "none";
+          solSubtotalUsd.textContent = "-";
+          solDescuentoUsd.textContent = "-";
+        }
+
+        bloqueQrBolivia.style.display = "none";
+        bloqueBinance.style.display = "none";
+        lineaTipoCambio.style.display = "none";
+        lineaMontoBs.style.display = "none";
+
+        if (metodo === "Binance") {
+          bloqueBinance.style.display = "block";
+          return;
+        }
+
+        if (metodo === "QR Bolivia") {
+          bloqueQrBolivia.style.display = "block";
+          lineaTipoCambio.style.display = "block";
+          lineaMontoBs.style.display = "block";
+          solTipoCambio.textContent = "Consultando...";
+          solMontoBs.textContent = "Consultando...";
+
+          enviarJSONP({ action: "cotizacion" }, function(respuesta) {
+            if (respuesta.status !== "success") {
+              solTipoCambio.textContent = "No disponible";
+              solMontoBs.textContent = "No disponible";
+              mostrarMensaje(mensajeSolicitud, "No se pudo obtener el tipo de cambio desde la base.", "error");
+              return;
+            }
+
+            const tc = parseFloat(respuesta.tipoCambio);
+            if (!tc) {
+              solTipoCambio.textContent = "No disponible";
+              solMontoBs.textContent = "No disponible";
+              return;
+            }
+
+            const montoBs = calculo.total * tc;
+            solicitudTipoCambioActual = tc.toFixed(2);
+            solicitudMontoBsActual = montoBs.toFixed(2);
+            tipoCambioRenovacionActual = solicitudTipoCambioActual;
+            montoBsRenovacionActual = solicitudMontoBsActual;
+
+            solTipoCambio.textContent = tc.toFixed(2) + " Bs";
+            solMontoBs.textContent = montoBs.toFixed(2) + " Bs";
+          });
+        }
+      }
+
+      function actualizarPagoCuentaAsignadaSolicitud() {
+        if (!esCuentaNuevaAsignada()) return;
+        const pago = calcularPagoCuentaAsignada();
+        const resumen = document.getElementById("resumenCuentaAsignada");
+        if (resumen) {
+          if (pago.cantidad && pago.unitario.precioBase && solTiempo.value) {
+            resumen.style.display = "block";
+            resumen.innerHTML = `Cantidad: <strong>${pago.cantidad}</strong> cuenta${pago.cantidad === 1 ? "" : "s"}. Total calculado: <strong>${pago.total.toFixed(2)} USDT</strong>.`;
+          } else {
+            resumen.style.display = "none";
+          }
+        }
+        actualizarResumenPago(pago, pago.unitario.precioBase ? `${pago.unitario.precioBase.toFixed(2)} USDT / cuenta / mes × ${pago.cantidad || 0}` : "-");
+      }
+
+      function actualizarPagoDominioSolicitud() {
+        if (!esCuentaNuevaDominio()) return;
+        const pago = calcularPagoDominio();
+        actualizarResumenPago(pago, pago.precioBase ? pago.precioBase.toFixed(2) + " USDT / mes total" : "-");
+      }
+
+      function crearCamposCorreoRenovacion() {
+        const cantidad = parseInt(document.getElementById("cantidadRenovarSolicitud")?.value || "0", 10);
+        const contenedor = document.getElementById("contenedorCorreosRenovacion");
+        if (!contenedor) return;
+
+        contenedor.innerHTML = "";
+        cuentasRenovacionVerificadas = [];
+
+        for (let i = 1; i <= cantidad; i++) {
+          const div = document.createElement("div");
+          div.innerHTML = `
+            <label for="correoRenovar_${i}">Correo de la cuenta ${i}</label>
+            <input type="text" inputmode="email" id="correoRenovar_${i}" class="correo-renovar-input" placeholder="correo${i}@gmail.com" autocomplete="new-password">
+          `;
+          contenedor.appendChild(div);
+        }
+      }
+
+      function obtenerCorreosRenovacionDigitados() {
+        return Array.from(document.querySelectorAll(".correo-renovar-input"))
+          .map(input => input.value.trim().toLowerCase())
+          .filter(Boolean);
+      }
+
+      function limpiarResultadoRenovacionSolicitud() {
+        const resultado = document.getElementById("resultadoCorreosRenovacion");
+        const aviso = document.getElementById("avisoRenovacionFinal");
+        if (resultado) resultado.innerHTML = "";
+        if (aviso) aviso.style.display = "none";
+        cuentasRenovacionVerificadas = [];
+        totalRenovacionUsdActual = 0;
+        subtotalRenovacionUsdActual = 0;
+        descuentoRenovacionUsdActual = 0;
+        tipoCambioRenovacionActual = "";
+        montoBsRenovacionActual = "";
+        if (esModoRenovacionSolicitud()) {
+          resumenPagoSolicitud.style.display = "none";
+        }
+      }
+
+      function verificarCorreosRenovacionSolicitud() {
+        const correos = obtenerCorreosRenovacionDigitados();
+        const cantidad = parseInt(document.getElementById("cantidadRenovarSolicitud")?.value || "0", 10);
+        const resultado = document.getElementById("resultadoCorreosRenovacion");
+        const btn = document.getElementById("btnVerificarCorreosRenovacion");
+
+        if (!cantidad) {
+          mostrarMensaje(mensajeSolicitud, "Selecciona la cantidad que deseas renovar.", "error");
+          return;
+        }
+
+        if (correos.length !== cantidad) {
+          mostrarMensaje(mensajeSolicitud, "Completa todos los correos que deseas verificar.", "error");
+          return;
+        }
+
+        const repetidos = correos.filter((correo, index) => correos.indexOf(correo) !== index);
+        if (repetidos.length) {
+          mostrarMensaje(mensajeSolicitud, "Hay correos repetidos. Revisa la lista.", "error");
+          return;
+        }
+
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = "Verificando...";
+        }
+        if (resultado) resultado.innerHTML = `<div class="renovacion-card">Buscando correos en la base...</div>`;
+
+        enviarJSONP({
+          action: "verificarCorreosRenovacion",
+          correos: JSON.stringify(correos)
+        }, function(respuesta) {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = "Verificar correos en la base de datos";
+          }
+
+          if (respuesta.status !== "success") {
+            if (resultado) resultado.innerHTML = "";
+            mostrarMensaje(mensajeSolicitud, "Error al verificar correos: " + (respuesta.message || "Intenta nuevamente."), "error");
+            return;
+          }
+
+          cuentasRenovacionVerificadas = respuesta.data || [];
+          mostrarResultadoCorreosRenovacion();
+        });
+      }
+
+      function mostrarResultadoCorreosRenovacion() {
+        const resultado = document.getElementById("resultadoCorreosRenovacion");
+        const aviso = document.getElementById("avisoRenovacionFinal");
+        if (!resultado) return;
+
+        resultado.innerHTML = "";
+
+        cuentasRenovacionVerificadas.forEach((cuenta, index) => {
+          const card = document.createElement("div");
+          card.className = "renovacion-card " + (cuenta.encontrado ? "ok" : "error-card");
+
+          if (!cuenta.encontrado) {
+            card.innerHTML = `
+              <p><strong>Correo:</strong> ${escaparHTML(cuenta.correo || "")}</p>
+              <p><strong>Resultado:</strong> No encontrado en nuestra base de datos.</p>
+            `;
+          } else {
+            card.innerHTML = `
+              <p><strong>Correo:</strong> ${escaparHTML(cuenta.correo || "")}</p>
+              <p><strong>Fecha de activación:</strong> ${escaparHTML(cuenta.fechaActivacion || "-")}</p>
+              <p><strong>Fecha en la cual vencía:</strong> ${escaparHTML(cuenta.fechaVencimiento || "-")}</p>
+              <p><strong>País:</strong> ${obtenerBanderaHTML(cuenta.pais)} ${escaparHTML(cuenta.pais || "-")}</p>
+              <label>
+                <input type="checkbox" class="check-renovar-cuenta" data-index="${index}">
+                ¿Deseas renovar esta cuenta? Sí
+              </label>
+            `;
+          }
+
+          resultado.appendChild(card);
+        });
+
+        resultado.querySelectorAll(".check-renovar-cuenta").forEach(check => {
+          check.addEventListener("change", function() {
+            if (aviso) aviso.style.display = obtenerCuentasSeleccionadasRenovacion().length ? "block" : "none";
+            autoseleccionarPaisYPlanRenovacion();
+            actualizarPagoRenovacionSolicitud();
+          });
+        });
+
+        mostrarMensaje(mensajeSolicitud, "Verificación finalizada. Marca las cuentas que deseas renovar.", "exito");
+        actualizarPagoRenovacionSolicitud();
+      }
+
+      function obtenerCuentasSeleccionadasRenovacion() {
+        return Array.from(document.querySelectorAll(".check-renovar-cuenta:checked"))
+          .map(check => cuentasRenovacionVerificadas[parseInt(check.dataset.index, 10)])
+          .filter(Boolean);
+      }
+
+      function autoseleccionarPaisYPlanRenovacion() {
+        const seleccionadas = obtenerCuentasSeleccionadasRenovacion();
+        if (!seleccionadas.length) {
+          solPais.value = "";
+          solPlan.innerHTML = `<option value="">Se seleccionará automáticamente</option>`;
+          return;
+        }
+
+        const primera = seleccionadas[0];
+        const pais = primera.pais || "";
+        const plan = normalizarPlanParaPrecio(pais, primera.plan || primera.tipoCuenta || "");
+
+        solPais.value = pais;
+        solPlan.innerHTML = `<option value="${escaparHTML(plan)}" selected>${escaparHTML(plan)}</option>`;
+      }
+
+      function calcularPrecioCuentaRenovacion(cuenta) {
+        const pais = cuenta.pais || "";
+        const plan = normalizarPlanParaPrecio(pais, cuenta.plan || cuenta.tipoCuenta || "");
+        const garantia = solGarantia.value;
+        const dias = parseInt(solTiempo.value || "0", 10);
+        return { ...calcularPrecioUnitario(pais, plan, garantia, dias), pais, plan };
+      }
+
+      function calcularPagoRenovacionSolicitud() {
+        const seleccionadas = obtenerCuentasSeleccionadasRenovacion();
+        let precioBase = 0;
+        let subtotal = 0;
+        let descuentoUsd = 0;
+        let total = 0;
+        let descuentoPorcentajeMax = 0;
+
+        seleccionadas.forEach(cuenta => {
+          const calculo = calcularPrecioCuentaRenovacion(cuenta);
+          precioBase += calculo.precioBase;
+          subtotal += calculo.subtotal;
+          descuentoUsd += calculo.descuentoUsd;
+          total += calculo.total;
+          descuentoPorcentajeMax = Math.max(descuentoPorcentajeMax, calculo.descuentoPorcentaje);
+        });
+
+        return { cantidad: seleccionadas.length, precioBase, subtotal, descuentoUsd, descuentoPorcentaje: descuentoPorcentajeMax, total };
+      }
+
+      function actualizarPagoRenovacionSolicitud() {
+        if (!esModoRenovacionSolicitud()) return;
+        const pago = calcularPagoRenovacionSolicitud();
+        totalRenovacionUsdActual = pago.total;
+        subtotalRenovacionUsdActual = pago.subtotal;
+        descuentoRenovacionUsdActual = pago.descuentoUsd;
+        actualizarResumenPago(pago, pago.precioBase ? pago.precioBase.toFixed(2) + " USDT / mes total" : "-");
+      }
+
+      function validarDatosBasicosCliente() {
+        const nombre = solNombre.value.trim();
+        const numero = obtenerNumeroWhatsappConMas(solNumero.value.trim());
+
+        if (!nombre || !numero) {
+          mostrarMensaje(mensajeSolicitud, "Completa el nombre y WhatsApp del cliente.", "error");
+          return null;
+        }
+
+        return { nombre, numero };
+      }
+
+      function validarPagoListo(total) {
+        if (!solMetodoPago.value) {
+          mostrarMensaje(mensajeSolicitud, "Selecciona método de pago.", "error");
+          return false;
+        }
+        if (!total) {
+          mostrarMensaje(mensajeSolicitud, "No se pudo calcular el monto total. Revisa los datos seleccionados.", "error");
+          return false;
+        }
+        if (solMetodoPago.value === "QR Bolivia" && !solicitudMontoBsActual) {
+          mostrarMensaje(mensajeSolicitud, "Espera a que se cargue el monto en Bs.", "error");
+          return false;
+        }
+        return true;
+      }
+
+      function enviarSolicitudCuentaAsignadaCliente() {
+        const cliente = validarDatosBasicosCliente();
+        if (!cliente) return;
+
+        const cantidad = parseInt(document.getElementById("cantidadCuentaAsignada")?.value || "0", 10);
+        const pais = solPais.value;
+        const plan = solPlan.value;
+        const tiempo = solTiempo.value;
+        const garantia = solGarantia.value;
+        const metodoPago = solMetodoPago.value;
+        const pago = calcularPagoCuentaAsignada();
+
+        if (!cantidad || !pais || !plan || !tiempo || !garantia || !metodoPago) {
+          mostrarMensaje(mensajeSolicitud, "Completa cantidad, país, plan, tiempo, garantía y método de pago.", "error");
+          return;
+        }
+
+        if (!validarPagoListo(pago.total)) return;
+
+        const codigoSeguimiento = generarCodigoSeguimiento();
+        const detalle = `${cantidad} cuenta${cantidad === 1 ? "" : "s"} asignada${cantidad === 1 ? "" : "s"} | País: ${pais} | Plan: ${plan} | Tiempo: ${tiempo} días | Garantía: ${garantia}`;
+
+        const datos = {
+          action: "solicitud",
+          tipoSolicitud: "Cuenta Nueva - Cuenta Asignada",
+          tipoCuentaNueva: "Cuenta Asignada",
+          cantidadCuentas: String(cantidad),
+          codigoSeguimiento,
+          nombre: cliente.nombre,
+          numero: cliente.numero,
+          correo: "Cuenta asignada",
+          accesoConfirmado: "No requiere correo del cliente en la web",
+          pais,
+          plan,
+          tiempo,
+          garantia,
+          precioBaseUsd: pago.precioBase.toFixed(2),
+          subtotalUsd: pago.subtotal.toFixed(2),
+          descuentoPorcentaje: pago.descuentoPorcentaje.toFixed(0),
+          descuentoUsd: pago.descuentoUsd.toFixed(2),
+          precioUsd: pago.total.toFixed(2),
+          metodoPago,
+          tipoCambio: solicitudTipoCambioActual,
+          montoBs: solicitudMontoBsActual,
+          detalleDominio: detalle
+        };
+
+        enviarSolicitudYWhatsapp(datos, crearMensajeCuentaAsignada({ codigoSeguimiento, cliente, detalle, pago, metodoPago }));
+      }
+
+      function enviarSolicitudDominioCliente() {
+        const cliente = validarDatosBasicosCliente();
+        if (!cliente) return;
+
+        const cuentas = obtenerCuentasDominio();
+        const cantidad = parseInt(document.getElementById("cantidadDominioSolicitud")?.value || "0", 10);
+        const metodoPago = solMetodoPago.value;
+        const pago = calcularPagoDominio();
+
+        if (!cantidad || cuentas.length !== cantidad) {
+          mostrarMensaje(mensajeSolicitud, "Selecciona la cantidad de cuentas dominio.", "error");
+          return;
+        }
+
+        for (const cuenta of cuentas) {
+          if (!cuenta.correo || !cuenta.pais || !cuenta.plan || !cuenta.tiempo || !cuenta.garantia) {
+            mostrarMensaje(mensajeSolicitud, "Completa correo, país, plan, tiempo y garantía de cada cuenta dominio.", "error");
+            return;
+          }
+        }
+
+        const correos = cuentas.map(c => c.correo);
+        const repetidos = correos.filter((correo, index) => correos.indexOf(correo) !== index);
+        if (repetidos.length) {
+          mostrarMensaje(mensajeSolicitud, "Hay correos repetidos en las cuentas dominio.", "error");
+          return;
+        }
+
+        if (!validarPagoListo(pago.total)) return;
+
+        const codigoSeguimiento = generarCodigoSeguimiento();
+        const detalle = cuentas.map(c => `${c.numero}. ${c.correo} | País: ${c.pais} | Plan: ${c.plan} | Tiempo: ${c.tiempo} días | Garantía: ${c.garantia}`).join("
+");
+        const paises = Array.from(new Set(cuentas.map(c => c.pais))).join(", ");
+        const planes = Array.from(new Set(cuentas.map(c => c.plan))).join(", ");
+        const tiempos = Array.from(new Set(cuentas.map(c => c.tiempo))).join(", ");
+        const garantias = Array.from(new Set(cuentas.map(c => c.garantia))).join(", ");
+
+        const datos = {
+          action: "solicitud",
+          tipoSolicitud: "Cuenta Nueva - Dominio",
+          tipoCuentaNueva: "Dominio",
+          cantidadCuentas: String(cantidad),
+          codigoSeguimiento,
+          nombre: cliente.nombre,
+          numero: cliente.numero,
+          correo: correos.join(", "),
+          accesoConfirmado: "Accesos pendientes por coordinación segura en WhatsApp",
+          pais: paises,
+          plan: planes,
+          tiempo: tiempos,
+          garantia: garantias,
+          precioBaseUsd: pago.precioBase.toFixed(2),
+          subtotalUsd: pago.subtotal.toFixed(2),
+          descuentoPorcentaje: pago.descuentoPorcentaje.toFixed(0),
+          descuentoUsd: pago.descuentoUsd.toFixed(2),
+          precioUsd: pago.total.toFixed(2),
+          metodoPago,
+          tipoCambio: solicitudTipoCambioActual,
+          montoBs: solicitudMontoBsActual,
+          detalleDominio: detalle,
+          cuentasDominio: JSON.stringify(cuentas)
+        };
+
+        enviarSolicitudYWhatsapp(datos, crearMensajeDominio({ codigoSeguimiento, cliente, detalle, pago, metodoPago }));
+      }
+
+      function enviarSolicitudRenovacionCliente() {
+        const cliente = validarDatosBasicosCliente();
+        if (!cliente) return;
+
+        const seleccionadas = obtenerCuentasSeleccionadasRenovacion();
+        const tiempo = solTiempo.value;
+        const garantia = solGarantia.value;
+        const metodoPago = solMetodoPago.value;
+        const pago = calcularPagoRenovacionSolicitud();
+
+        if (!seleccionadas.length) {
+          mostrarMensaje(mensajeSolicitud, "Verifica los correos y marca al menos una cuenta para renovar.", "error");
+          return;
+        }
+
+        if (!tiempo || !garantia || !metodoPago) {
+          mostrarMensaje(mensajeSolicitud, "Selecciona tiempo, garantía y método de pago.", "error");
+          return;
+        }
+
+        if (!validarPagoListo(pago.total)) return;
+
+        const codigoSeguimiento = generarCodigoSeguimiento();
+        const cuentasTexto = seleccionadas.map((cuenta, i) => {
+          return `${i + 1}. ${cuenta.correo} | País: ${cuenta.pais || "-"} | Activación: ${cuenta.fechaActivacion || "-"} | Vencía: ${cuenta.fechaVencimiento || "-"}`;
+        }).join("
+");
+
+        const paises = Array.from(new Set(seleccionadas.map(c => c.pais).filter(Boolean))).join(", ");
+        const planes = Array.from(new Set(seleccionadas.map(c => normalizarPlanParaPrecio(c.pais, c.plan || c.tipoCuenta || "")).filter(Boolean))).join(", ");
+
+        const datos = {
+          action: "solicitud",
+          tipoSolicitud: "Renovación",
+          codigoSeguimiento,
+          nombre: cliente.nombre,
+          numero: cliente.numero,
+          correo: seleccionadas.map(c => c.correo).join(", "),
+          accesoConfirmado: "Renovación solicitada por cliente",
+          pais: paises,
+          plan: planes,
+          tiempo,
+          garantia,
+          precioBaseUsd: pago.precioBase.toFixed(2),
+          subtotalUsd: pago.subtotal.toFixed(2),
+          descuentoPorcentaje: pago.descuentoPorcentaje.toFixed(0),
+          descuentoUsd: pago.descuentoUsd.toFixed(2),
+          precioUsd: pago.total.toFixed(2),
+          metodoPago,
+          tipoCambio: solicitudTipoCambioActual,
+          montoBs: solicitudMontoBsActual,
+          cuentasRenovacion: JSON.stringify(seleccionadas),
+          detalleRenovacion: cuentasTexto,
+          cantidadCuentas: String(seleccionadas.length)
+        };
+
+        enviarSolicitudYWhatsapp(datos, crearMensajeRenovacion({ codigoSeguimiento, cliente, cuentasTexto, tiempo, garantia, metodoPago, pago }));
+      }
+
+      function enviarSolicitudYWhatsapp(datos, mensajeWhatsapp) {
+        btnEnviarSolicitud.disabled = true;
+        btnEnviarSolicitud.textContent = "Enviando solicitud...";
+
+        enviarJSONP(datos, function(respuesta) {
+          btnEnviarSolicitud.disabled = false;
+          actualizarModoTipoSolicitud();
+
+          if (respuesta.status !== "success") {
+            mostrarMensaje(mensajeSolicitud, "Error al guardar solicitud: " + (respuesta.message || "Intenta nuevamente."), "error");
+            return;
+          }
+
+          window.open("https://wa.me/" + NUMERO_SOPORTE_SOLICITUDES + "?text=" + encodeURIComponent(mensajeWhatsapp), "_blank");
+
+          mostrarMensaje(
+            mensajeSolicitud,
+            "Solicitud enviada correctamente. Código de seguimiento: " + datos.codigoSeguimiento + ". Nuestro personal se contactará contigo en caso de algún percance.",
+            "exito"
+          );
+        });
+      }
+
+      function textoPagoComun(pago, metodoPago) {
+        return `Método de pago: ${metodoPago}
+Total a pagar: ${pago.total.toFixed(2)} USDT${solicitudMontoBsActual ? "
+Monto en Bs: " + solicitudMontoBsActual + " Bs" : ""}`;
+      }
+
+      function crearMensajeCuentaAsignada(info) {
+        return `Hola, quiero enviar el comprobante de pago para una solicitud de cuenta asignada.
+
+Código de seguimiento: ${info.codigoSeguimiento}
+
+Cliente: ${info.cliente.nombre}
+WhatsApp: ${info.cliente.numero}
+
+Detalle:
+${info.detalle}
+
+${textoPagoComun(info.pago, info.metodoPago)}
+
+📌 Adjuntaré aquí mi comprobante, voucher o recibo de pago.
+
+Luego podré consultar mi solicitud en la sección Consulta con el código: ${info.codigoSeguimiento}
+
+Nuestro personal se contactará conmigo en caso de algún percance.`;
+      }
+
+      function crearMensajeDominio(info) {
+        return `Hola, quiero enviar el comprobante de pago para una solicitud de dominio.
+
+Código de seguimiento: ${info.codigoSeguimiento}
+
+Cliente: ${info.cliente.nombre}
+WhatsApp: ${info.cliente.numero}
+
+Cuentas solicitadas:
+${info.detalle}
+
+${textoPagoComun(info.pago, info.metodoPago)}
+
+📌 Adjuntaré aquí mi comprobante, voucher o recibo de pago.
+🔐 Los accesos se coordinarán por este WhatsApp si son necesarios.
+
+Luego podré consultar mi solicitud en la sección Consulta con el código: ${info.codigoSeguimiento}
+
+Nuestro personal se contactará conmigo en caso de algún percance.`;
+      }
+
+      function crearMensajeRenovacion(info) {
+        return `Hola, quiero enviar el comprobante de pago para una solicitud de renovación.
+
+Código de seguimiento: ${info.codigoSeguimiento}
+
+Cliente: ${info.cliente.nombre}
+WhatsApp: ${info.cliente.numero}
+
+Cuentas seleccionadas:
+${info.cuentasTexto}
+
+Tiempo solicitado: ${info.tiempo} días
+Garantía: ${info.garantia}
+${textoPagoComun(info.pago, info.metodoPago)}
+
+📌 Adjuntaré aquí mi comprobante, voucher o recibo de pago.
+
+Luego podré consultar mi solicitud en la sección Consulta con el código: ${info.codigoSeguimiento}
+
+Nuestro personal se contactará conmigo en caso de algún percance.`;
+      }
+
+      function configurarConsultaPorCodigoSeguimiento() {
+        const correoConsultaInput = document.getElementById("correoConsulta");
+        const formConsultaActual = document.getElementById("formConsulta");
+        const labelConsulta = document.querySelector('label[for="correoConsulta"]');
+
+        if (!correoConsultaInput || !formConsultaActual) return;
+
+        if (labelConsulta) {
+          labelConsulta.textContent = "Correo de la cuenta o código de seguimiento";
+        }
+        correoConsultaInput.placeholder = "correo@gmail.com o SPO-20260623-1234";
+
+        formConsultaActual.addEventListener("submit", function(e) {
+          const valor = correoConsultaInput.value.trim();
+          if (!/^SPO-/i.test(valor)) return;
+
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          consultarSolicitudPorCodigo(valor);
+        }, true);
+      }
+
+      function consultarSolicitudPorCodigo(codigo) {
+        if (!codigo) {
+          mostrarMensaje(mensajeConsulta, "Coloca el código de seguimiento.", "error");
+          return;
+        }
+
+        resultadoConsulta.innerHTML = "";
+        resumenConsulta.style.display = "none";
+        btnBuscar.disabled = true;
+        btnBuscar.textContent = "Consultando...";
+
+        enviarJSONP({
+          action: "consultaSeguimiento",
+          codigoSeguimiento: codigo
+        }, function(respuesta) {
+          btnBuscar.disabled = false;
+          btnBuscar.textContent = "Consultar";
+
+          if (respuesta.status !== "success") {
+            mostrarMensaje(mensajeConsulta, "Error al consultar: " + (respuesta.message || "Intenta nuevamente."), "error");
+            return;
+          }
+
+          if (!respuesta.data) {
+            mostrarMensaje(mensajeConsulta, "No se encontró una solicitud con ese código.", "error");
+            return;
+          }
+
+          const item = respuesta.data;
+          mostrarMensaje(mensajeConsulta, "Solicitud encontrada correctamente.", "exito");
+
+          const card = document.createElement("div");
+          card.className = "consulta-card";
+          card.innerHTML = `
+            <div class="detalle-titulo">📌 Seguimiento de solicitud</div>
+            <p><strong>Código:</strong> ${escaparHTML(item.codigoSeguimiento || "-")}</p>
+            <p><strong>Tipo:</strong> ${escaparHTML(item.tipoSolicitud || "-")}</p>
+            <p><strong>Modalidad:</strong> ${escaparHTML(item.tipoCuentaNueva || "-")}</p>
+            <p><strong>Cantidad:</strong> ${escaparHTML(item.cantidadCuentas || "-")}</p>
+            <p><strong>Nombre:</strong> ${escaparHTML(item.nombre || "-")}</p>
+            <p><strong>WhatsApp:</strong> ${escaparHTML(item.numero || "-")}</p>
+            <p><strong>Correo / cuentas:</strong> ${escaparHTML(item.correo || "-")}</p>
+            <p><strong>País:</strong> ${escaparHTML(item.pais || "-")}</p>
+            <p><strong>Plan:</strong> ${escaparHTML(item.plan || "-")}</p>
+            <p><strong>Tiempo:</strong> ${escaparHTML(item.tiempo || "-")} días</p>
+            <p><strong>Garantía:</strong> ${escaparHTML(item.garantia || "-")}</p>
+            <p><strong>Total:</strong> ${escaparHTML(item.precioUsd || "-")} USDT</p>
+            <p><strong>Monto Bs:</strong> ${escaparHTML(item.montoBs || "-")}</p>
+            <p><strong>Estado:</strong> <span class="estado-activo">${escaparHTML(item.estado || "Pendiente")}</span></p>
+            ${item.detalleDominio ? `<p><strong>Detalle:</strong><br>${escaparHTML(item.detalleDominio).replaceAll("
+", "<br>")}</p>` : ""}
+            ${item.detalleRenovacion ? `<p><strong>Detalle renovación:</strong><br>${escaparHTML(item.detalleRenovacion).replaceAll("
+", "<br>")}</p>` : ""}
+            <p><strong>Nota:</strong> Nuestro personal se contactará contigo en caso de algún percance.</p>
+          `;
+          resultadoConsulta.appendChild(card);
+        });
+      }
+    })();
+
+
   </script>
 
 </body>
