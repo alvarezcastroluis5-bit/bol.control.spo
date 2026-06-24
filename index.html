@@ -899,6 +899,19 @@
       margin: 8px 0 14px;
     }
 
+  
+    .nota-renovacion-consulta {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(30, 215, 96, 0.45);
+      background: rgba(30, 215, 96, 0.12);
+      color: #ffffff;
+      font-weight: 900;
+      line-height: 1.45;
+      text-transform: uppercase;
+    }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
@@ -1014,6 +1027,32 @@
           </div>
         </div>
 
+        <label for="garantiaRegistro">Garantía</label>
+        <select id="garantiaRegistro" autocomplete="off" required>
+          <option value="">Seleccionar garantía</option>
+          <option value="Garantía de Activación">Garantía de Activación</option>
+          <option value="Garantía Parcial">Garantía Parcial</option>
+          <option value="Garantía Total">Garantía Total</option>
+        </select>
+
+        <div class="info-box" id="descripcionGarantiaRegistro">
+          <div class="detalle-titulo">🛡️ ¿Qué significa cada garantía?</div>
+          <div style="display:grid; gap:12px; margin-top:10px;">
+            <div>
+              <strong>Garantía de Activación:</strong><br>
+              Cubre únicamente la activación inicial del servicio. Si la cuenta se activa correctamente, la garantía queda cumplida.
+            </div>
+            <div>
+              <strong>Garantía Parcial:</strong><br>
+              Si la cuenta cae o presenta algún incidente dentro del tiempo contratado, el cliente paga solo la mitad del monto para levantar nuevamente el servicio.
+            </div>
+            <div>
+              <strong>Garantía Total:</strong><br>
+              Si la cuenta cae desde el día 1 hasta el día 30, se levanta una vez sin costo. Si vuelve a caer, el cliente selecciona nuevamente el tipo de plan que desea.
+            </div>
+          </div>
+        </div>
+
         <label for="correoBanca">Correo de la banca</label>
         <input type="text" inputmode="email" id="correoBanca" name="correo_banca_no_autofill_6549" placeholder="correo asociado a la banca" autocomplete="new-password" required>
 
@@ -1066,6 +1105,7 @@
           </p>
           <p><strong>WhatsApp:</strong> <span id="renovacionNumeroCliente">-</span></p>
           <p><strong>País de la cuenta:</strong> <span id="renovacionPaisCuenta">-</span></p>
+          <p><strong>Tipo de garantía:</strong> <span id="renovacionGarantiaCuenta">-</span></p>
           <p><strong>Fecha en la cual vencía:</strong> <span id="renovacionVencia">-</span></p>
           <p><strong>Días que le quedan:</strong> <span id="renovacionDias" class="contador">-</span></p>
         </div>
@@ -1276,11 +1316,13 @@
           <p id="lineaMontoBs" style="display:none;"><strong>Monto a pagar en Bs:</strong> <span id="solMontoBs">-</span></p>
 
           <div id="bloqueQrBolivia" style="display:none;">
-            <img src="qr-bnb.png" alt="QR BNB Bolivia" class="qr-pago">
+            <div class="detalle-titulo">📲 QR Bolivia</div>
+            <img src="qr-bnb.png" alt="QR BNB Bolivia" class="qr-pago" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<div class=&quot;aviso-pago&quot;>No se encontró la imagen del QR. Sube el archivo <strong>qr-bnb.png</strong> en la misma carpeta del index.</div>');">
           </div>
 
           <div id="bloqueBinance" style="display:none;">
-            <img src="qr-binance.png" alt="QR Binance" class="qr-pago">
+            <div class="detalle-titulo">🟡 Binance</div>
+            <img src="qr-binance.png" alt="QR Binance" class="qr-pago" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<div class=&quot;aviso-pago&quot;>No se encontró la imagen del QR. Sube el archivo <strong>qr-binance.png</strong> en la misma carpeta del index.</div>');">
 
             <label>Dirección de depósito Binance</label>
             <div class="copy-box">
@@ -1295,7 +1337,7 @@
         </div>
 
         <button type="submit" class="enviar" id="btnEnviarSolicitud">
-          Presiona aquí para enviar solicitud y comprobante
+          Enviar solicitud y comprobante
         </button>
       </form>
 
@@ -1360,6 +1402,7 @@
     const renovacionNombreCliente = document.getElementById("renovacionNombreCliente");
     const renovacionNumeroCliente = document.getElementById("renovacionNumeroCliente");
     const renovacionPaisCuenta = document.getElementById("renovacionPaisCuenta");
+    const renovacionGarantiaCuenta = document.getElementById("renovacionGarantiaCuenta");
     const renovacionVencia = document.getElementById("renovacionVencia");
     const renovacionDias = document.getElementById("renovacionDias");
     const renovacionCorreoBanca = document.getElementById("renovacionCorreoBanca");
@@ -1741,6 +1784,7 @@
       if (renovacionNombreCliente) renovacionNombreCliente.textContent = "-";
       if (renovacionNumeroCliente) renovacionNumeroCliente.textContent = "-";
       if (renovacionPaisCuenta) renovacionPaisCuenta.textContent = "-";
+      if (renovacionGarantiaCuenta) renovacionGarantiaCuenta.textContent = "-";
       if (renovacionVencia) renovacionVencia.textContent = "-";
 
       if (renovacionDias) {
@@ -1825,7 +1869,7 @@
 
       if (btnEnviarSolicitud) {
         btnEnviarSolicitud.disabled = false;
-        btnEnviarSolicitud.textContent = "Presiona aquí para enviar solicitud y comprobante";
+        btnEnviarSolicitud.textContent = "Enviar solicitud y comprobante";
       }
     }
 
@@ -1994,12 +2038,13 @@
       const pais = document.getElementById("pais").value;
       const fechaAct = fechaActivacion.value;
       const tiempoSuscripcion = duracion.value;
+      const garantia = document.getElementById("garantiaRegistro").value;
       const correoBanca = document.getElementById("correoBanca").value.trim();
 
       const tarjetaSegura = obtenerTarjetaSegura(numeroTarjetaInput);
       const fechasCalculadas = calcularFechasRegistro();
 
-      if (!correoCuenta || !nombreCliente || !numeroCliente || !tipoCuenta || !pais || !fechaAct || !tiempoSuscripcion || !correoBanca) {
+      if (!correoCuenta || !nombreCliente || !numeroCliente || !tipoCuenta || !pais || !fechaAct || !tiempoSuscripcion || !garantia || !correoBanca) {
         mostrarMensaje(mensajeRegistro, "Completa todos los campos.", "error");
         return;
       }
@@ -2024,6 +2069,7 @@
         pais,
         fechaActivacion: fechaAct,
         tiempoSuscripcion,
+        garantia,
         fechaVencimiento: fechasCalculadas.fechaVencimiento,
         diasRestantes: fechasCalculadas.diasRestantes,
         correoBanca,
@@ -2089,15 +2135,8 @@
     });
 
     function mostrarResumenConsulta(item) {
-      consultaActivacion.textContent = item.fechaActivacion || "-";
-      consultaVencimiento.textContent = item.fechaVencimiento || "-";
-      consultaDias.textContent = item.diasRestantes || "-";
-
-      consultaDias.classList.remove("vencido");
-
-      if (item.estado === "Vencida") consultaDias.classList.add("vencido");
-
-      resumenConsulta.style.display = "block";
+      /* La consulta pública solo muestra la tarjeta resumida solicitada. */
+      resumenConsulta.style.display = "none";
     }
 
     function mostrarResultadosConsulta(registros) {
@@ -2111,25 +2150,19 @@
 
         card.innerHTML = `
           <div class="detalle-titulo">✨ Detalles de la cuenta</div>
-          <div class="detalle-subtitulo">Información completa del registro consultado</div>
+          <div class="detalle-subtitulo">Información de la cuenta consultada</div>
 
           <p><strong>Correo de la cuenta:</strong> ${escaparHTML(item.correoCuenta)}</p>
           <p><strong>Nombre del cliente:</strong> ${escaparHTML(item.nombreCliente)}</p>
-          <p><strong>WhatsApp del cliente:</strong> ${escaparHTML(item.numeroCliente)}</p>
-
-          <p><strong>Tipo de cuenta:</strong> ${escaparHTML(item.tipoCuenta)}</p>
-          <p><strong>País de la cuenta:</strong> ${obtenerBanderaHTML(item.pais)} ${escaparHTML(item.pais)}</p>
-
-          <p><strong>Fecha de activación:</strong> ${escaparHTML(item.fechaActivacion)}</p>
-          <p><strong>Tiempo de suscripción:</strong> ${escaparHTML(item.tiempoSuscripcion)} días</p>
-          <p><strong>Fecha de vencimiento:</strong> ${escaparHTML(item.fechaVencimiento)}</p>
-          <p><strong>Días restantes:</strong> ${escaparHTML(item.diasRestantes)}</p>
-
           <p><strong>Estado:</strong> <span class="${estadoClase}">${escaparHTML(item.estado)}</span></p>
+          <p><strong>Tipo de cuenta:</strong> ${escaparHTML(item.tipoCuenta)}</p>
+          <p><strong>Tipo de garantía:</strong> ${escaparHTML(item.garantia || "-")}</p>
+          <p><strong>Fecha de activación:</strong> ${escaparHTML(item.fechaActivacion)}</p>
+          <p><strong>Fecha de renovación:</strong> ${escaparHTML(item.fechaVencimiento)}</p>
 
-          <p><strong>Correo de banca:</strong> ${escaparHTML(item.correoBanca)}</p>
-          <p><strong>Tarjeta:</strong> ${mostrarTarjeta(item)}</p>
-          <p><strong>Últimos 4 dígitos:</strong> ${escaparHTML(item.ultimos4Tarjeta)}</p>
+          <div class="nota-renovacion-consulta">
+            RENUEVA CON 2 DÍAS DE ANTICIPACIÓN PARA CONTINUAR CON LA MISMA CUENTA
+          </div>
         `;
 
         resultadoConsulta.appendChild(card);
@@ -2199,6 +2232,7 @@
       renovacionNombreCliente.textContent = item.nombreCliente || "-";
       renovacionNumeroCliente.textContent = item.numeroCliente || "-";
       renovacionPaisCuenta.innerHTML = `${obtenerBanderaHTML(item.pais)} ${escaparHTML(item.pais || "-")}`;
+      if (renovacionGarantiaCuenta) renovacionGarantiaCuenta.textContent = item.garantia || "-";
 
       renovacionVencia.textContent = item.fechaVencimiento || "-";
       renovacionDias.textContent = item.diasRestantes || "-";
@@ -2956,7 +2990,7 @@
 
       enviarJSONP(datos, function(respuesta) {
         btnEnviarSolicitud.disabled = false;
-        btnEnviarSolicitud.textContent = "Presiona aquí para enviar solicitud y comprobante";
+        btnEnviarSolicitud.textContent = "Enviar solicitud y comprobante";
 
         if (respuesta.status !== "success") {
           mostrarMensaje(mensajeSolicitud, "Error al guardar solicitud: " + respuesta.message, "error");
@@ -3409,7 +3443,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           <div class="renovacion-solicitud-box" id="renovacionSolicitudBox">
             <div class="detalle-titulo" style="font-size:22px;">🔁 Renovación de cuentas</div>
             <p class="nota" style="margin-top:0; color:#eaf3ff;">
-              Selecciona cuántas cuentas deseas renovar. Verificaremos los correos en nuestra base y solo mostraremos fecha y país de activación.
+              Selecciona cuántas cuentas deseas renovar. Verificaremos los correos en nuestra base y mostraremos fecha, país y tipo de garantía de cada cuenta.
             </p>
 
             <label for="cantidadRenovarSolicitud">Cantidad que deseas renovar</label>
@@ -3427,7 +3461,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
             <div id="resultadoCorreosRenovacion"></div>
 
             <div class="aviso-renovacion-final" id="avisoRenovacionFinal">
-              📌 Luego de realizar el pago, presiona <strong>Enviar solicitud de renovación y comprobante</strong>.
+              📌 Luego de realizar el pago, presiona <strong>Enviar solicitud y comprobante</strong>.
               Se abrirá WhatsApp directo a nuestro número. Adjunta tu comprobante en ese chat.
               Abajo se mostrará tu código de seguimiento para consultarlo en la sección Consulta.
               Nuestro personal se contactará contigo en caso de algún percance.
@@ -3602,7 +3636,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         }
 
         if (modoRenovacion) {
-          btnEnviarSolicitud.textContent = "Enviar solicitud de renovación y comprobante";
+          btnEnviarSolicitud.textContent = "Enviar solicitud y comprobante";
           solPais.value = "";
           solPlan.innerHTML = `<option value="">Se seleccionará automáticamente</option>`;
           actualizarPagoRenovacionSolicitud();
@@ -3610,14 +3644,14 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         }
 
         if (modoDominio) {
-          btnEnviarSolicitud.textContent = "Enviar solicitud de dominio y comprobante";
+          btnEnviarSolicitud.textContent = "Enviar solicitud y comprobante";
           solPais.value = "";
           solPlan.innerHTML = `<option value="">Se selecciona por cuenta</option>`;
           actualizarPagoDominioSolicitud();
           return;
         }
 
-        btnEnviarSolicitud.textContent = "Enviar solicitud de cuenta asignada y comprobante";
+        btnEnviarSolicitud.textContent = "Enviar solicitud y comprobante";
         limpiarResultadoRenovacionSolicitud();
         actualizarPlanesSolicitud();
         actualizarPagoCuentaAsignadaSolicitud();
@@ -3826,23 +3860,29 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
 
       function actualizarResumenPago(calculo, etiquetaBase) {
         const metodo = solMetodoPago.value;
+        const totalListo = !!(calculo && calculo.total && calculo.total > 0);
 
-        solicitudPrecioActual = calculo.total;
-        solicitudPrecioBaseActual = calculo.precioBase;
-        solicitudSubtotalActual = calculo.subtotal;
-        solicitudDescuentoPorcentajeActual = calculo.descuentoPorcentaje;
-        solicitudDescuentoUsdActual = calculo.descuentoUsd;
+        solicitudPrecioActual = calculo.total || 0;
+        solicitudPrecioBaseActual = calculo.precioBase || 0;
+        solicitudSubtotalActual = calculo.subtotal || 0;
+        solicitudDescuentoPorcentajeActual = calculo.descuentoPorcentaje || 0;
+        solicitudDescuentoUsdActual = calculo.descuentoUsd || 0;
         solicitudTipoCambioActual = "";
         solicitudMontoBsActual = "";
 
-        if (!calculo.total || !metodo) {
+        bloqueQrBolivia.style.display = "none";
+        bloqueBinance.style.display = "none";
+        lineaTipoCambio.style.display = "none";
+        lineaMontoBs.style.display = "none";
+
+        if (!metodo) {
           resumenPagoSolicitud.style.display = "none";
           return;
         }
 
         resumenPagoSolicitud.style.display = "block";
-        solPrecioBaseUsd.textContent = etiquetaBase || (calculo.precioBase.toFixed(2) + " USDT / mes total");
-        solPrecioUsd.textContent = calculo.total.toFixed(2) + " USDT";
+        solPrecioBaseUsd.textContent = calculo.precioBase ? (etiquetaBase || (calculo.precioBase.toFixed(2) + " USDT / mes total")) : "Completa país, plan, tiempo y garantía";
+        solPrecioUsd.textContent = totalListo ? (calculo.total.toFixed(2) + " USDT") : "Completa los datos para calcular";
 
         if (calculo.descuentoUsd > 0) {
           lineaSubtotalUsd.style.display = "block";
@@ -3856,11 +3896,6 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           solDescuentoUsd.textContent = "-";
         }
 
-        bloqueQrBolivia.style.display = "none";
-        bloqueBinance.style.display = "none";
-        lineaTipoCambio.style.display = "none";
-        lineaMontoBs.style.display = "none";
-
         if (metodo === "Binance") {
           bloqueBinance.style.display = "block";
           return;
@@ -3871,30 +3906,36 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           lineaTipoCambio.style.display = "block";
           lineaMontoBs.style.display = "block";
           solTipoCambio.textContent = "Consultando...";
-          solMontoBs.textContent = "Consultando...";
+          solMontoBs.textContent = totalListo ? "Consultando..." : "Completa los datos para calcular";
 
           enviarJSONP({ action: "cotizacion" }, function(respuesta) {
             if (respuesta.status !== "success") {
               solTipoCambio.textContent = "No disponible";
-              solMontoBs.textContent = "No disponible";
-              mostrarMensaje(mensajeSolicitud, "No se pudo obtener el tipo de cambio desde la base.", "error");
+              solMontoBs.textContent = totalListo ? "No disponible" : "Completa los datos para calcular";
               return;
             }
 
             const tc = parseFloat(respuesta.tipoCambio);
             if (!tc) {
               solTipoCambio.textContent = "No disponible";
-              solMontoBs.textContent = "No disponible";
+              solMontoBs.textContent = totalListo ? "No disponible" : "Completa los datos para calcular";
+              return;
+            }
+
+            solicitudTipoCambioActual = tc.toFixed(2);
+            tipoCambioRenovacionActual = solicitudTipoCambioActual;
+            solTipoCambio.textContent = tc.toFixed(2) + " Bs";
+
+            if (!totalListo) {
+              solicitudMontoBsActual = "";
+              montoBsRenovacionActual = "";
+              solMontoBs.textContent = "Completa los datos para calcular";
               return;
             }
 
             const montoBs = calculo.total * tc;
-            solicitudTipoCambioActual = tc.toFixed(2);
             solicitudMontoBsActual = montoBs.toFixed(2);
-            tipoCambioRenovacionActual = solicitudTipoCambioActual;
             montoBsRenovacionActual = solicitudMontoBsActual;
-
-            solTipoCambio.textContent = tc.toFixed(2) + " Bs";
             solMontoBs.textContent = montoBs.toFixed(2) + " Bs";
           });
         }
@@ -4031,6 +4072,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
               <p><strong>Fecha de activación:</strong> ${escaparHTML(cuenta.fechaActivacion || "-")}</p>
               <p><strong>Fecha en la cual vencía:</strong> ${escaparHTML(cuenta.fechaVencimiento || "-")}</p>
               <p><strong>País:</strong> ${obtenerBanderaHTML(cuenta.pais)} ${escaparHTML(cuenta.pais || "-")}</p>
+              <p><strong>Tipo de garantía:</strong> ${escaparHTML(cuenta.garantia || "-")}</p>
               <label>
                 <input type="checkbox" class="check-renovar-cuenta" data-index="${index}">
                 ¿Deseas renovar esta cuenta? Sí
@@ -4280,7 +4322,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
 
         const codigoSeguimiento = generarCodigoSeguimiento();
         const cuentasTexto = seleccionadas.map((cuenta, i) => {
-          return `${i + 1}. ${cuenta.correo} | País: ${cuenta.pais || "-"} | Activación: ${cuenta.fechaActivacion || "-"} | Vencía: ${cuenta.fechaVencimiento || "-"}`;
+          return `${i + 1}. ${cuenta.correo} | País: ${cuenta.pais || "-"} | Garantía actual: ${cuenta.garantia || "-"} | Activación: ${cuenta.fechaActivacion || "-"} | Vencía: ${cuenta.fechaVencimiento || "-"}`;
         }).join("\n");
 
         const paises = Array.from(new Set(seleccionadas.map(c => c.pais).filter(Boolean))).join(", ");
