@@ -1297,7 +1297,7 @@
         </div>
 
         <button type="submit" class="enviar" id="btnEnviarSolicitud">
-          Presiona aquí para enviar solicitud y comprobante
+          Enviar solicitud y comprobante
         </button>
       </form>
 
@@ -1827,7 +1827,7 @@
 
       if (btnEnviarSolicitud) {
         btnEnviarSolicitud.disabled = false;
-        btnEnviarSolicitud.textContent = "Presiona aquí para enviar solicitud y comprobante";
+        btnEnviarSolicitud.textContent = "Enviar solicitud y comprobante";
       }
     }
 
@@ -2958,7 +2958,7 @@
 
       enviarJSONP(datos, function(respuesta) {
         btnEnviarSolicitud.disabled = false;
-        btnEnviarSolicitud.textContent = "Presiona aquí para enviar solicitud y comprobante";
+        btnEnviarSolicitud.textContent = "Enviar solicitud y comprobante";
 
         if (respuesta.status !== "success") {
           mostrarMensaje(mensajeSolicitud, "Error al guardar solicitud: " + respuesta.message, "error");
@@ -3429,7 +3429,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
             <div id="resultadoCorreosRenovacion"></div>
 
             <div class="aviso-renovacion-final" id="avisoRenovacionFinal">
-              📌 Luego de realizar el pago, presiona <strong>Enviar solicitud de renovación y comprobante</strong>.
+              📌 Luego de realizar el pago, presiona <strong>Enviar solicitud y comprobante</strong>.
               Se abrirá WhatsApp directo a nuestro número. Adjunta tu comprobante en ese chat.
               Abajo se mostrará tu código de seguimiento para consultarlo en la sección Consulta.
               Nuestro personal se contactará contigo en caso de algún percance.
@@ -3604,7 +3604,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         }
 
         if (modoRenovacion) {
-          btnEnviarSolicitud.textContent = "Enviar solicitud de renovación y comprobante";
+          btnEnviarSolicitud.textContent = "Enviar solicitud y comprobante";
           solPais.value = "";
           solPlan.innerHTML = `<option value="">Se seleccionará automáticamente</option>`;
           actualizarPagoRenovacionSolicitud();
@@ -3612,14 +3612,14 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         }
 
         if (modoDominio) {
-          btnEnviarSolicitud.textContent = "Enviar solicitud de dominio y comprobante";
+          btnEnviarSolicitud.textContent = "Enviar solicitud y comprobante";
           solPais.value = "";
           solPlan.innerHTML = `<option value="">Se selecciona por cuenta</option>`;
           actualizarPagoDominioSolicitud();
           return;
         }
 
-        btnEnviarSolicitud.textContent = "Enviar solicitud de cuenta asignada y comprobante";
+        btnEnviarSolicitud.textContent = "Enviar solicitud y comprobante";
         limpiarResultadoRenovacionSolicitud();
         actualizarPlanesSolicitud();
         actualizarPagoCuentaAsignadaSolicitud();
