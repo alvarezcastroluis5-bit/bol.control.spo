@@ -1276,11 +1276,13 @@
           <p id="lineaMontoBs" style="display:none;"><strong>Monto a pagar en Bs:</strong> <span id="solMontoBs">-</span></p>
 
           <div id="bloqueQrBolivia" style="display:none;">
-            <img src="qr-bnb.png" alt="QR BNB Bolivia" class="qr-pago">
+            <div class="detalle-titulo">📲 QR Bolivia</div>
+            <img src="qr-bnb.png" alt="QR BNB Bolivia" class="qr-pago" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<div class=&quot;aviso-pago&quot;>No se encontró la imagen del QR. Sube el archivo <strong>qr-bnb.png</strong> en la misma carpeta del index.</div>');">
           </div>
 
           <div id="bloqueBinance" style="display:none;">
-            <img src="qr-binance.png" alt="QR Binance" class="qr-pago">
+            <div class="detalle-titulo">🟡 Binance</div>
+            <img src="qr-binance.png" alt="QR Binance" class="qr-pago" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<div class=&quot;aviso-pago&quot;>No se encontró la imagen del QR. Sube el archivo <strong>qr-binance.png</strong> en la misma carpeta del index.</div>');">
 
             <label>Dirección de depósito Binance</label>
             <div class="copy-box">
@@ -2994,31 +2996,34 @@
     }
 
     function actualizarDescripcionGarantia() {
-      const garantia = solGarantia.value;
-      let texto = "";
+      if (!descripcionGarantia) return;
 
-      if (garantia === "Garantía de Activación") {
-        texto = `<strong>Garantía de Activación:</strong><br>
-        La garantía solo tiene validez por 30 días luego de la activación. Se revisa la activación inicial del servicio.`;
-      }
+      const metodoVisible = solMetodoPago && solMetodoPago.style.display !== "none";
 
-      if (garantia === "Garantía Parcial") {
-        texto = `<strong>Garantía Parcial:</strong><br>
-        Desde el momento de activación, si la cuenta cae o presenta algún incidente, el cliente paga la mitad del monto para levantar nuevamente el servicio.`;
-      }
-
-      if (garantia === "Garantía Total") {
-        texto = `<strong>Garantía Total:</strong><br>
-        Si la cuenta cae desde el día 1 hasta el día 30, se levanta una vez sin costo. Si vuelve a caer, el cliente selecciona nuevamente el tipo de plan que desea.`;
-      }
-
-      if (texto) {
-        descripcionGarantia.innerHTML = texto;
-        descripcionGarantia.style.display = "block";
-      } else {
+      if (!metodoVisible) {
         descripcionGarantia.innerHTML = "";
         descripcionGarantia.style.display = "none";
+        return;
       }
+
+      descripcionGarantia.innerHTML = `
+        <div class="detalle-titulo">🛡️ ¿Qué significa cada garantía?</div>
+        <div style="display:grid; gap:12px; margin-top:10px;">
+          <div>
+            <strong>Garantía de Activación:</strong><br>
+            Cubre únicamente la activación inicial del servicio. Si la cuenta se activa correctamente, la garantía queda cumplida.
+          </div>
+          <div>
+            <strong>Garantía Parcial:</strong><br>
+            Si la cuenta cae o presenta algún incidente dentro del tiempo contratado, el cliente paga solo la mitad del monto para levantar nuevamente el servicio.
+          </div>
+          <div>
+            <strong>Garantía Total:</strong><br>
+            Si la cuenta cae desde el día 1 hasta el día 30, se levanta una vez sin costo. Si vuelve a caer, el cliente selecciona nuevamente el tipo de plan que desea.
+          </div>
+        </div>
+      `;
+      descripcionGarantia.style.display = "block";
     }
 
     function obtenerPrecioBaseSolicitud() {
@@ -3586,6 +3591,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         setRequired(solPlan, modoAsignada);
         setRequired(solTiempo, modoAsignada || modoRenovacion);
         setRequired(solGarantia, modoAsignada || modoRenovacion);
+        actualizarDescripcionGarantia();
 
         if (!seleccionadoSolicitud) {
           limpiarResultadoRenovacionSolicitud();
@@ -3697,6 +3703,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           });
           el.addEventListener("input", actualizarPagoDominioSolicitud);
         });
+        actualizarDescripcionGarantia();
       }
 
       function opcionesPaises() {
@@ -3821,23 +3828,29 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
 
       function actualizarResumenPago(calculo, etiquetaBase) {
         const metodo = solMetodoPago.value;
+        const totalListo = !!(calculo && calculo.total && calculo.total > 0);
 
-        solicitudPrecioActual = calculo.total;
-        solicitudPrecioBaseActual = calculo.precioBase;
-        solicitudSubtotalActual = calculo.subtotal;
-        solicitudDescuentoPorcentajeActual = calculo.descuentoPorcentaje;
-        solicitudDescuentoUsdActual = calculo.descuentoUsd;
+        solicitudPrecioActual = calculo.total || 0;
+        solicitudPrecioBaseActual = calculo.precioBase || 0;
+        solicitudSubtotalActual = calculo.subtotal || 0;
+        solicitudDescuentoPorcentajeActual = calculo.descuentoPorcentaje || 0;
+        solicitudDescuentoUsdActual = calculo.descuentoUsd || 0;
         solicitudTipoCambioActual = "";
         solicitudMontoBsActual = "";
 
-        if (!calculo.total || !metodo) {
+        bloqueQrBolivia.style.display = "none";
+        bloqueBinance.style.display = "none";
+        lineaTipoCambio.style.display = "none";
+        lineaMontoBs.style.display = "none";
+
+        if (!metodo) {
           resumenPagoSolicitud.style.display = "none";
           return;
         }
 
         resumenPagoSolicitud.style.display = "block";
-        solPrecioBaseUsd.textContent = etiquetaBase || (calculo.precioBase.toFixed(2) + " USDT / mes total");
-        solPrecioUsd.textContent = calculo.total.toFixed(2) + " USDT";
+        solPrecioBaseUsd.textContent = calculo.precioBase ? (etiquetaBase || (calculo.precioBase.toFixed(2) + " USDT / mes total")) : "Completa país, plan, tiempo y garantía";
+        solPrecioUsd.textContent = totalListo ? (calculo.total.toFixed(2) + " USDT") : "Completa los datos para calcular";
 
         if (calculo.descuentoUsd > 0) {
           lineaSubtotalUsd.style.display = "block";
@@ -3851,11 +3864,6 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           solDescuentoUsd.textContent = "-";
         }
 
-        bloqueQrBolivia.style.display = "none";
-        bloqueBinance.style.display = "none";
-        lineaTipoCambio.style.display = "none";
-        lineaMontoBs.style.display = "none";
-
         if (metodo === "Binance") {
           bloqueBinance.style.display = "block";
           return;
@@ -3866,30 +3874,36 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           lineaTipoCambio.style.display = "block";
           lineaMontoBs.style.display = "block";
           solTipoCambio.textContent = "Consultando...";
-          solMontoBs.textContent = "Consultando...";
+          solMontoBs.textContent = totalListo ? "Consultando..." : "Completa los datos para calcular";
 
           enviarJSONP({ action: "cotizacion" }, function(respuesta) {
             if (respuesta.status !== "success") {
               solTipoCambio.textContent = "No disponible";
-              solMontoBs.textContent = "No disponible";
-              mostrarMensaje(mensajeSolicitud, "No se pudo obtener el tipo de cambio desde la base.", "error");
+              solMontoBs.textContent = totalListo ? "No disponible" : "Completa los datos para calcular";
               return;
             }
 
             const tc = parseFloat(respuesta.tipoCambio);
             if (!tc) {
               solTipoCambio.textContent = "No disponible";
-              solMontoBs.textContent = "No disponible";
+              solMontoBs.textContent = totalListo ? "No disponible" : "Completa los datos para calcular";
+              return;
+            }
+
+            solicitudTipoCambioActual = tc.toFixed(2);
+            tipoCambioRenovacionActual = solicitudTipoCambioActual;
+            solTipoCambio.textContent = tc.toFixed(2) + " Bs";
+
+            if (!totalListo) {
+              solicitudMontoBsActual = "";
+              montoBsRenovacionActual = "";
+              solMontoBs.textContent = "Completa los datos para calcular";
               return;
             }
 
             const montoBs = calculo.total * tc;
-            solicitudTipoCambioActual = tc.toFixed(2);
             solicitudMontoBsActual = montoBs.toFixed(2);
-            tipoCambioRenovacionActual = solicitudTipoCambioActual;
             montoBsRenovacionActual = solicitudMontoBsActual;
-
-            solTipoCambio.textContent = tc.toFixed(2) + " Bs";
             solMontoBs.textContent = montoBs.toFixed(2) + " Bs";
           });
         }
