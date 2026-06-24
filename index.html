@@ -1276,13 +1276,11 @@
           <p id="lineaMontoBs" style="display:none;"><strong>Monto a pagar en Bs:</strong> <span id="solMontoBs">-</span></p>
 
           <div id="bloqueQrBolivia" style="display:none;">
-            <div class="detalle-titulo">📲 QR Bolivia</div>
-            <img src="qr-bnb.png" alt="QR BNB Bolivia" class="qr-pago" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<div class=&quot;aviso-pago&quot;>No se encontró la imagen del QR. Sube el archivo <strong>qr-bnb.png</strong> en la misma carpeta del index.</div>');">
+            <img src="qr-bnb.png" alt="QR BNB Bolivia" class="qr-pago">
           </div>
 
           <div id="bloqueBinance" style="display:none;">
-            <div class="detalle-titulo">🟡 Binance</div>
-            <img src="qr-binance.png" alt="QR Binance" class="qr-pago" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<div class=&quot;aviso-pago&quot;>No se encontró la imagen del QR. Sube el archivo <strong>qr-binance.png</strong> en la misma carpeta del index.</div>');">
+            <img src="qr-binance.png" alt="QR Binance" class="qr-pago">
 
             <label>Dirección de depósito Binance</label>
             <div class="copy-box">
@@ -1297,7 +1295,7 @@
         </div>
 
         <button type="submit" class="enviar" id="btnEnviarSolicitud">
-          Enviar solicitud y comprobante
+          Presiona aquí para enviar solicitud y comprobante
         </button>
       </form>
 
@@ -1827,7 +1825,7 @@
 
       if (btnEnviarSolicitud) {
         btnEnviarSolicitud.disabled = false;
-        btnEnviarSolicitud.textContent = "Enviar solicitud y comprobante";
+        btnEnviarSolicitud.textContent = "Presiona aquí para enviar solicitud y comprobante";
       }
     }
 
@@ -2958,7 +2956,7 @@
 
       enviarJSONP(datos, function(respuesta) {
         btnEnviarSolicitud.disabled = false;
-        btnEnviarSolicitud.textContent = "Enviar solicitud y comprobante";
+        btnEnviarSolicitud.textContent = "Presiona aquí para enviar solicitud y comprobante";
 
         if (respuesta.status !== "success") {
           mostrarMensaje(mensajeSolicitud, "Error al guardar solicitud: " + respuesta.message, "error");
@@ -3429,7 +3427,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
             <div id="resultadoCorreosRenovacion"></div>
 
             <div class="aviso-renovacion-final" id="avisoRenovacionFinal">
-              📌 Luego de realizar el pago, presiona <strong>Enviar solicitud y comprobante</strong>.
+              📌 Luego de realizar el pago, presiona <strong>Enviar solicitud de renovación y comprobante</strong>.
               Se abrirá WhatsApp directo a nuestro número. Adjunta tu comprobante en ese chat.
               Abajo se mostrará tu código de seguimiento para consultarlo en la sección Consulta.
               Nuestro personal se contactará contigo en caso de algún percance.
@@ -3604,7 +3602,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         }
 
         if (modoRenovacion) {
-          btnEnviarSolicitud.textContent = "Enviar solicitud y comprobante";
+          btnEnviarSolicitud.textContent = "Enviar solicitud de renovación y comprobante";
           solPais.value = "";
           solPlan.innerHTML = `<option value="">Se seleccionará automáticamente</option>`;
           actualizarPagoRenovacionSolicitud();
@@ -3612,14 +3610,14 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         }
 
         if (modoDominio) {
-          btnEnviarSolicitud.textContent = "Enviar solicitud y comprobante";
+          btnEnviarSolicitud.textContent = "Enviar solicitud de dominio y comprobante";
           solPais.value = "";
           solPlan.innerHTML = `<option value="">Se selecciona por cuenta</option>`;
           actualizarPagoDominioSolicitud();
           return;
         }
 
-        btnEnviarSolicitud.textContent = "Enviar solicitud y comprobante";
+        btnEnviarSolicitud.textContent = "Enviar solicitud de cuenta asignada y comprobante";
         limpiarResultadoRenovacionSolicitud();
         actualizarPlanesSolicitud();
         actualizarPagoCuentaAsignadaSolicitud();
@@ -3828,29 +3826,23 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
 
       function actualizarResumenPago(calculo, etiquetaBase) {
         const metodo = solMetodoPago.value;
-        const totalListo = !!(calculo && calculo.total && calculo.total > 0);
 
-        solicitudPrecioActual = calculo.total || 0;
-        solicitudPrecioBaseActual = calculo.precioBase || 0;
-        solicitudSubtotalActual = calculo.subtotal || 0;
-        solicitudDescuentoPorcentajeActual = calculo.descuentoPorcentaje || 0;
-        solicitudDescuentoUsdActual = calculo.descuentoUsd || 0;
+        solicitudPrecioActual = calculo.total;
+        solicitudPrecioBaseActual = calculo.precioBase;
+        solicitudSubtotalActual = calculo.subtotal;
+        solicitudDescuentoPorcentajeActual = calculo.descuentoPorcentaje;
+        solicitudDescuentoUsdActual = calculo.descuentoUsd;
         solicitudTipoCambioActual = "";
         solicitudMontoBsActual = "";
 
-        bloqueQrBolivia.style.display = "none";
-        bloqueBinance.style.display = "none";
-        lineaTipoCambio.style.display = "none";
-        lineaMontoBs.style.display = "none";
-
-        if (!metodo) {
+        if (!calculo.total || !metodo) {
           resumenPagoSolicitud.style.display = "none";
           return;
         }
 
         resumenPagoSolicitud.style.display = "block";
-        solPrecioBaseUsd.textContent = calculo.precioBase ? (etiquetaBase || (calculo.precioBase.toFixed(2) + " USDT / mes total")) : "Completa país, plan, tiempo y garantía";
-        solPrecioUsd.textContent = totalListo ? (calculo.total.toFixed(2) + " USDT") : "Completa los datos para calcular";
+        solPrecioBaseUsd.textContent = etiquetaBase || (calculo.precioBase.toFixed(2) + " USDT / mes total");
+        solPrecioUsd.textContent = calculo.total.toFixed(2) + " USDT";
 
         if (calculo.descuentoUsd > 0) {
           lineaSubtotalUsd.style.display = "block";
@@ -3864,6 +3856,11 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           solDescuentoUsd.textContent = "-";
         }
 
+        bloqueQrBolivia.style.display = "none";
+        bloqueBinance.style.display = "none";
+        lineaTipoCambio.style.display = "none";
+        lineaMontoBs.style.display = "none";
+
         if (metodo === "Binance") {
           bloqueBinance.style.display = "block";
           return;
@@ -3874,36 +3871,30 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           lineaTipoCambio.style.display = "block";
           lineaMontoBs.style.display = "block";
           solTipoCambio.textContent = "Consultando...";
-          solMontoBs.textContent = totalListo ? "Consultando..." : "Completa los datos para calcular";
+          solMontoBs.textContent = "Consultando...";
 
           enviarJSONP({ action: "cotizacion" }, function(respuesta) {
             if (respuesta.status !== "success") {
               solTipoCambio.textContent = "No disponible";
-              solMontoBs.textContent = totalListo ? "No disponible" : "Completa los datos para calcular";
+              solMontoBs.textContent = "No disponible";
+              mostrarMensaje(mensajeSolicitud, "No se pudo obtener el tipo de cambio desde la base.", "error");
               return;
             }
 
             const tc = parseFloat(respuesta.tipoCambio);
             if (!tc) {
               solTipoCambio.textContent = "No disponible";
-              solMontoBs.textContent = totalListo ? "No disponible" : "Completa los datos para calcular";
-              return;
-            }
-
-            solicitudTipoCambioActual = tc.toFixed(2);
-            tipoCambioRenovacionActual = solicitudTipoCambioActual;
-            solTipoCambio.textContent = tc.toFixed(2) + " Bs";
-
-            if (!totalListo) {
-              solicitudMontoBsActual = "";
-              montoBsRenovacionActual = "";
-              solMontoBs.textContent = "Completa los datos para calcular";
+              solMontoBs.textContent = "No disponible";
               return;
             }
 
             const montoBs = calculo.total * tc;
+            solicitudTipoCambioActual = tc.toFixed(2);
             solicitudMontoBsActual = montoBs.toFixed(2);
+            tipoCambioRenovacionActual = solicitudTipoCambioActual;
             montoBsRenovacionActual = solicitudMontoBsActual;
+
+            solTipoCambio.textContent = tc.toFixed(2) + " Bs";
             solMontoBs.textContent = montoBs.toFixed(2) + " Bs";
           });
         }
