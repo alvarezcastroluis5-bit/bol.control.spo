@@ -1192,15 +1192,8 @@
         <label for="solNumero">Número WhatsApp sin + (ejemplo: 591XXXXXXXX)</label>
         <input type="text" inputmode="tel" id="solNumero" name="sol_numero_no_autofill" placeholder="591XXXXXXXX" autocomplete="new-password" required>
 
-        <label for="solCorreo">Correo de la cuenta</label>
+        <label for="solCorreo">Correo de la cuenta + acceso por WhatsApp</label>
         <input type="text" inputmode="email" id="solCorreo" name="sol_correo_no_autofill" placeholder="correo@gmail.com" autocomplete="new-password" required>
-
-        <div class="aviso-seguridad">
-          🔐 <strong>PASS / ACCESOS</strong><br>
-          Por seguridad, no coloques tu contraseña en esta página.
-          Nuestro equipo se contactará contigo para pedirte los accesos necesarios y continuar con la activación.
-          Si no podemos acceder a la cuenta, tu solicitud puede tener demora.
-        </div>
 
         <label class="check-line">
           <input type="checkbox" id="solAccesoConfirmado">
@@ -3211,9 +3204,8 @@ Código de activación / seguimiento: ${codigo}
 
 📌 Coloca aquí el comprobante, voucher o recibo de pago.
 
-🔐 PASS / ACCESOS:
-Mi cuenta está disponible para activación.
-El equipo puede contactarme para solicitar los accesos necesarios.`;
+🔐 Accesos:
+Mi cuenta está disponible para activación. Los accesos, si son necesarios, se coordinarán por este WhatsApp.`;
 
       const url = "https://wa.me/" + numeroDestino + "?text=" + encodeURIComponent(mensaje);
       window.open(url, "_blank");
@@ -3397,9 +3389,6 @@ El equipo puede contactarme para solicitar los accesos necesarios.`;
               <p class="nota" style="margin-top:0; color:#eaf3ff;">
                 Coloca la cantidad de cuentas. Se abrirá un espacio para cada correo y podrás seleccionar país, plan, tiempo y garantía por cuenta.
               </p>
-              <div class="aviso-seguridad" style="margin-bottom:14px;">
-                🔐 Por seguridad, esta página no guarda claves ni contraseñas. Nuestro personal coordinará los accesos por WhatsApp si son necesarios.
-              </div>
               <label for="cantidadDominioSolicitud">Cantidad de cuentas dominio</label>
               <select id="cantidadDominioSolicitud" class="cantidad-mini">
                 <option value="">Seleccionar cantidad</option>
@@ -3649,7 +3638,7 @@ El equipo puede contactarme para solicitar los accesos necesarios.`;
           card.className = "dominio-cuenta-card";
           card.innerHTML = `
             <h4>Cuenta dominio ${i}</h4>
-            <label for="dominioCorreo_${i}">Correo de la cuenta</label>
+            <label for="dominioCorreo_${i}">Correo de la cuenta + acceso por WhatsApp</label>
             <input type="text" inputmode="email" id="dominioCorreo_${i}" class="dominio-correo" placeholder="correo${i}@gmail.com" autocomplete="new-password">
 
             <div class="row">
