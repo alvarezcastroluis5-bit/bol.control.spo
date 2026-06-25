@@ -607,6 +607,26 @@
       padding: 10px;
     }
 
+
+    .red-binance {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 193, 7, 0.14);
+      border: 1px solid rgba(255, 193, 7, 0.55);
+      color: #fff7d6;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 800;
+      margin: 6px 0 14px;
+    }
+
+    .red-binance strong {
+      color: #ffd54a;
+      letter-spacing: 0.5px;
+    }
+
     .copy-box {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -1323,6 +1343,8 @@
           <div id="bloqueBinance" style="display:none;">
             <div class="detalle-titulo">🟡 Binance</div>
             <img src="qr-binance.png" alt="QR Binance" class="qr-pago" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<div class=&quot;aviso-pago&quot;>No se encontró la imagen del QR. Sube el archivo <strong>qr-binance.png</strong> en la misma carpeta del index.</div>');">
+
+            <div class="red-binance">Red: <strong>BEP20</strong></div>
 
             <label>Dirección de depósito Binance</label>
             <div class="copy-box">
