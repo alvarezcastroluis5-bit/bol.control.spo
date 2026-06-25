@@ -1478,6 +1478,7 @@
     let solicitudSubtotalActual = 0;
     let solicitudDescuentoPorcentajeActual = 0;
     let solicitudDescuentoUsdActual = 0;
+    let solicitudPagoRequestId = 0;
 
     let adminToken = sessionStorage.getItem("adminToken") || "";
     let adminNombre = sessionStorage.getItem("adminNombre") || "";
@@ -3200,7 +3201,10 @@
         solTipoCambio.textContent = "Consultando...";
         solMontoBs.textContent = "Consultando...";
 
+        const pagoRequestId = ++solicitudPagoRequestId;
+
         enviarJSONP({ action: "cotizacion" }, function(respuesta) {
+          if (pagoRequestId !== solicitudPagoRequestId || solMetodoPago.value !== "QR Bolivia") return;
           if (respuesta.status !== "success") {
             solTipoCambio.textContent = "No disponible";
             solMontoBs.textContent = "No disponible";
@@ -3216,7 +3220,8 @@
             return;
           }
 
-          const montoBs = precioTotal * tc;
+          const totalActual = parseFloat(solicitudPrecioActual || "0") || precioTotal || 0;
+          const montoBs = totalActual * tc;
 
           solicitudTipoCambioActual = tc.toFixed(2);
           solicitudMontoBsActual = montoBs.toFixed(2);
@@ -3908,7 +3913,10 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           solTipoCambio.textContent = "Consultando...";
           solMontoBs.textContent = totalListo ? "Consultando..." : "Completa los datos para calcular";
 
-          enviarJSONP({ action: "cotizacion" }, function(respuesta) {
+          const pagoRequestId = ++solicitudPagoRequestId;
+
+        enviarJSONP({ action: "cotizacion" }, function(respuesta) {
+          if (pagoRequestId !== solicitudPagoRequestId || solMetodoPago.value !== "QR Bolivia") return;
             if (respuesta.status !== "success") {
               solTipoCambio.textContent = "No disponible";
               solMontoBs.textContent = totalListo ? "No disponible" : "Completa los datos para calcular";
@@ -3933,7 +3941,8 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
               return;
             }
 
-            const montoBs = calculo.total * tc;
+            const totalActual = parseFloat(solicitudPrecioActual || "0") || calculo.total || 0;
+            const montoBs = totalActual * tc;
             solicitudMontoBsActual = montoBs.toFixed(2);
             montoBsRenovacionActual = solicitudMontoBsActual;
             solMontoBs.textContent = montoBs.toFixed(2) + " Bs";
