@@ -3307,6 +3307,17 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
       return '<span class="flag flag-empty"></span>';
     }
 
+    function obtenerBanderaEmoji(pais) {
+      const nombre = String(pais || "").trim().toLowerCase();
+
+      if (nombre === "nigeria") return "🇳🇬";
+      if (nombre === "egipto") return "🇪🇬";
+      if (nombre === "brasil") return "🇧🇷";
+      if (nombre === "bolivia") return "🇧🇴";
+
+      return "🌍";
+    }
+
     function enviarJSONP(parametros, callback) {
       const callbackName = "callback_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
 
@@ -3745,7 +3756,8 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
 
       function opcionesPaises() {
         return Object.keys(PRECIOS_SOLICITUDES || {}).map(pais => {
-          return `<option value="${escaparHTML(pais)}">${escaparHTML(pais)}</option>`;
+          const bandera = obtenerBanderaEmoji(pais);
+          return `<option value="${escaparHTML(pais)}">${bandera} ${escaparHTML(pais)}</option>`;
         }).join("\n");
       }
 
