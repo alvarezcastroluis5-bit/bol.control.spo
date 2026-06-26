@@ -413,6 +413,10 @@
       margin-bottom: 17px;
     }
 
+    .dominio-cuenta-card .selector-personalizado {
+      margin-bottom: 0;
+    }
+
     .selector-btn {
       width: 100%;
       padding: 13px;
@@ -1028,6 +1032,16 @@
           </div>
         </div>
 
+        <div class="notificacion-familiar" id="avisoFamiliarRegistro" style="display:none;">
+          <div class="notificacion-icono">💡</div>
+          <div>
+            <strong>Recomendación para cuentas familiares</strong>
+            <p>
+              Para cuentas familiares se recomienda utilizar cuentas reposadas que hayan tenido Premium al menos una vez.
+            </p>
+          </div>
+        </div>
+
         <div class="row">
           <div>
             <label for="fechaActivacion">Fecha de activación</label>
@@ -1229,19 +1243,8 @@
     <section id="seccionSolicitudes" class="seccion active">
       <form id="formSolicitudes" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 
-        <div class="notificacion-familiar">
-          <div class="notificacion-icono">ℹ️</div>
-          <div>
-            <strong>Información importante sobre cuentas individuales unidas a plan familiar</strong>
-            <p>
-              Las cuentas individuales unidas a plan familiar son cuentas bajo nuestro dominio.
-              Te pedimos los accesos del cliente para poder transferir su playlist
-              y datos correspondientes.
-            </p>
-          </div>
-        </div>
 
-        <div class="notificacion-familiar">
+        <div class="notificacion-familiar" id="avisoFamiliarSolicitudes" style="display:none;">
           <div class="notificacion-icono">💡</div>
           <div>
             <strong>Recomendación para cuentas familiares</strong>
@@ -1316,6 +1319,28 @@
         </div>
 
         <div id="descripcionGarantia" class="info-box" style="display:none;"></div>
+
+        <div class="notificacion-familiar aviso-familiar-solicitud" id="avisoFamiliarCuentaAsignada" style="display:none; margin-top:14px;">
+          <div class="notificacion-icono">💡</div>
+          <div>
+            <strong>Recomendación para cuentas familiares</strong>
+            <p>
+              Para cuentas familiares se recomienda utilizar cuentas reposadas que hayan tenido Premium al menos una vez.
+            </p>
+          </div>
+        </div>
+
+        <div class="notificacion-familiar aviso-individual-plan-familiar-solicitud" id="avisoIndividualPlanFamiliarCuentaAsignada" style="display:none; margin-top:14px;">
+          <div class="notificacion-icono">ℹ️</div>
+          <div>
+            <strong>Información importante sobre cuentas individuales unidas a plan familiar</strong>
+            <p>
+              Las cuentas individuales unidas a plan familiar son cuentas bajo nuestro dominio.
+              Te pedimos los accesos del cliente para poder transferir su playlist
+              y datos correspondientes.
+            </p>
+          </div>
+        </div>
 
         <label for="solMetodoPago">Método de pago</label>
         <select id="solMetodoPago" required>
@@ -1900,8 +1925,12 @@
       const selectores = document.querySelectorAll(".selector-personalizado");
 
       selectores.forEach(selector => {
+        if (selector.dataset.iniciado === "1") return;
+        selector.dataset.iniciado = "1";
+
         const boton = selector.querySelector(".selector-btn");
         const lista = selector.querySelector(".selector-lista");
+        if (!boton || !lista) return;
         const inputId = selector.dataset.input;
         const inputHidden = document.getElementById(inputId);
 
@@ -3050,34 +3079,64 @@
       actualizarPagoSolicitud();
     }
 
+    function obtenerDescripcionGarantiaHTML(garantia) {
+      const garantiaTexto = String(garantia || "").trim();
+
+      if (!garantiaTexto) return "";
+
+      if (garantiaTexto === "Garantía de Activación") {
+        return `
+          <div class="detalle-titulo">🛡️ Garantía de Activación</div>
+          <p style="margin:8px 0 0; color:#eaf3ff; font-weight:700;">
+            Cubre únicamente la activación inicial del servicio. Si la cuenta se activa correctamente, la garantía queda cumplida.
+          </p>
+        `;
+      }
+
+      if (garantiaTexto === "Garantía Parcial") {
+        return `
+          <div class="detalle-titulo">🛡️ Garantía Parcial</div>
+          <p style="margin:8px 0 0; color:#eaf3ff; font-weight:700;">
+            Si la cuenta cae o presenta algún incidente dentro del tiempo contratado, el cliente paga solo la mitad del monto para levantar nuevamente el servicio.
+          </p>
+        `;
+      }
+
+      if (garantiaTexto === "Garantía Total") {
+        return `
+          <div class="detalle-titulo">🛡️ Garantía Total</div>
+          <p style="margin:8px 0 0; color:#eaf3ff; font-weight:700;">
+            Si la cuenta cae desde el día 1 hasta el día 30, se levanta una vez sin costo. Si vuelve a caer, el cliente selecciona nuevamente el tipo de plan que desea.
+          </p>
+        `;
+      }
+
+      return "";
+    }
+
     function actualizarDescripcionGarantia() {
       if (!descripcionGarantia) return;
 
-      const metodoVisible = solMetodoPago && solMetodoPago.style.display !== "none";
+      const seleccionadoSolicitud = document.querySelector('input[name="solTipoSolicitud"]:checked');
+      const tipoCuentaNueva = typeof obtenerTipoCuentaNueva === "function" ? obtenerTipoCuentaNueva() : "";
+      const modoCuentaNueva = seleccionadoSolicitud && seleccionadoSolicitud.value === "Cuenta Nueva";
+      const modoRenovacion = seleccionadoSolicitud && seleccionadoSolicitud.value === "Renovación";
+      const modoAsignada = modoCuentaNueva && tipoCuentaNueva === "Cuenta Asignada";
 
-      if (!metodoVisible) {
+      const puedeMostrarDescripcion =
+        modoAsignada ||
+        modoRenovacion;
+
+      const valorGarantia = solGarantia ? String(solGarantia.value || "").trim() : "";
+      const htmlGarantia = obtenerDescripcionGarantiaHTML(valorGarantia);
+
+      if (!puedeMostrarDescripcion || !valorGarantia || !htmlGarantia) {
         descripcionGarantia.innerHTML = "";
         descripcionGarantia.style.display = "none";
         return;
       }
 
-      descripcionGarantia.innerHTML = `
-        <div class="detalle-titulo">🛡️ ¿Qué significa cada garantía?</div>
-        <div style="display:grid; gap:12px; margin-top:10px;">
-          <div>
-            <strong>Garantía de Activación:</strong><br>
-            Cubre únicamente la activación inicial del servicio. Si la cuenta se activa correctamente, la garantía queda cumplida.
-          </div>
-          <div>
-            <strong>Garantía Parcial:</strong><br>
-            Si la cuenta cae o presenta algún incidente dentro del tiempo contratado, el cliente paga solo la mitad del monto para levantar nuevamente el servicio.
-          </div>
-          <div>
-            <strong>Garantía Total:</strong><br>
-            Si la cuenta cae desde el día 1 hasta el día 30, se levanta una vez sin costo. Si vuelve a caer, el cliente selecciona nuevamente el tipo de plan que desea.
-          </div>
-        </div>
-      `;
+      descripcionGarantia.innerHTML = htmlGarantia;
       descripcionGarantia.style.display = "block";
     }
 
@@ -3475,6 +3534,26 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
                 ${opcionesCantidad(20)}
               </select>
               <div id="contenedorCuentasDominio" class="dominio-cuentas-grid"></div>
+              <div class="notificacion-familiar aviso-familiar-solicitud" id="avisoFamiliarDominio" style="display:none; margin-top:14px;">
+                <div class="notificacion-icono">💡</div>
+                <div>
+                  <strong>Recomendación para cuentas familiares</strong>
+                  <p>
+                    Para cuentas familiares se recomienda utilizar cuentas reposadas que hayan tenido Premium al menos una vez.
+                  </p>
+                </div>
+              </div>
+              <div class="notificacion-familiar aviso-individual-plan-familiar-solicitud" id="avisoIndividualPlanFamiliarDominio" style="display:none; margin-top:14px;">
+                <div class="notificacion-icono">ℹ️</div>
+                <div>
+                  <strong>Información importante sobre cuentas individuales unidas a plan familiar</strong>
+                  <p>
+                    Las cuentas individuales unidas a plan familiar son cuentas bajo nuestro dominio.
+                    Te pedimos los accesos del cliente para poder transferir su playlist
+                    y datos correspondientes.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -3724,11 +3803,16 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
 
             <div class="row">
               <div>
-                <label for="dominioPais_${i}">País</label>
-                <select id="dominioPais_${i}" class="dominio-pais" data-index="${i}">
-                  <option value="">Seleccionar país</option>
-                  ${opcionesPaises()}
-                </select>
+                <label>País</label>
+                <div class="selector-personalizado selector-pais-dominio" data-input="dominioPais_${i}">
+                  <button type="button" class="selector-btn">
+                    <span class="pais-con-bandera"><span class="flag flag-empty"></span> Seleccionar país</span>
+                  </button>
+                  <div class="selector-lista">
+                    ${opcionesPaisesPersonalizadas()}
+                  </div>
+                </div>
+                <input type="hidden" id="dominioPais_${i}" class="dominio-pais" data-index="${i}">
               </div>
               <div>
                 <label for="dominioPlan_${i}">Plan</label>
@@ -3752,7 +3836,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
               </div>
               <div>
                 <label for="dominioGarantia_${i}">Garantía</label>
-                <select id="dominioGarantia_${i}" class="dominio-garantia">
+                <select id="dominioGarantia_${i}" class="dominio-garantia" data-index="${i}">
                   <option value="">Seleccionar garantía</option>
                   <option value="Garantía de Activación">Garantía de Activación</option>
                   <option value="Garantía Parcial">Garantía Parcial</option>
@@ -3760,9 +3844,35 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
                 </select>
               </div>
             </div>
+
+            <div class="notificacion-familiar aviso-familiar-dominio-card" id="avisoFamiliarDominioCard_${i}" style="display:none; margin-top:12px;">
+              <div class="notificacion-icono">💡</div>
+              <div>
+                <strong>Recomendación para cuentas familiares</strong>
+                <p>
+                  Para cuentas familiares se recomienda utilizar cuentas reposadas que hayan tenido Premium al menos una vez.
+                </p>
+              </div>
+            </div>
+
+            <div class="notificacion-familiar aviso-individual-plan-familiar-dominio-card" id="avisoIndividualPlanFamiliarDominioCard_${i}" style="display:none; margin-top:12px;">
+              <div class="notificacion-icono">ℹ️</div>
+              <div>
+                <strong>Información importante sobre cuentas individuales unidas a plan familiar</strong>
+                <p>
+                  Las cuentas individuales unidas a plan familiar son cuentas bajo nuestro dominio.
+                  Te pedimos los accesos del cliente para poder transferir su playlist
+                  y datos correspondientes.
+                </p>
+              </div>
+            </div>
+
+            <div class="info-box descripcion-garantia-dominio-card" id="descripcionGarantiaDominio_${i}" style="display:none; margin-top:12px;"></div>
           `;
           contenedor.appendChild(card);
         }
+
+        iniciarSelectoresPais();
 
         contenedor.querySelectorAll("select, input").forEach(el => {
           el.addEventListener("change", function() {
@@ -3770,16 +3880,28 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
               actualizarPlanesDominio(el.dataset.index);
             }
             actualizarPagoDominioSolicitud();
+            if (typeof actualizarAvisosDominioPorCuenta === "function") actualizarAvisosDominioPorCuenta();
           });
-          el.addEventListener("input", actualizarPagoDominioSolicitud);
+          el.addEventListener("input", function() {
+            actualizarPagoDominioSolicitud();
+            if (typeof actualizarAvisosDominioPorCuenta === "function") actualizarAvisosDominioPorCuenta();
+          });
         });
+
+        if (typeof actualizarAvisosDominioPorCuenta === "function") actualizarAvisosDominioPorCuenta();
         actualizarDescripcionGarantia();
       }
 
       function opcionesPaises() {
         return Object.keys(PRECIOS_SOLICITUDES || {}).map(pais => {
           const bandera = obtenerBanderaEmoji(pais);
-          return `<option value="${escaparHTML(pais)}">${bandera} ${escaparHTML(pais)}</option>`;
+          return `<option value="${escaparHTML(pais)}">${escaparHTML(pais)} ${bandera}</option>`;
+        }).join("\n");
+      }
+
+      function opcionesPaisesPersonalizadas() {
+        return Object.keys(PRECIOS_SOLICITUDES || {}).map(pais => {
+          return `<div class="opcion-pais" data-value="${escaparHTML(pais)}">${obtenerBanderaHTML(pais)} ${escaparHTML(pais)}</div>`;
         }).join("\n");
       }
 
@@ -4568,6 +4690,143 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
           resultadoConsulta.appendChild(card);
         });
       }
+
+      function textoAvisoFamiliarNormalizado(valor) {
+        return String(valor || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
+      }
+
+      function esSeleccionFamiliar(valor) {
+        const texto = textoAvisoFamiliarNormalizado(valor);
+        return (texto.includes("familiar") || texto.includes("familia")) && !texto.includes("individual");
+      }
+
+      function esSeleccionIndividualPlanFamiliar(valor) {
+        const texto = textoAvisoFamiliarNormalizado(valor);
+        return texto.includes("individual") && texto.includes("plan familiar");
+      }
+
+      function actualizarAvisosDominioPorCuenta() {
+        document.querySelectorAll(".dominio-cuenta-card").forEach(function(card) {
+          const plan = card.querySelector(".dominio-plan");
+          const garantia = card.querySelector(".dominio-garantia");
+          const avisoFamiliar = card.querySelector(".aviso-familiar-dominio-card");
+          const avisoIndividual = card.querySelector(".aviso-individual-plan-familiar-dominio-card");
+          const descripcionGarantia = card.querySelector(".descripcion-garantia-dominio-card");
+
+          const valorPlan = plan ? plan.value : "";
+          const valorGarantia = garantia ? garantia.value : "";
+
+          if (avisoFamiliar) {
+            avisoFamiliar.style.display = esSeleccionFamiliar(valorPlan) ? "flex" : "none";
+          }
+
+          if (avisoIndividual) {
+            avisoIndividual.style.display = esSeleccionIndividualPlanFamiliar(valorPlan) ? "flex" : "none";
+          }
+
+          if (descripcionGarantia) {
+            const htmlGarantia = obtenerDescripcionGarantiaHTML(valorGarantia);
+            descripcionGarantia.innerHTML = htmlGarantia;
+            descripcionGarantia.style.display = htmlGarantia ? "block" : "none";
+          }
+        });
+      }
+
+      function actualizarAvisoFamiliarRegistro() {
+        const aviso = document.getElementById("avisoFamiliarRegistro");
+        const tipoCuentaRegistro = document.getElementById("tipoCuenta");
+
+        if (!aviso || !tipoCuentaRegistro) return;
+
+        aviso.style.display = esSeleccionFamiliar(tipoCuentaRegistro.value) ? "flex" : "none";
+      }
+
+      function actualizarAvisoFamiliarSolicitudes() {
+        const avisoGeneral = document.getElementById("avisoFamiliarSolicitudes");
+        const avisoCuentaAsignada = document.getElementById("avisoFamiliarCuentaAsignada");
+        const avisoDominio = document.getElementById("avisoFamiliarDominio");
+
+        const seleccionadoSolicitud = document.querySelector('input[name="solTipoSolicitud"]:checked');
+        const tipoCuentaNueva = obtenerTipoCuentaNueva ? obtenerTipoCuentaNueva() : "";
+        const modoCuentaNueva = seleccionadoSolicitud && seleccionadoSolicitud.value === "Cuenta Nueva";
+        const modoCuentaAsignada = modoCuentaNueva && tipoCuentaNueva === "Cuenta Asignada";
+        const modoDominio = modoCuentaNueva && tipoCuentaNueva === "Dominio";
+
+        let mostrarCuentaAsignada = false;
+        let mostrarDominio = false;
+
+        const planCuentaAsignada = document.getElementById("solPlan");
+        if (modoCuentaAsignada && planCuentaAsignada && esSeleccionFamiliar(planCuentaAsignada.value)) {
+          mostrarCuentaAsignada = true;
+        }
+
+        if (modoDominio) {
+          mostrarDominio = false;
+        }
+
+        if (avisoGeneral) avisoGeneral.style.display = "none";
+        if (avisoCuentaAsignada) avisoCuentaAsignada.style.display = mostrarCuentaAsignada ? "flex" : "none";
+        if (avisoDominio) avisoDominio.style.display = "none";
+      }
+
+      function actualizarAvisoIndividualPlanFamiliarSolicitudes() {
+        const avisoCuentaAsignada = document.getElementById("avisoIndividualPlanFamiliarCuentaAsignada");
+        const avisoDominio = document.getElementById("avisoIndividualPlanFamiliarDominio");
+
+        const seleccionadoSolicitud = document.querySelector('input[name="solTipoSolicitud"]:checked');
+        const tipoCuentaNueva = obtenerTipoCuentaNueva ? obtenerTipoCuentaNueva() : "";
+        const modoCuentaNueva = seleccionadoSolicitud && seleccionadoSolicitud.value === "Cuenta Nueva";
+        const modoCuentaAsignada = modoCuentaNueva && tipoCuentaNueva === "Cuenta Asignada";
+        const modoDominio = modoCuentaNueva && tipoCuentaNueva === "Dominio";
+
+        let mostrarCuentaAsignada = false;
+        let mostrarDominio = false;
+
+        const planCuentaAsignada = document.getElementById("solPlan");
+        if (modoCuentaAsignada && planCuentaAsignada && esSeleccionIndividualPlanFamiliar(planCuentaAsignada.value)) {
+          mostrarCuentaAsignada = true;
+        }
+
+        if (modoDominio) {
+          mostrarDominio = false;
+        }
+
+        if (avisoCuentaAsignada) avisoCuentaAsignada.style.display = mostrarCuentaAsignada ? "flex" : "none";
+        if (avisoDominio) avisoDominio.style.display = "none";
+      }
+
+      function actualizarAvisosFamiliares() {
+        actualizarAvisoFamiliarRegistro();
+        actualizarAvisoFamiliarSolicitudes();
+        actualizarAvisoIndividualPlanFamiliarSolicitudes();
+        actualizarAvisosDominioPorCuenta();
+      }
+
+      document.addEventListener("change", function(evento) {
+        const objetivo = evento.target;
+        if (!objetivo) return;
+
+        if (
+          objetivo.id === "tipoCuenta" ||
+          objetivo.id === "solPlan" ||
+          objetivo.name === "solTipoSolicitud" ||
+          objetivo.name === "solTipoCuentaNueva" ||
+          objetivo.classList.contains("dominio-plan") ||
+          objetivo.classList.contains("dominio-garantia") ||
+          objetivo.closest(".renovacion-card")
+        ) {
+          actualizarAvisosFamiliares();
+        }
+      }, true);
+
+      document.addEventListener("click", function() {
+        setTimeout(actualizarAvisosFamiliares, 80);
+      }, true);
+
+      actualizarAvisosFamiliares();
     })();
 
 
