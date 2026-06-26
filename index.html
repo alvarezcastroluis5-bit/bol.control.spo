@@ -4455,7 +4455,10 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
             const descuento = detalle.descuentoPorcentaje
               ? ` Descuento aplicado: ${detalle.descuentoPorcentaje}%.`
               : "";
-            texto.textContent = `${detalle.precioBase.toFixed(2)} USDT / 30 días × ${obtenerMesesPorTiempo(parseInt(detalle.tiempo, 10))} mes(es).${descuento}`;
+            const diasCuenta = parseInt(detalle.tiempo, 10);
+            const mesesCuenta = obtenerMesesPorTiempo(diasCuenta);
+            const textoMesCuenta = mesesCuenta === 1 ? "mes" : "meses";
+            texto.textContent = `Monto = ${diasCuenta} días (${mesesCuenta} ${textoMesCuenta}).${descuento}`;
           }
         });
 
