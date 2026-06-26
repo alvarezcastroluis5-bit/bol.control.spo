@@ -1034,6 +1034,48 @@
       text-transform: uppercase;
     }
 
+  
+
+    .precio-cuenta-dominio-card,
+    .total-dominio-box {
+      margin-top: 14px;
+      padding: 16px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(76, 255, 155, 0.16), rgba(30, 144, 255, 0.12));
+      border: 1px solid rgba(76, 255, 155, 0.45);
+      color: #ffffff;
+    }
+
+    .precio-cuenta-titulo,
+    .total-dominio-titulo {
+      font-weight: 900;
+      color: #4cff9b;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .precio-cuenta-dominio-card p,
+    .total-dominio-box p {
+      margin: 6px 0;
+      line-height: 1.45;
+    }
+
+    .precio-cuenta-dominio-valor,
+    .total-dominio-valor {
+      font-weight: 900;
+      color: #4cff9b;
+      font-size: 20px;
+    }
+
+    .detalle-cuentas-dominio-precio {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.16);
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+    }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
@@ -3776,6 +3818,11 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
                 ${opcionesCantidad(20)}
               </select>
               <div id="contenedorCuentasDominio" class="dominio-cuentas-grid"></div>
+              <div id="totalDominioPorCuenta" class="total-dominio-box" style="display:none;">
+                <div class="total-dominio-titulo">💰 Total de cuentas dominio</div>
+                <p><strong>Total calculado:</strong> <span class="total-dominio-valor" id="valorTotalDominioPorCuenta">-</span></p>
+                <div id="detalleTotalDominioPorCuenta" class="detalle-cuentas-dominio-precio"></div>
+              </div>
               <div class="notificacion-familiar aviso-familiar-solicitud" id="avisoFamiliarDominio" style="display:none; margin-top:14px;">
                 <div class="notificacion-icono">💡</div>
                 <div>
@@ -3977,6 +4024,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         }
 
         if (resumenPagoSolicitud && !hayFlujoActivo) resumenPagoSolicitud.style.display = "none";
+        if (!modoDominio && typeof ocultarPreciosDominioPorCuenta === "function") ocultarPreciosDominioPorCuenta();
         if (btnEnviarSolicitud) btnEnviarSolicitud.style.display = hayFlujoActivo ? "block" : "none";
 
         setRequired(solPlan, modoAsignada);
@@ -4110,6 +4158,12 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
             </div>
 
             <div class="info-box descripcion-garantia-dominio-card" id="descripcionGarantiaDominio_${i}" style="display:none; margin-top:12px;"></div>
+
+            <div class="precio-cuenta-dominio-card" id="precioCuentaDominio_${i}" style="display:none;">
+              <div class="precio-cuenta-titulo">💵 Precio de esta cuenta</div>
+              <p><strong>Total:</strong> <span class="precio-cuenta-dominio-valor">-</span></p>
+              <p class="precio-cuenta-dominio-detalle">Completa país, plan, tiempo y garantía.</p>
+            </div>
           `;
           contenedor.appendChild(card);
         }
@@ -4131,6 +4185,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         });
 
         if (typeof actualizarAvisosDominioPorCuenta === "function") actualizarAvisosDominioPorCuenta();
+        actualizarPagoDominioSolicitud();
         actualizarDescripcionGarantia();
       }
 
@@ -4248,6 +4303,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         let descuentoUsd = 0;
         let total = 0;
         let descuentoPorcentajeMax = 0;
+        const detalles = [];
 
         cuentas.forEach(cuenta => {
           const calculo = calcularPrecioUnitario(cuenta.pais, cuenta.plan, cuenta.garantia, cuenta.tiempo);
@@ -4256,9 +4312,19 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           descuentoUsd += calculo.descuentoUsd;
           total += calculo.total;
           descuentoPorcentajeMax = Math.max(descuentoPorcentajeMax, calculo.descuentoPorcentaje);
+          detalles.push({
+            ...cuenta,
+            precioBase: calculo.precioBase,
+            subtotal: calculo.subtotal,
+            descuentoPorcentaje: calculo.descuentoPorcentaje,
+            descuentoUsd: calculo.descuentoUsd,
+            total: calculo.total,
+            planNormalizado: calculo.planNormalizado || cuenta.plan,
+            completa: !!(cuenta.pais && cuenta.plan && cuenta.garantia && cuenta.tiempo && calculo.total > 0)
+          });
         });
 
-        return { cantidad: cuentas.length, precioBase, subtotal, descuentoUsd, descuentoPorcentaje: descuentoPorcentajeMax, total };
+        return { cantidad: cuentas.length, precioBase, subtotal, descuentoUsd, descuentoPorcentaje: descuentoPorcentajeMax, total, detalles };
       }
 
       function actualizarResumenPago(calculo, etiquetaBase) {
@@ -4363,9 +4429,80 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         actualizarResumenPago(pago, pago.unitario.precioBase ? `${pago.unitario.precioBase.toFixed(2)} USDT / cuenta / mes × ${pago.cantidad || 0}` : "-");
       }
 
+      function actualizarPreciosDominioPorCuenta(pago) {
+        const detalles = (pago && pago.detalles) ? pago.detalles : [];
+        let cuentasCompletas = 0;
+
+        detalles.forEach(function(detalle) {
+          const box = document.getElementById(`precioCuentaDominio_${detalle.numero}`);
+          if (!box) return;
+
+          const valor = box.querySelector(".precio-cuenta-dominio-valor");
+          const texto = box.querySelector(".precio-cuenta-dominio-detalle");
+
+          if (!detalle.completa) {
+            box.style.display = "none";
+            if (valor) valor.textContent = "-";
+            if (texto) texto.textContent = "Completa país, plan, tiempo y garantía.";
+            return;
+          }
+
+          cuentasCompletas++;
+          box.style.display = "block";
+          if (valor) valor.textContent = detalle.total.toFixed(2) + " USDT";
+
+          if (texto) {
+            const descuento = detalle.descuentoPorcentaje
+              ? ` Descuento aplicado: ${detalle.descuentoPorcentaje}%.`
+              : "";
+            texto.textContent = `${detalle.precioBase.toFixed(2)} USDT / 30 días × ${obtenerMesesPorTiempo(parseInt(detalle.tiempo, 10))} mes(es).${descuento}`;
+          }
+        });
+
+        const totalBox = document.getElementById("totalDominioPorCuenta");
+        const totalValor = document.getElementById("valorTotalDominioPorCuenta");
+        const detalleTotal = document.getElementById("detalleTotalDominioPorCuenta");
+
+        if (!totalBox || !totalValor || !detalleTotal) return;
+
+        if (!pago || !pago.total || pago.total <= 0) {
+          totalBox.style.display = "none";
+          totalValor.textContent = "-";
+          detalleTotal.innerHTML = "";
+          return;
+        }
+
+        totalBox.style.display = "block";
+        totalValor.textContent = pago.total.toFixed(2) + " USDT";
+
+        const lineas = detalles
+          .filter(function(detalle) { return detalle.completa; })
+          .map(function(detalle) {
+            return `<div><strong>Cuenta ${detalle.numero}:</strong> ${detalle.total.toFixed(2)} USDT - ${escaparHTML(detalle.pais)} / ${escaparHTML(detalle.plan)} / ${escaparHTML(detalle.tiempo)} días / ${escaparHTML(detalle.garantia)}</div>`;
+          })
+          .join("");
+
+        detalleTotal.innerHTML = `
+          <div><strong>Cuentas completas:</strong> ${cuentasCompletas} de ${pago.cantidad}</div>
+          ${lineas}
+        `;
+      }
+
+      function ocultarPreciosDominioPorCuenta() {
+        document.querySelectorAll(".precio-cuenta-dominio-card").forEach(function(box) {
+          box.style.display = "none";
+        });
+        const totalBox = document.getElementById("totalDominioPorCuenta");
+        if (totalBox) totalBox.style.display = "none";
+      }
+
       function actualizarPagoDominioSolicitud() {
-        if (!esCuentaNuevaDominio()) return;
+        if (!esCuentaNuevaDominio()) {
+          ocultarPreciosDominioPorCuenta();
+          return;
+        }
         const pago = calcularPagoDominio();
+        actualizarPreciosDominioPorCuenta(pago);
         actualizarResumenPago(pago, pago.precioBase ? pago.precioBase.toFixed(2) + " USDT / mes total" : "-");
       }
 
