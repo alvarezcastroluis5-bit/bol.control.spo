@@ -1551,8 +1551,6 @@
           </div>
         </div>
 
-        <div id="descripcionGarantia" class="info-box" style="display:none;"></div>
-
         <div class="notificacion-familiar aviso-familiar-solicitud" id="avisoFamiliarCuentaAsignada" style="display:none; margin-top:14px;">
           <div class="notificacion-icono">💡</div>
           <div>
@@ -1575,7 +1573,9 @@
           </div>
         </div>
 
-        <label for="solMetodoPago">Método de pago</label>
+                <div id="descripcionGarantia" class="info-box" style="display:none; margin-top:14px;"></div>
+
+<label for="solMetodoPago">Método de pago</label>
         <select id="solMetodoPago" required>
           <option value="">Seleccionar método</option>
           <option value="QR Bolivia">QR Bolivia</option>
@@ -3362,20 +3362,17 @@
     function actualizarDescripcionGarantia() {
       if (!descripcionGarantia) return;
 
+      const valorGarantia = solGarantia ? String(solGarantia.value || "").trim() : "";
+      const htmlGarantia = obtenerDescripcionGarantiaHTML(valorGarantia);
+
+      const estaVisible = solGarantia && solGarantia.offsetParent !== null;
       const seleccionadoSolicitud = document.querySelector('input[name="solTipoSolicitud"]:checked');
       const tipoCuentaNueva = typeof obtenerTipoCuentaNueva === "function" ? obtenerTipoCuentaNueva() : "";
       const modoCuentaNueva = seleccionadoSolicitud && seleccionadoSolicitud.value === "Cuenta Nueva";
       const modoRenovacion = seleccionadoSolicitud && seleccionadoSolicitud.value === "Renovación";
       const modoAsignada = modoCuentaNueva && tipoCuentaNueva === "Cuenta Asignada";
 
-      const puedeMostrarDescripcion =
-        modoAsignada ||
-        modoRenovacion;
-
-      const valorGarantia = solGarantia ? String(solGarantia.value || "").trim() : "";
-      const htmlGarantia = obtenerDescripcionGarantiaHTML(valorGarantia);
-
-      if (!puedeMostrarDescripcion || !valorGarantia || !htmlGarantia) {
+      if (!estaVisible || (!modoAsignada && !modoRenovacion) || !valorGarantia || !htmlGarantia) {
         descripcionGarantia.innerHTML = "";
         descripcionGarantia.style.display = "none";
         return;
@@ -5072,6 +5069,22 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
       }, true);
 
       actualizarAvisosFamiliares();
+      actualizarDescripcionGarantia();
+
+      document.addEventListener("change", function(evento) {
+        if (!evento || !evento.target) return;
+        if (evento.target.id === "solGarantia" || evento.target.id === "solPlan" || evento.target.name === "solTipoCuentaNueva" || evento.target.name === "solTipoSolicitud") {
+          setTimeout(function() {
+            actualizarDescripcionGarantia();
+          }, 50);
+        }
+      }, true);
+
+      document.addEventListener("click", function() {
+        setTimeout(function() {
+          actualizarDescripcionGarantia();
+        }, 80);
+      }, true);
     })();
 
 
