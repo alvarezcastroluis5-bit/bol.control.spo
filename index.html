@@ -924,6 +924,104 @@
     }
 
   
+
+
+    .catalogo-header {
+      background: rgba(30, 215, 96, 0.10);
+      border: 1px solid rgba(30, 215, 96, 0.38);
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .catalogo-header h2 {
+      margin: 0 0 8px;
+      color: #4cff9b;
+      font-size: 28px;
+      font-weight: 900;
+    }
+
+    .catalogo-header p {
+      margin: 0;
+      color: #eaf3ff;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .catalogo-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .catalogo-card {
+      background: rgba(9, 18, 36, 0.78);
+      border: 1px solid rgba(76, 255, 155, 0.32);
+      border-radius: 18px;
+      padding: 16px;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .catalogo-card h3 {
+      margin: 0 0 12px;
+      color: #4cff9b;
+      font-size: 24px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .catalogo-tabla-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .catalogo-tabla {
+      width: 100%;
+      min-width: 650px;
+      border-collapse: collapse;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .catalogo-tabla th,
+    .catalogo-tabla td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+      font-weight: 800;
+      color: #fff;
+      vertical-align: top;
+    }
+
+    .catalogo-tabla th {
+      background: rgba(30, 215, 96, 0.18);
+      color: #4cff9b;
+      font-weight: 900;
+    }
+
+    .catalogo-tabla tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .catalogo-precio {
+      white-space: nowrap;
+      color: #eaf3ff;
+    }
+
+    .catalogo-nota {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(76, 255, 155, 0.35);
+      background: rgba(76, 255, 155, 0.10);
+      color: #eaf3ff;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
     .nota-renovacion-consulta {
       margin-top: 18px;
       padding: 14px 16px;
@@ -963,7 +1061,8 @@
     </div>
 
     <div class="tabs">
-      <button class="tab-btn active" id="btnSolicitudes" type="button">Solicitudes</button>
+      <button class="tab-btn" id="btnCatalogo" type="button">Catálogo</button>
+      <button class="tab-btn active" id="btnSolicitudes" type="button">Pedidos</button>
       <button class="tab-btn" id="btnConsulta" type="button">Consulta</button>
       <button class="tab-btn protegido" id="btnRegistro" type="button">Registro</button>
       <button class="tab-btn protegido" id="btnRenovacion" type="button">Renovación</button>
@@ -983,6 +1082,140 @@
         <button type="button" class="enviar" id="btnLoginAdmin">Ingresar</button>
 
         <div id="mensajeLogin" class="mensaje"></div>
+      </div>
+    </section>
+
+
+    <section id="seccionCatalogo" class="seccion">
+      <div class="catalogo-header">
+        <h2>📋 Catálogo de precios</h2>
+        <p>Precios por cuenta para 30 días. Los montos están expresados en USDT y varían según país, plan y tipo de garantía.</p>
+      </div>
+
+      <div class="catalogo-grid">
+        <div class="catalogo-card">
+          <h3><span class="flag flag-ng"></span> Nigeria</h3>
+          <div class="catalogo-tabla-wrap">
+            <table class="catalogo-tabla">
+              <thead>
+                <tr>
+                  <th>Plan</th>
+                  <th>Garantía de Activación</th>
+                  <th>Garantía Parcial</th>
+                  <th>Garantía Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Individual unido a plan familiar</td>
+                  <td class="catalogo-precio">1.60 USDT</td>
+                  <td class="catalogo-precio">1.80 USDT</td>
+                  <td class="catalogo-precio">2.00 USDT</td>
+                </tr>
+                <tr>
+                  <td>Dúo</td>
+                  <td class="catalogo-precio">3.50 USDT</td>
+                  <td class="catalogo-precio">4.00 USDT</td>
+                  <td class="catalogo-precio">4.50 USDT</td>
+                </tr>
+                <tr>
+                  <td>Familiar</td>
+                  <td class="catalogo-precio">4.50 USDT</td>
+                  <td class="catalogo-precio">5.50 USDT</td>
+                  <td class="catalogo-precio">8.00 USDT</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="catalogo-card">
+          <h3><span class="flag flag-eg"></span> Egipto</h3>
+          <div class="catalogo-tabla-wrap">
+            <table class="catalogo-tabla">
+              <thead>
+                <tr>
+                  <th>Plan</th>
+                  <th>Garantía de Activación</th>
+                  <th>Garantía Parcial</th>
+                  <th>Garantía Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Individual</td>
+                  <td class="catalogo-precio">2.20 USDT</td>
+                  <td class="catalogo-precio">2.50 USDT</td>
+                  <td class="catalogo-precio">3.00 USDT</td>
+                </tr>
+                <tr>
+                  <td>Dúo</td>
+                  <td class="catalogo-precio">3.50 USDT</td>
+                  <td class="catalogo-precio">3.70 USDT</td>
+                  <td class="catalogo-precio">4.00 USDT</td>
+                </tr>
+                <tr>
+                  <td>Familiar</td>
+                  <td class="catalogo-precio">4.00 USDT</td>
+                  <td class="catalogo-precio">5.50 USDT</td>
+                  <td class="catalogo-precio">8.00 USDT</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="catalogo-card">
+          <h3><span class="flag flag-br"></span> Brasil</h3>
+          <div class="catalogo-tabla-wrap">
+            <table class="catalogo-tabla">
+              <thead>
+                <tr>
+                  <th>Plan</th>
+                  <th>Garantía de Activación</th>
+                  <th>Garantía Parcial</th>
+                  <th>Garantía Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Individual unido a plan familiar</td>
+                  <td class="catalogo-precio">2.40 USDT</td>
+                  <td class="catalogo-precio">2.80 USDT</td>
+                  <td class="catalogo-precio">3.20 USDT</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="catalogo-card">
+          <h3><span class="flag flag-bo"></span> Bolivia</h3>
+          <div class="catalogo-tabla-wrap">
+            <table class="catalogo-tabla">
+              <thead>
+                <tr>
+                  <th>Plan</th>
+                  <th>Garantía de Activación</th>
+                  <th>Garantía Parcial</th>
+                  <th>Garantía Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Individual unido a plan familiar</td>
+                  <td class="catalogo-precio">2.50 USDT</td>
+                  <td class="catalogo-precio">2.80 USDT</td>
+                  <td class="catalogo-precio">3.50 USDT</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="catalogo-nota">
+        📌 Estos precios son por 30 días. Para más cuentas o más tiempo, el sistema calcula automáticamente el total en Pedidos.
       </div>
     </section>
 
@@ -1406,6 +1639,7 @@
     const btnConsulta = document.getElementById("btnConsulta");
     const btnRenovacion = document.getElementById("btnRenovacion");
     const btnSolicitudes = document.getElementById("btnSolicitudes");
+    const btnCatalogo = document.getElementById("btnCatalogo");
     const btnCerrarSesion = document.getElementById("btnCerrarSesion");
 
     const seccionLogin = document.getElementById("seccionLogin");
@@ -1413,6 +1647,7 @@
     const seccionConsulta = document.getElementById("seccionConsulta");
     const seccionRenovacion = document.getElementById("seccionRenovacion");
     const seccionSolicitudes = document.getElementById("seccionSolicitudes");
+    const seccionCatalogo = document.getElementById("seccionCatalogo");
 
     const loginUsuario = document.getElementById("loginUsuario");
     const loginClave = document.getElementById("loginClave");
@@ -1537,30 +1772,30 @@
     const PRECIOS_SOLICITUDES = {
       Nigeria: {
         "Individual unido a plan familiar": {
-          "Garantía de Activación": 1.5,
+          "Garantía de Activación": 1.6,
           "Garantía Parcial": 1.8,
           "Garantía Total": 2
         },
         "Dúo": {
-          "Garantía de Activación": 3,
-          "Garantía Parcial": 3.5,
-          "Garantía Total": 4
+          "Garantía de Activación": 3.5,
+          "Garantía Parcial": 4,
+          "Garantía Total": 4.5
         },
         "Familiar": {
-          "Garantía de Activación": 4,
+          "Garantía de Activación": 4.5,
           "Garantía Parcial": 5.5,
           "Garantía Total": 8
         }
       },
       Egipto: {
         "Individual": {
-          "Garantía de Activación": 1.8,
-          "Garantía Parcial": 2.2,
-          "Garantía Total": 2.5
+          "Garantía de Activación": 2.2,
+          "Garantía Parcial": 2.5,
+          "Garantía Total": 3
         },
         "Dúo": {
-          "Garantía de Activación": 3,
-          "Garantía Parcial": 3.5,
+          "Garantía de Activación": 3.5,
+          "Garantía Parcial": 3.7,
           "Garantía Total": 4
         },
         "Familiar": {
@@ -1571,16 +1806,16 @@
       },
       Brasil: {
         "Individual unido a plan familiar": {
-          "Garantía de Activación": 1.8,
-          "Garantía Parcial": 2.2,
-          "Garantía Total": 2.5
+          "Garantía de Activación": 2.4,
+          "Garantía Parcial": 2.8,
+          "Garantía Total": 3.2
         }
       },
       Bolivia: {
         "Individual unido a plan familiar": {
-          "Garantía de Activación": 1.8,
-          "Garantía Parcial": 2.2,
-          "Garantía Total": 2.5
+          "Garantía de Activación": 2.5,
+          "Garantía Parcial": 2.8,
+          "Garantía Total": 3.5
         }
       }
     };
@@ -1602,6 +1837,7 @@
     });
 
     btnSolicitudes.addEventListener("click", () => cambiarSeccion("solicitudes"));
+    btnCatalogo.addEventListener("click", () => cambiarSeccion("catalogo"));
     btnConsulta.addEventListener("click", () => cambiarSeccion("consulta"));
     btnRegistro.addEventListener("click", () => cambiarSeccion("registro"));
     btnRenovacion.addEventListener("click", () => cambiarSeccion("renovacion"));
@@ -1731,6 +1967,7 @@
       limpiarSolicitudes();
 
       btnSolicitudes.classList.remove("active");
+      btnCatalogo.classList.remove("active");
       btnConsulta.classList.remove("active");
       btnRegistro.classList.remove("active");
       btnRenovacion.classList.remove("active");
@@ -1740,10 +1977,16 @@
       seccionConsulta.classList.remove("active");
       seccionRenovacion.classList.remove("active");
       seccionSolicitudes.classList.remove("active");
+      seccionCatalogo.classList.remove("active");
 
       if (seccion === "solicitudes") {
         btnSolicitudes.classList.add("active");
         seccionSolicitudes.classList.add("active");
+      }
+
+      if (seccion === "catalogo") {
+        btnCatalogo.classList.add("active");
+        seccionCatalogo.classList.add("active");
       }
 
       if (seccion === "consulta") {
@@ -1771,6 +2014,7 @@
       limpiarSolicitudes();
 
       btnSolicitudes.classList.remove("active");
+      btnCatalogo.classList.remove("active");
       btnConsulta.classList.remove("active");
       btnRegistro.classList.remove("active");
       btnRenovacion.classList.remove("active");
@@ -1779,6 +2023,7 @@
       seccionConsulta.classList.remove("active");
       seccionRenovacion.classList.remove("active");
       seccionSolicitudes.classList.remove("active");
+      seccionCatalogo.classList.remove("active");
 
       seccionLogin.classList.add("active");
 
