@@ -1076,6 +1076,74 @@
       font-size: 13px;
     }
 
+  
+
+    .cupon-descuento-box {
+      margin: 16px 0 18px;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(59, 255, 146, .45);
+      background: linear-gradient(135deg, rgba(34, 197, 94, .13), rgba(37, 99, 235, .11));
+    }
+
+    .cupon-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .cupon-row input {
+      width: 100%;
+      text-transform: uppercase;
+    }
+
+    .btn-cupon {
+      border: 0;
+      border-radius: 12px;
+      padding: 13px 18px;
+      font-weight: 800;
+      cursor: pointer;
+      color: #fff;
+      background: #1d9bf0;
+      white-space: nowrap;
+    }
+
+    .btn-cupon.secundario-cupon {
+      background: rgba(255,255,255,.16);
+      border: 1px solid rgba(255,255,255,.25);
+    }
+
+    .mensaje-cupon {
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 10px 12px;
+      border-radius: 12px;
+    }
+
+    .mensaje-cupon.ok {
+      color: #b7ffd4;
+      background: rgba(34, 197, 94, .15);
+      border: 1px solid rgba(34, 197, 94, .4);
+    }
+
+    .mensaje-cupon.error {
+      color: #ffd0d0;
+      background: rgba(239, 68, 68, .15);
+      border: 1px solid rgba(239, 68, 68, .4);
+    }
+
+    @media (max-width: 640px) {
+      .cupon-row {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-cupon {
+        width: 100%;
+      }
+    }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
@@ -1257,7 +1325,8 @@
       </div>
 
       <div class="catalogo-nota">
-        📌 Estos precios son por 30 días. Para más cuentas o más tiempo, el sistema calcula automáticamente el total en Pedidos.
+        📌 Estos precios son por 30 días. Para más cuentas o más tiempo, el sistema calcula automáticamente el total en Pedidos.<br><br>
+        🎟️ <strong>Descuento:</strong> el único descuento disponible es mediante <strong>cupón de descuento</strong>.
       </div>
     </section>
 
@@ -1617,6 +1686,16 @@
 
                 <div id="descripcionGarantia" class="info-box" style="display:none; margin-top:14px;"></div>
 
+        <div class="cupon-descuento-box" id="cuponDescuentoBox" style="display:none;">
+          <label for="cuponDescuento">Cupón de descuento</label>
+          <div class="cupon-row">
+            <input type="text" id="cuponDescuento" placeholder="Ejemplo: SPOTIFY10" autocomplete="off">
+            <button type="button" class="btn-cupon" id="btnAplicarCupon">Aplicar cupón</button>
+            <button type="button" class="btn-cupon secundario-cupon" id="btnQuitarCupon">Quitar</button>
+          </div>
+          <div id="mensajeCupon" class="mensaje-cupon" style="display:none;"></div>
+        </div>
+
 <label for="solMetodoPago">Método de pago</label>
         <select id="solMetodoPago" required>
           <option value="">Seleccionar método</option>
@@ -1628,8 +1707,8 @@
           <div class="detalle-titulo">💰 Resumen de pago</div>
 
           <p><strong>Precio base mensual:</strong> <span id="solPrecioBaseUsd">-</span></p>
-          <p id="lineaSubtotalUsd" style="display:none;"><strong>Subtotal sin descuento:</strong> <span id="solSubtotalUsd">-</span></p>
-          <p id="lineaDescuentoUsd" style="display:none;"><strong>Descuento aplicado:</strong> <span id="solDescuentoUsd">-</span></p>
+          <p id="lineaSubtotalUsd" style="display:none;"><strong>Subtotal:</strong> <span id="solSubtotalUsd">-</span></p>
+          <p id="lineaDescuentoUsd" style="display:none;"><strong>Cupón aplicado:</strong> <span id="solDescuentoUsd">-</span></p>
           <p><strong>Total a pagar:</strong> <span id="solPrecioUsd">-</span></p>
 
           <p id="lineaTipoCambio" style="display:none;"><strong>Tipo de cambio:</strong> <span id="solTipoCambio">-</span></p>
@@ -1765,6 +1844,11 @@
     const solTiempo = document.getElementById("solTiempo");
     const solGarantia = document.getElementById("solGarantia");
     const solMetodoPago = document.getElementById("solMetodoPago");
+    const cuponDescuentoBox = document.getElementById("cuponDescuentoBox");
+    const cuponDescuento = document.getElementById("cuponDescuento");
+    const btnAplicarCupon = document.getElementById("btnAplicarCupon");
+    const btnQuitarCupon = document.getElementById("btnQuitarCupon");
+    const mensajeCupon = document.getElementById("mensajeCupon");
 
     const descripcionGarantia = document.getElementById("descripcionGarantia");
     const resumenPagoSolicitud = document.getElementById("resumenPagoSolicitud");
@@ -1803,6 +1887,13 @@
     let solicitudDescuentoPorcentajeActual = 0;
     let solicitudDescuentoUsdActual = 0;
     let solicitudPagoRequestId = 0;
+    let cuponAplicadoActual = null;
+
+    /*
+      Los cupones ya no se editan aquí.
+      Ahora se controlan desde la hoja de Google Sheets llamada "Cupones".
+      Columnas: Cupón | Tipo descuento | Valor | Estado | Uso máximo | Usos actuales
+    */
 
     let adminToken = sessionStorage.getItem("adminToken") || "";
     let adminNombre = sessionStorage.getItem("adminNombre") || "";
@@ -1916,6 +2007,25 @@
       actualizarPagoSolicitud();
     });
     solMetodoPago.addEventListener("change", actualizarPagoSolicitud);
+
+    if (btnAplicarCupon) {
+      btnAplicarCupon.addEventListener("click", aplicarCuponDescuento);
+    }
+
+    if (btnQuitarCupon) {
+      btnQuitarCupon.addEventListener("click", quitarCuponDescuento);
+    }
+
+    if (cuponDescuento) {
+      cuponDescuento.addEventListener("input", function() {
+        cuponDescuento.value = cuponDescuento.value.toUpperCase().trim();
+        if (cuponAplicadoActual && cuponDescuento.value !== cuponAplicadoActual.codigo) {
+          cuponAplicadoActual = null;
+          mostrarMensajeCupon("Cupón pendiente de aplicar.", "error");
+          actualizarPagoFlujoSolicitudes();
+        }
+      });
+    }
 
     btnCopiarBinance.addEventListener("click", function() {
       direccionBinance.select();
@@ -3448,14 +3558,154 @@
       return dias / 30;
     }
 
+    function normalizarCodigoCupon(valor) {
+      return String(valor || "").trim().toUpperCase();
+    }
+
+    function mostrarMensajeCupon(texto, tipo) {
+      if (!mensajeCupon) return;
+      if (!texto) {
+        mensajeCupon.style.display = "none";
+        mensajeCupon.textContent = "";
+        mensajeCupon.className = "mensaje-cupon";
+        return;
+      }
+
+      mensajeCupon.style.display = "block";
+      mensajeCupon.textContent = texto;
+      mensajeCupon.className = "mensaje-cupon " + (tipo === "ok" ? "ok" : "error");
+    }
+
+    function aplicarCuponDescuento() {
+      const codigo = normalizarCodigoCupon(cuponDescuento ? cuponDescuento.value : "");
+
+      if (!codigo) {
+        cuponAplicadoActual = null;
+        mostrarMensajeCupon("Coloca un cupón para aplicarlo.", "error");
+        actualizarPagoFlujoSolicitudes();
+        return;
+      }
+
+      cuponAplicadoActual = null;
+      mostrarMensajeCupon("Validando cupón...", "ok");
+      if (btnAplicarCupon) {
+        btnAplicarCupon.disabled = true;
+        btnAplicarCupon.textContent = "Validando...";
+      }
+
+      enviarJSONP({
+        action: "validarCupon",
+        codigoCupon: codigo
+      }, function(respuesta) {
+        if (btnAplicarCupon) {
+          btnAplicarCupon.disabled = false;
+          btnAplicarCupon.textContent = "Aplicar cupón";
+        }
+
+        if (!respuesta || respuesta.status !== "success" || !respuesta.valido) {
+          cuponAplicadoActual = null;
+          mostrarMensajeCupon((respuesta && respuesta.message) ? respuesta.message : "Cupón no válido o inactivo.", "error");
+          actualizarPagoFlujoSolicitudes();
+          return;
+        }
+
+        const tipo = String(respuesta.tipo || "").toLowerCase();
+        const valor = parseFloat(respuesta.valor || 0) || 0;
+
+        cuponAplicadoActual = {
+          codigo: codigo,
+          tipo: tipo,
+          valor: valor
+        };
+
+        const texto = tipo === "porcentaje"
+          ? codigo + " aplicado: " + valor + "% de descuento."
+          : codigo + " aplicado: " + valor.toFixed(2) + " USDT de descuento.";
+
+        mostrarMensajeCupon(texto, "ok");
+        actualizarPagoFlujoSolicitudes();
+      });
+    }
+
+    function quitarCuponDescuento() {
+      cuponAplicadoActual = null;
+      if (cuponDescuento) cuponDescuento.value = "";
+      mostrarMensajeCupon("", "");
+      actualizarPagoFlujoSolicitudes();
+    }
+
+
+    function obtenerDatosCuponParaEnvio(pago) {
+      const descuentoAplicado = pago && parseFloat(pago.descuentoUsd || 0) > 0;
+
+      if (!cuponAplicadoActual || !descuentoAplicado) {
+        return {
+          cuponCodigo: "",
+          cuponTipo: "",
+          cuponValor: ""
+        };
+      }
+
+      return {
+        cuponCodigo: cuponAplicadoActual.codigo || "",
+        cuponTipo: cuponAplicadoActual.tipo || "",
+        cuponValor: String(cuponAplicadoActual.valor || "")
+      };
+    }
+
+    function aplicarCuponACalculo(calculo) {
+      const base = Object.assign({
+        precioBase: 0,
+        subtotal: 0,
+        descuentoPorcentaje: 0,
+        descuentoUsd: 0,
+        descuentoMotivo: "",
+        total: 0
+      }, calculo || {});
+
+      const totalAntesCupon = parseFloat(base.total || base.subtotal || 0) || 0;
+      base.subtotal = totalAntesCupon;
+      base.descuentoPorcentaje = 0;
+      base.descuentoUsd = 0;
+      base.descuentoMotivo = "";
+      base.total = totalAntesCupon;
+
+      if (!cuponAplicadoActual || totalAntesCupon <= 0) {
+        return base;
+      }
+
+      let descuentoUsd = 0;
+      let descuentoPorcentaje = 0;
+
+      if (cuponAplicadoActual.tipo === "porcentaje") {
+        descuentoPorcentaje = parseFloat(cuponAplicadoActual.valor || 0) || 0;
+        descuentoUsd = totalAntesCupon * (descuentoPorcentaje / 100);
+      } else if (cuponAplicadoActual.tipo === "fijo") {
+        descuentoUsd = parseFloat(cuponAplicadoActual.valor || 0) || 0;
+      }
+
+      descuentoUsd = Math.max(0, Math.min(descuentoUsd, totalAntesCupon));
+
+      if (descuentoUsd <= 0) {
+        return base;
+      }
+
+      return Object.assign(base, {
+        subtotal: totalAntesCupon,
+        descuentoPorcentaje: descuentoPorcentaje,
+        descuentoUsd: descuentoUsd,
+        descuentoMotivo: "Cupón " + cuponAplicadoActual.codigo,
+        cuponCodigo: cuponAplicadoActual.codigo,
+        total: totalAntesCupon - descuentoUsd
+      });
+    }
+
     function calcularPrecioSolicitudConDescuento() {
       const precioBase = obtenerPrecioBaseSolicitud();
       const dias = parseInt(solTiempo.value || "0", 10);
-      const plan = solPlan.value;
-      const garantia = solGarantia.value;
 
       if (!precioBase || !dias) {
-        return {
+        return aplicarCuponACalculo({
           precioBase: 0,
           dias: 0,
           meses: 0,
@@ -3463,50 +3713,33 @@
           descuentoPorcentaje: 0,
           descuentoUsd: 0,
           total: 0
-        };
+        });
       }
 
       const meses = obtenerMesesPorTiempo(dias);
       const subtotal = precioBase * meses;
-      const descuentoPorcentaje = obtenerDescuentoSolicitud(plan, garantia, dias);
-      const descuentoUsd = subtotal * (descuentoPorcentaje / 100);
-      const total = subtotal - descuentoUsd;
 
-      return {
+      return aplicarCuponACalculo({
         precioBase: precioBase,
         dias: dias,
         meses: meses,
         subtotal: subtotal,
-        descuentoPorcentaje: descuentoPorcentaje,
-        descuentoUsd: descuentoUsd,
-        total: total
-      };
+        descuentoPorcentaje: 0,
+        descuentoUsd: 0,
+        total: subtotal
+      });
     }
 
     function obtenerDescuentoSolicitud(plan, garantia, dias) {
-      if (garantia !== "Garantía Total") return 0;
-
-      const planTexto = String(plan || "").toLowerCase();
-
-      const esIndividual = planTexto.includes("individual");
-      const esDuo = planTexto.includes("dúo") || planTexto.includes("duo");
-      const esFamiliar = planTexto.includes("familiar") && !planTexto.includes("individual");
-
-      if (esIndividual || esDuo) {
-        if (dias === 60) return 5;
-        if (dias === 90) return 10;
-        if (dias === 180) return 15;
-        if (dias === 365) return 20;
-      }
-
-      if (esFamiliar) {
-        if (dias === 60) return 3;
-        if (dias === 90) return 5;
-        if (dias === 180) return 10;
-        if (dias === 365) return 15;
-      }
-
       return 0;
+    }
+
+    function obtenerDescuentoCantidadActivacion(cantidad, garantia) {
+      return 0;
+    }
+
+    function obtenerMotivoDescuento(plan, garantia, dias, cantidad) {
+      return "";
     }
 
     function actualizarPagoSolicitud() {
@@ -4017,6 +4250,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         if (filaPaisPlan) filaPaisPlan.style.display = modoAsignada ? "grid" : "none";
         if (filaTiempoGarantia) filaTiempoGarantia.style.display = (modoAsignada || modoRenovacion) ? "grid" : "none";
 
+        if (cuponDescuentoBox) cuponDescuentoBox.style.display = hayFlujoActivo ? "block" : "none";
         if (labelMetodoPago) labelMetodoPago.style.display = hayFlujoActivo ? "block" : "none";
         if (solMetodoPago) {
           solMetodoPago.style.display = hayFlujoActivo ? "block" : "none";
@@ -4263,18 +4497,39 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         return claves[0] || plan;
       }
 
-      function calcularPrecioUnitario(pais, plan, garantia, dias) {
+      function calcularPrecioUnitario(pais, plan, garantia, dias, cantidadParaDescuento) {
         if (!pais || !plan || !garantia || !dias) {
-          return { precioBase: 0, subtotal: 0, descuentoPorcentaje: 0, descuentoUsd: 0, total: 0 };
+          return {
+            precioBase: 0,
+            subtotal: 0,
+            descuentoPorcentaje: 0,
+            descuentoUsd: 0,
+            total: 0,
+            descuentoMotivo: ""
+          };
         }
+
+        const diasNumero = parseInt(dias, 10);
+        const cantidadNumero = parseInt(cantidadParaDescuento || "1", 10) || 1;
         const planNormalizado = normalizarPlanParaPrecio(pais, plan);
         const precioBase = PRECIOS_SOLICITUDES?.[pais]?.[planNormalizado]?.[garantia] || 0;
-        const meses = obtenerMesesPorTiempo(parseInt(dias, 10));
+        const meses = obtenerMesesPorTiempo(diasNumero);
         const subtotal = precioBase * meses;
-        const descuentoPorcentaje = obtenerDescuentoSolicitud(planNormalizado, garantia, parseInt(dias, 10));
-        const descuentoUsd = subtotal * (descuentoPorcentaje / 100);
-        const total = subtotal - descuentoUsd;
-        return { precioBase, subtotal, descuentoPorcentaje, descuentoUsd, total, planNormalizado };
+
+        const descuentoPorcentaje = 0;
+        const descuentoMotivo = "";
+        const descuentoUsd = 0;
+        const total = subtotal;
+
+        return {
+          precioBase,
+          subtotal,
+          descuentoPorcentaje,
+          descuentoUsd,
+          total,
+          planNormalizado,
+          descuentoMotivo
+        };
       }
 
       function calcularPagoCuentaAsignada() {
@@ -4283,48 +4538,57 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         const plan = solPlan.value;
         const garantia = solGarantia.value;
         const dias = parseInt(solTiempo.value || "0", 10);
-        const unitario = calcularPrecioUnitario(pais, plan, garantia, dias);
+        const unitario = calcularPrecioUnitario(pais, plan, garantia, dias, cantidad);
 
-        return {
+        return aplicarCuponACalculo({
           cantidad,
           precioBase: unitario.precioBase * cantidad,
           subtotal: unitario.subtotal * cantidad,
-          descuentoPorcentaje: unitario.descuentoPorcentaje,
-          descuentoUsd: unitario.descuentoUsd * cantidad,
+          descuentoPorcentaje: 0,
+          descuentoUsd: 0,
+          descuentoMotivo: "",
           total: unitario.total * cantidad,
           unitario
-        };
+        });
       }
 
       function calcularPagoDominio() {
         const cuentas = obtenerCuentasDominio();
+        const cantidadActivacionCompleta = cuentas.filter(cuenta => {
+          return cuenta.pais && cuenta.plan && cuenta.tiempo && cuenta.garantia === "Garantía de Activación";
+        }).length;
+
         let precioBase = 0;
         let subtotal = 0;
         let descuentoUsd = 0;
         let total = 0;
         let descuentoPorcentajeMax = 0;
+        let descuentoMotivo = "";
         const detalles = [];
 
         cuentas.forEach(cuenta => {
-          const calculo = calcularPrecioUnitario(cuenta.pais, cuenta.plan, cuenta.garantia, cuenta.tiempo);
+          const cantidadParaDescuento = cuenta.garantia === "Garantía de Activación" ? cantidadActivacionCompleta : 1;
+          const calculo = calcularPrecioUnitario(cuenta.pais, cuenta.plan, cuenta.garantia, cuenta.tiempo, cantidadParaDescuento);
           precioBase += calculo.precioBase;
           subtotal += calculo.subtotal;
           descuentoUsd += calculo.descuentoUsd;
           total += calculo.total;
           descuentoPorcentajeMax = Math.max(descuentoPorcentajeMax, calculo.descuentoPorcentaje);
+          if (calculo.descuentoMotivo && !descuentoMotivo) descuentoMotivo = calculo.descuentoMotivo;
           detalles.push({
             ...cuenta,
             precioBase: calculo.precioBase,
             subtotal: calculo.subtotal,
             descuentoPorcentaje: calculo.descuentoPorcentaje,
             descuentoUsd: calculo.descuentoUsd,
+            descuentoMotivo: calculo.descuentoMotivo || "",
             total: calculo.total,
             planNormalizado: calculo.planNormalizado || cuenta.plan,
             completa: !!(cuenta.pais && cuenta.plan && cuenta.garantia && cuenta.tiempo && calculo.total > 0)
           });
         });
 
-        return { cantidad: cuentas.length, precioBase, subtotal, descuentoUsd, descuentoPorcentaje: descuentoPorcentajeMax, total, detalles };
+        return aplicarCuponACalculo({ cantidad: cuentas.length, precioBase, subtotal, descuentoUsd: 0, descuentoPorcentaje: 0, descuentoMotivo: "", total: subtotal, detalles });
       }
 
       function actualizarResumenPago(calculo, etiquetaBase) {
@@ -4357,7 +4621,9 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           lineaSubtotalUsd.style.display = "block";
           lineaDescuentoUsd.style.display = "block";
           solSubtotalUsd.textContent = calculo.subtotal.toFixed(2) + " USDT";
-          solDescuentoUsd.textContent = "-" + calculo.descuentoUsd.toFixed(2) + " USDT";
+          const motivo = calculo.descuentoMotivo ? calculo.descuentoMotivo + ": " : "";
+          const porcentaje = calculo.descuentoPorcentaje ? calculo.descuentoPorcentaje + "% " : "";
+          solDescuentoUsd.textContent = motivo + porcentaje + "(-" + calculo.descuentoUsd.toFixed(2) + " USDT)";
         } else {
           lineaSubtotalUsd.style.display = "none";
           lineaDescuentoUsd.style.display = "none";
@@ -4452,13 +4718,10 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           if (valor) valor.textContent = detalle.total.toFixed(2) + " USDT";
 
           if (texto) {
-            const descuento = detalle.descuentoPorcentaje
-              ? ` Descuento aplicado: ${detalle.descuentoPorcentaje}%.`
-              : "";
             const diasCuenta = parseInt(detalle.tiempo, 10);
             const mesesCuenta = obtenerMesesPorTiempo(diasCuenta);
             const textoMesCuenta = mesesCuenta === 1 ? "mes" : "meses";
-            texto.textContent = `Monto = ${diasCuenta} días (${mesesCuenta} ${textoMesCuenta}).${descuento}`;
+            texto.textContent = `Monto = ${diasCuenta} días (${mesesCuenta} ${textoMesCuenta}).`;
           }
         });
 
@@ -4485,9 +4748,14 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           })
           .join("");
 
+        const lineaCupon = pago.descuentoUsd > 0
+          ? `<div><strong>${escaparHTML(pago.descuentoMotivo || "Cupón aplicado")}:</strong> -${pago.descuentoUsd.toFixed(2)} USDT</div>`
+          : "";
+
         detalleTotal.innerHTML = `
           <div><strong>Cuentas completas:</strong> ${cuentasCompletas} de ${pago.cantidad}</div>
           ${lineas}
+          ${lineaCupon}
         `;
       }
 
@@ -4664,32 +4932,35 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         solPlan.innerHTML = `<option value="${escaparHTML(plan)}" selected>${escaparHTML(plan)}</option>`;
       }
 
-      function calcularPrecioCuentaRenovacion(cuenta) {
+      function calcularPrecioCuentaRenovacion(cuenta, cantidadParaDescuento) {
         const pais = cuenta.pais || "";
         const plan = normalizarPlanParaPrecio(pais, cuenta.plan || cuenta.tipoCuenta || "");
         const garantia = solGarantia.value;
         const dias = parseInt(solTiempo.value || "0", 10);
-        return { ...calcularPrecioUnitario(pais, plan, garantia, dias), pais, plan };
+        return { ...calcularPrecioUnitario(pais, plan, garantia, dias, cantidadParaDescuento), pais, plan };
       }
 
       function calcularPagoRenovacionSolicitud() {
         const seleccionadas = obtenerCuentasSeleccionadasRenovacion();
+        const cantidadParaDescuento = solGarantia.value === "Garantía de Activación" ? seleccionadas.length : 1;
         let precioBase = 0;
         let subtotal = 0;
         let descuentoUsd = 0;
         let total = 0;
         let descuentoPorcentajeMax = 0;
+        let descuentoMotivo = "";
 
         seleccionadas.forEach(cuenta => {
-          const calculo = calcularPrecioCuentaRenovacion(cuenta);
+          const calculo = calcularPrecioCuentaRenovacion(cuenta, cantidadParaDescuento);
           precioBase += calculo.precioBase;
           subtotal += calculo.subtotal;
           descuentoUsd += calculo.descuentoUsd;
           total += calculo.total;
           descuentoPorcentajeMax = Math.max(descuentoPorcentajeMax, calculo.descuentoPorcentaje);
+          if (calculo.descuentoMotivo && !descuentoMotivo) descuentoMotivo = calculo.descuentoMotivo;
         });
 
-        return { cantidad: seleccionadas.length, precioBase, subtotal, descuentoUsd, descuentoPorcentaje: descuentoPorcentajeMax, total };
+        return aplicarCuponACalculo({ cantidad: seleccionadas.length, precioBase, subtotal, descuentoUsd: 0, descuentoPorcentaje: 0, descuentoMotivo: "", total: subtotal });
       }
 
       function actualizarPagoRenovacionSolicitud() {
@@ -4776,6 +5047,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           detalleDominio: detalle
         };
 
+        Object.assign(datos, obtenerDatosCuponParaEnvio(pago));
         enviarSolicitudYWhatsapp(datos, crearMensajeCuentaAsignada({ codigoSeguimiento, cliente, detalle, pago, metodoPago }));
       }
 
@@ -4842,6 +5114,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           cuentasDominio: JSON.stringify(cuentas)
         };
 
+        Object.assign(datos, obtenerDatosCuponParaEnvio(pago));
         enviarSolicitudYWhatsapp(datos, crearMensajeDominio({ codigoSeguimiento, cliente, detalle, pago, metodoPago }));
       }
 
@@ -4900,6 +5173,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           cantidadCuentas: String(seleccionadas.length)
         };
 
+        Object.assign(datos, obtenerDatosCuponParaEnvio(pago));
         enviarSolicitudYWhatsapp(datos, crearMensajeRenovacion({ codigoSeguimiento, cliente, cuentasTexto, tiempo, garantia, metodoPago, pago }));
       }
 
