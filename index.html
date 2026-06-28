@@ -1706,7 +1706,8 @@
         <div id="resumenPagoSolicitud" class="consulta-card" style="display:none;">
           <div class="detalle-titulo">💰 Resumen de pago</div>
 
-          <p><strong>Precio base mensual:</strong> <span id="solPrecioBaseUsd">-</span></p>
+          <p><strong>Cantidad de cuentas:</strong> <span id="solCantidadResumen">-</span></p>
+          <p><strong>Precio unitario:</strong> <span id="solPrecioBaseUsd">-</span></p>
           <p id="lineaSubtotalUsd" style="display:none;"><strong>Subtotal:</strong> <span id="solSubtotalUsd">-</span></p>
           <p id="lineaDescuentoUsd" style="display:none;"><strong>Cupón aplicado:</strong> <span id="solDescuentoUsd">-</span></p>
           <p><strong>Total a pagar:</strong> <span id="solPrecioUsd">-</span></p>
@@ -1732,7 +1733,7 @@
             </div>
           </div>
 
-          <div class="aviso-pago">
+          <div class="aviso-pago" id="avisoRealizaPago" style="display:none;">
             📌 Realiza tu pago. Una vez realizado, saca una captura del comprobante, voucher o recibo.
           </div>
         </div>
@@ -1852,6 +1853,7 @@
 
     const descripcionGarantia = document.getElementById("descripcionGarantia");
     const resumenPagoSolicitud = document.getElementById("resumenPagoSolicitud");
+    const solCantidadResumen = document.getElementById("solCantidadResumen");
     const solPrecioBaseUsd = document.getElementById("solPrecioBaseUsd");
     const solPrecioUsd = document.getElementById("solPrecioUsd");
 
@@ -3158,7 +3160,131 @@
           <body>
             <h2>Preparando WhatsApp...</h2>
             <p>No cierres esta pestaña.</p>
-          </body>
+          
+
+<script>
+/* =========================================================
+   FIX: aviso visible del tipo de garantía en Pedidos
+   Este bloque fuerza que la explicación de garantía salga
+   justo debajo de Garantía, antes del cupón / método de pago.
+========================================================= */
+(function() {
+  function htmlGarantia(valor) {
+    const garantia = String(valor || "").trim();
+    if (!garantia) return "";
+
+    if (garantia === "Garantía de Activación") {
+      return `
+        <div class="detalle-titulo">🛡️ Garantía de Activación</div>
+        <p style="margin:8px 0 0; color:#eaf3ff; font-weight:700;">
+          Cubre únicamente la activación inicial del servicio. Si la cuenta se activa correctamente, la garantía queda cumplida.
+        </p>
+      `;
+    }
+
+    if (garantia === "Garantía Parcial") {
+      return `
+        <div class="detalle-titulo">🛡️ Garantía Parcial</div>
+        <p style="margin:8px 0 0; color:#eaf3ff; font-weight:700;">
+          Si la cuenta cae o presenta algún incidente dentro del tiempo contratado, el cliente paga solo la mitad del monto para levantar nuevamente el servicio.
+        </p>
+      `;
+    }
+
+    if (garantia === "Garantía Total") {
+      return `
+        <div class="detalle-titulo">🛡️ Garantía Total</div>
+        <p style="margin:8px 0 0; color:#eaf3ff; font-weight:700;">
+          Si la cuenta cae desde el día 1 hasta el día 30, se levanta una vez sin costo. Si vuelve a caer, el cliente selecciona nuevamente el tipo de plan que desea.
+        </p>
+      `;
+    }
+
+    return "";
+  }
+
+  function estaVisible(el) {
+    return !!(el && el.offsetParent !== null && getComputedStyle(el).display !== "none");
+  }
+
+  function obtenerTipoCuentaNuevaSeleccionada() {
+    const seleccionado = document.querySelector('input[name="solTipoCuentaNueva"]:checked');
+    return seleccionado ? seleccionado.value : "";
+  }
+
+  function obtenerTipoSolicitudSeleccionada() {
+    const seleccionado = document.querySelector('input[name="solTipoSolicitud"]:checked');
+    return seleccionado ? seleccionado.value : "";
+  }
+
+  function actualizarAvisoGarantiaPedidos() {
+    const selectGarantia = document.getElementById("solGarantia");
+    if (!selectGarantia) return;
+
+    let contenedor = document.getElementById("descripcionGarantia");
+    if (!contenedor) {
+      contenedor = document.createElement("div");
+      contenedor.id = "descripcionGarantia";
+      contenedor.className = "info-box";
+      contenedor.style.display = "none";
+      contenedor.style.marginTop = "14px";
+      const cupon = document.getElementById("cuponDescuentoBox");
+      const metodo = document.querySelector('label[for="solMetodoPago"]');
+      if (cupon && cupon.parentNode) {
+        cupon.parentNode.insertBefore(contenedor, cupon);
+      } else if (metodo && metodo.parentNode) {
+        metodo.parentNode.insertBefore(contenedor, metodo);
+      } else {
+        selectGarantia.insertAdjacentElement("afterend", contenedor);
+      }
+    }
+
+    const tipoSolicitud = obtenerTipoSolicitudSeleccionada();
+    const tipoCuentaNueva = obtenerTipoCuentaNuevaSeleccionada();
+    const esPedidoCuentaAsignada = tipoSolicitud === "Cuenta Nueva" && tipoCuentaNueva === "Cuenta Asignada";
+    const esRenovacion = tipoSolicitud === "Renovación";
+    const garantia = selectGarantia.value;
+    const contenido = htmlGarantia(garantia);
+
+    if (!contenido || !estaVisible(selectGarantia) || (!esPedidoCuentaAsignada && !esRenovacion)) {
+      contenedor.innerHTML = "";
+      contenedor.style.display = "none";
+      return;
+    }
+
+    contenedor.innerHTML = contenido;
+    contenedor.style.display = "block";
+  }
+
+  function actualizarConRetraso() {
+    actualizarAvisoGarantiaPedidos();
+    setTimeout(actualizarAvisoGarantiaPedidos, 80);
+    setTimeout(actualizarAvisoGarantiaPedidos, 200);
+  }
+
+  document.addEventListener("change", function(e) {
+    if (!e.target) return;
+    if (
+      e.target.id === "solGarantia" ||
+      e.target.name === "solTipoSolicitud" ||
+      e.target.name === "solTipoCuentaNueva" ||
+      e.target.id === "solPlan" ||
+      e.target.id === "solTiempo"
+    ) {
+      actualizarConRetraso();
+    }
+  }, true);
+
+  document.addEventListener("click", function() {
+    setTimeout(actualizarAvisoGarantiaPedidos, 120);
+  }, true);
+
+  window.addEventListener("load", actualizarConRetraso);
+  document.addEventListener("DOMContentLoaded", actualizarConRetraso);
+})();
+</script>
+
+</body>
           </html>
         `);
         ventana.document.close();
@@ -4591,11 +4717,66 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         return aplicarCuponACalculo({ cantidad: cuentas.length, precioBase, subtotal, descuentoUsd: 0, descuentoPorcentaje: 0, descuentoMotivo: "", total: subtotal, detalles });
       }
 
-      function actualizarResumenPago(calculo, etiquetaBase) {
-        const metodo = solMetodoPago.value;
-        const totalListo = !!(calculo && calculo.total && calculo.total > 0);
+      function obtenerCantidadResumenPago(calculo) {
+        const detalles = (calculo && Array.isArray(calculo.detalles)) ? calculo.detalles : [];
+        const completos = detalles.filter(function(detalle) { return detalle && detalle.completa; }).length;
+        return completos || parseInt((calculo && calculo.cantidad) || "0", 10) || 1;
+      }
 
-        solicitudPrecioActual = calculo.total || 0;
+      function obtenerTextoPrecioUnitarioPago(calculo, etiquetaBase) {
+        if (!calculo) return "-";
+
+        if (calculo.unitario && calculo.unitario.total > 0) {
+          return calculo.unitario.total.toFixed(2) + " USDT";
+        }
+
+        const detalles = Array.isArray(calculo.detalles) ? calculo.detalles.filter(function(detalle) {
+          return detalle && detalle.completa && detalle.total > 0;
+        }) : [];
+
+        if (detalles.length) {
+          const valores = detalles.map(function(detalle) { return detalle.total.toFixed(2); });
+          const unicos = Array.from(new Set(valores));
+          if (unicos.length === 1) return unicos[0] + " USDT";
+          return "Variable por cuenta";
+        }
+
+        if (calculo.precioBase > 0 && calculo.cantidad > 0) {
+          const unitarioAproximado = calculo.subtotal > 0 ? (calculo.subtotal / calculo.cantidad) : (calculo.precioBase / calculo.cantidad);
+          if (unitarioAproximado > 0) return unitarioAproximado.toFixed(2) + " USDT";
+        }
+
+        return etiquetaBase || "-";
+      }
+
+      function actualizarVisibilidadMetodoPago(requierePago) {
+        const labelMetodoPago = document.querySelector('label[for="solMetodoPago"]');
+
+        if (labelMetodoPago) labelMetodoPago.style.display = requierePago ? "block" : "none";
+        if (solMetodoPago) {
+          solMetodoPago.style.display = requierePago ? "block" : "none";
+          solMetodoPago.required = !!requierePago;
+          if (!requierePago) solMetodoPago.value = "";
+        }
+      }
+
+      function actualizarResumenPago(calculo, etiquetaBase) {
+        calculo = Object.assign({
+          cantidad: 0,
+          precioBase: 0,
+          subtotal: 0,
+          descuentoPorcentaje: 0,
+          descuentoUsd: 0,
+          descuentoMotivo: "",
+          total: 0
+        }, calculo || {});
+
+        const subtotalListo = parseFloat(calculo.subtotal || 0) > 0;
+        const total = Math.max(0, parseFloat(calculo.total || 0) || 0);
+        const requierePago = subtotalListo && total > 0.000001;
+        const metodo = requierePago ? solMetodoPago.value : "";
+
+        solicitudPrecioActual = total;
         solicitudPrecioBaseActual = calculo.precioBase || 0;
         solicitudSubtotalActual = calculo.subtotal || 0;
         solicitudDescuentoPorcentajeActual = calculo.descuentoPorcentaje || 0;
@@ -4607,56 +4788,88 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         bloqueBinance.style.display = "none";
         lineaTipoCambio.style.display = "none";
         lineaMontoBs.style.display = "none";
+        const avisoRealizaPago = document.getElementById("avisoRealizaPago");
+        if (avisoRealizaPago) avisoRealizaPago.style.display = "none";
 
-        if (!metodo) {
+        actualizarVisibilidadMetodoPago(requierePago);
+
+        if (!subtotalListo) {
           resumenPagoSolicitud.style.display = "none";
+          if (solCantidadResumen) solCantidadResumen.textContent = "-";
+          solPrecioBaseUsd.textContent = "-";
+          solPrecioUsd.textContent = "-";
+          solSubtotalUsd.textContent = "-";
+          solDescuentoUsd.textContent = "-";
           return;
         }
 
         resumenPagoSolicitud.style.display = "block";
-        solPrecioBaseUsd.textContent = calculo.precioBase ? (etiquetaBase || (calculo.precioBase.toFixed(2) + " USDT / mes total")) : "Completa país, plan, tiempo y garantía";
-        solPrecioUsd.textContent = totalListo ? (calculo.total.toFixed(2) + " USDT") : "Completa los datos para calcular";
+
+        const cantidadResumen = obtenerCantidadResumenPago(calculo);
+        if (solCantidadResumen) {
+          solCantidadResumen.textContent = cantidadResumen + " cuenta" + (cantidadResumen === 1 ? "" : "s");
+        }
+
+        solPrecioBaseUsd.textContent = obtenerTextoPrecioUnitarioPago(calculo, etiquetaBase);
+        solSubtotalUsd.textContent = calculo.subtotal.toFixed(2) + " USDT";
+        solPrecioUsd.textContent = total.toFixed(2) + " USDT";
+
+        lineaSubtotalUsd.style.display = "block";
+        lineaDescuentoUsd.style.display = "block";
 
         if (calculo.descuentoUsd > 0) {
-          lineaSubtotalUsd.style.display = "block";
-          lineaDescuentoUsd.style.display = "block";
-          solSubtotalUsd.textContent = calculo.subtotal.toFixed(2) + " USDT";
           const motivo = calculo.descuentoMotivo ? calculo.descuentoMotivo + ": " : "";
           const porcentaje = calculo.descuentoPorcentaje ? calculo.descuentoPorcentaje + "% " : "";
           solDescuentoUsd.textContent = motivo + porcentaje + "(-" + calculo.descuentoUsd.toFixed(2) + " USDT)";
         } else {
-          lineaSubtotalUsd.style.display = "none";
-          lineaDescuentoUsd.style.display = "none";
-          solSubtotalUsd.textContent = "-";
-          solDescuentoUsd.textContent = "-";
+          solDescuentoUsd.textContent = "Sin cupón aplicado";
+        }
+
+        lineaTipoCambio.style.display = "block";
+        lineaMontoBs.style.display = "block";
+
+        if (!requierePago) {
+          solTipoCambio.textContent = "No aplica";
+          solMontoBs.textContent = "0.00 Bs";
+          solicitudMontoBsActual = "0.00";
+          solicitudTipoCambioActual = "";
+          return;
+        }
+
+        if (!metodo) {
+          solTipoCambio.textContent = "Selecciona método de pago";
+          solMontoBs.textContent = "Selecciona método de pago";
+          return;
         }
 
         if (metodo === "Binance") {
           bloqueBinance.style.display = "block";
+          if (avisoRealizaPago) avisoRealizaPago.style.display = "block";
+          solTipoCambio.textContent = "No aplica";
+          solMontoBs.textContent = "No aplica";
           return;
         }
 
         if (metodo === "QR Bolivia") {
           bloqueQrBolivia.style.display = "block";
-          lineaTipoCambio.style.display = "block";
-          lineaMontoBs.style.display = "block";
+          if (avisoRealizaPago) avisoRealizaPago.style.display = "block";
           solTipoCambio.textContent = "Consultando...";
-          solMontoBs.textContent = totalListo ? "Consultando..." : "Completa los datos para calcular";
+          solMontoBs.textContent = "Consultando...";
 
           const pagoRequestId = ++solicitudPagoRequestId;
 
-        enviarJSONP({ action: "cotizacion" }, function(respuesta) {
-          if (pagoRequestId !== solicitudPagoRequestId || solMetodoPago.value !== "QR Bolivia") return;
-            if (respuesta.status !== "success") {
+          enviarJSONP({ action: "cotizacion" }, function(respuesta) {
+            if (pagoRequestId !== solicitudPagoRequestId || solMetodoPago.value !== "QR Bolivia") return;
+            if (!respuesta || respuesta.status !== "success") {
               solTipoCambio.textContent = "No disponible";
-              solMontoBs.textContent = totalListo ? "No disponible" : "Completa los datos para calcular";
+              solMontoBs.textContent = "No disponible";
               return;
             }
 
             const tc = parseFloat(respuesta.tipoCambio);
             if (!tc) {
               solTipoCambio.textContent = "No disponible";
-              solMontoBs.textContent = totalListo ? "No disponible" : "Completa los datos para calcular";
+              solMontoBs.textContent = "No disponible";
               return;
             }
 
@@ -4664,14 +4877,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
             tipoCambioRenovacionActual = solicitudTipoCambioActual;
             solTipoCambio.textContent = tc.toFixed(2) + " Bs";
 
-            if (!totalListo) {
-              solicitudMontoBsActual = "";
-              montoBsRenovacionActual = "";
-              solMontoBs.textContent = "Completa los datos para calcular";
-              return;
-            }
-
-            const totalActual = parseFloat(solicitudPrecioActual || "0") || calculo.total || 0;
+            const totalActual = parseFloat(solicitudPrecioActual || "0") || total || 0;
             const montoBs = totalActual * tc;
             solicitudMontoBsActual = montoBs.toFixed(2);
             montoBsRenovacionActual = solicitudMontoBsActual;
@@ -4685,14 +4891,10 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         const pago = calcularPagoCuentaAsignada();
         const resumen = document.getElementById("resumenCuentaAsignada");
         if (resumen) {
-          if (pago.cantidad && pago.unitario.precioBase && solTiempo.value) {
-            resumen.style.display = "block";
-            resumen.innerHTML = `Cantidad: <strong>${pago.cantidad}</strong> cuenta${pago.cantidad === 1 ? "" : "s"}. Total calculado: <strong>${pago.total.toFixed(2)} USDT</strong>.`;
-          } else {
-            resumen.style.display = "none";
-          }
+          resumen.style.display = "none";
+          resumen.innerHTML = "";
         }
-        actualizarResumenPago(pago, pago.unitario.precioBase ? `${pago.unitario.precioBase.toFixed(2)} USDT / cuenta / mes × ${pago.cantidad || 0}` : "-");
+        actualizarResumenPago(pago, pago.unitario && pago.unitario.total ? `${pago.unitario.total.toFixed(2)} USDT` : "-");
       }
 
       function actualizarPreciosDominioPorCuenta(pago) {
@@ -4984,15 +5186,24 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         return { nombre, numero };
       }
 
-      function validarPagoListo(total) {
+      function validarPagoListo(total, subtotal) {
+        const totalNumero = parseFloat(total || 0) || 0;
+        const subtotalNumero = parseFloat(subtotal || 0) || 0;
+
+        if (!subtotalNumero) {
+          mostrarMensaje(mensajeSolicitud, "No se pudo calcular el monto total. Revisa los datos seleccionados.", "error");
+          return false;
+        }
+
+        if (totalNumero <= 0) {
+          return true;
+        }
+
         if (!solMetodoPago.value) {
           mostrarMensaje(mensajeSolicitud, "Selecciona método de pago.", "error");
           return false;
         }
-        if (!total) {
-          mostrarMensaje(mensajeSolicitud, "No se pudo calcular el monto total. Revisa los datos seleccionados.", "error");
-          return false;
-        }
+
         if (solMetodoPago.value === "QR Bolivia" && !solicitudMontoBsActual) {
           mostrarMensaje(mensajeSolicitud, "Espera a que se cargue el monto en Bs.", "error");
           return false;
@@ -5011,13 +5222,15 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         const garantia = solGarantia.value;
         const metodoPago = solMetodoPago.value;
         const pago = calcularPagoCuentaAsignada();
+        const metodoPagoEnvio = pago.total > 0 ? metodoPago : "No requiere pago por cupón";
 
-        if (!cantidad || !pais || !plan || !tiempo || !garantia || !metodoPago) {
-          mostrarMensaje(mensajeSolicitud, "Completa cantidad, país, plan, tiempo, garantía y método de pago.", "error");
+        const requierePago = pago.total > 0;
+        if (!cantidad || !pais || !plan || !tiempo || !garantia || (requierePago && !metodoPago)) {
+          mostrarMensaje(mensajeSolicitud, requierePago ? "Completa cantidad, país, plan, tiempo, garantía y método de pago." : "Completa cantidad, país, plan, tiempo y garantía.", "error");
           return;
         }
 
-        if (!validarPagoListo(pago.total)) return;
+        if (!validarPagoListo(pago.total, pago.subtotal)) return;
 
         const codigoSeguimiento = generarCodigoSeguimiento();
         const detalle = `${cantidad} cuenta${cantidad === 1 ? "" : "s"} asignada${cantidad === 1 ? "" : "s"} | País: ${pais} | Plan: ${plan} | Tiempo: ${tiempo} días | Garantía: ${garantia}`;
@@ -5041,14 +5254,14 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           descuentoPorcentaje: pago.descuentoPorcentaje.toFixed(0),
           descuentoUsd: pago.descuentoUsd.toFixed(2),
           precioUsd: pago.total.toFixed(2),
-          metodoPago,
+          metodoPago: metodoPagoEnvio,
           tipoCambio: solicitudTipoCambioActual,
-          montoBs: solicitudMontoBsActual,
+          montoBs: pago.total > 0 ? solicitudMontoBsActual : "0.00",
           detalleDominio: detalle
         };
 
         Object.assign(datos, obtenerDatosCuponParaEnvio(pago));
-        enviarSolicitudYWhatsapp(datos, crearMensajeCuentaAsignada({ codigoSeguimiento, cliente, detalle, pago, metodoPago }));
+        enviarSolicitudYWhatsapp(datos, crearMensajeCuentaAsignada({ codigoSeguimiento, cliente, detalle, pago, metodoPago: metodoPagoEnvio }));
       }
 
       function enviarSolicitudDominioCliente() {
@@ -5059,6 +5272,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         const cantidad = parseInt(document.getElementById("cantidadDominioSolicitud")?.value || "0", 10);
         const metodoPago = solMetodoPago.value;
         const pago = calcularPagoDominio();
+        const metodoPagoEnvio = pago.total > 0 ? metodoPago : "No requiere pago por cupón";
 
         if (!cantidad || cuentas.length !== cantidad) {
           mostrarMensaje(mensajeSolicitud, "Selecciona la cantidad de cuentas dominio.", "error");
@@ -5079,7 +5293,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           return;
         }
 
-        if (!validarPagoListo(pago.total)) return;
+        if (!validarPagoListo(pago.total, pago.subtotal)) return;
 
         const codigoSeguimiento = generarCodigoSeguimiento();
         const detalle = cuentas.map(c => `${c.numero}. ${c.correo} | País: ${c.pais} | Plan: ${c.plan} | Tiempo: ${c.tiempo} días | Garantía: ${c.garantia}`).join("\n");
@@ -5107,15 +5321,15 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           descuentoPorcentaje: pago.descuentoPorcentaje.toFixed(0),
           descuentoUsd: pago.descuentoUsd.toFixed(2),
           precioUsd: pago.total.toFixed(2),
-          metodoPago,
+          metodoPago: metodoPagoEnvio,
           tipoCambio: solicitudTipoCambioActual,
-          montoBs: solicitudMontoBsActual,
+          montoBs: pago.total > 0 ? solicitudMontoBsActual : "0.00",
           detalleDominio: detalle,
           cuentasDominio: JSON.stringify(cuentas)
         };
 
         Object.assign(datos, obtenerDatosCuponParaEnvio(pago));
-        enviarSolicitudYWhatsapp(datos, crearMensajeDominio({ codigoSeguimiento, cliente, detalle, pago, metodoPago }));
+        enviarSolicitudYWhatsapp(datos, crearMensajeDominio({ codigoSeguimiento, cliente, detalle, pago, metodoPago: metodoPagoEnvio }));
       }
 
       function enviarSolicitudRenovacionCliente() {
@@ -5127,18 +5341,20 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         const garantia = solGarantia.value;
         const metodoPago = solMetodoPago.value;
         const pago = calcularPagoRenovacionSolicitud();
+        const metodoPagoEnvio = pago.total > 0 ? metodoPago : "No requiere pago por cupón";
 
         if (!seleccionadas.length) {
           mostrarMensaje(mensajeSolicitud, "Verifica los correos y marca al menos una cuenta para renovar.", "error");
           return;
         }
 
-        if (!tiempo || !garantia || !metodoPago) {
-          mostrarMensaje(mensajeSolicitud, "Selecciona tiempo, garantía y método de pago.", "error");
+        const requierePago = pago.total > 0;
+        if (!tiempo || !garantia || (requierePago && !metodoPago)) {
+          mostrarMensaje(mensajeSolicitud, requierePago ? "Selecciona tiempo, garantía y método de pago." : "Selecciona tiempo y garantía.", "error");
           return;
         }
 
-        if (!validarPagoListo(pago.total)) return;
+        if (!validarPagoListo(pago.total, pago.subtotal)) return;
 
         const codigoSeguimiento = generarCodigoSeguimiento();
         const cuentasTexto = seleccionadas.map((cuenta, i) => {
@@ -5165,16 +5381,16 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
           descuentoPorcentaje: pago.descuentoPorcentaje.toFixed(0),
           descuentoUsd: pago.descuentoUsd.toFixed(2),
           precioUsd: pago.total.toFixed(2),
-          metodoPago,
+          metodoPago: metodoPagoEnvio,
           tipoCambio: solicitudTipoCambioActual,
-          montoBs: solicitudMontoBsActual,
+          montoBs: pago.total > 0 ? solicitudMontoBsActual : "0.00",
           cuentasRenovacion: JSON.stringify(seleccionadas),
           detalleRenovacion: cuentasTexto,
           cantidadCuentas: String(seleccionadas.length)
         };
 
         Object.assign(datos, obtenerDatosCuponParaEnvio(pago));
-        enviarSolicitudYWhatsapp(datos, crearMensajeRenovacion({ codigoSeguimiento, cliente, cuentasTexto, tiempo, garantia, metodoPago, pago }));
+        enviarSolicitudYWhatsapp(datos, crearMensajeRenovacion({ codigoSeguimiento, cliente, cuentasTexto, tiempo, garantia, metodoPago: metodoPagoEnvio, pago }));
       }
 
       function enviarSolicitudYWhatsapp(datos, mensajeWhatsapp) {
@@ -5201,8 +5417,17 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
       }
 
       function textoPagoComun(pago, metodoPago) {
-        return `Método de pago: ${metodoPago}
-Total a pagar: ${pago.total.toFixed(2)} USDT${solicitudMontoBsActual ? "\nMonto en Bs: " + solicitudMontoBsActual + " Bs" : ""}`;
+        const lineas = [];
+        lineas.push("Subtotal: " + (pago.subtotal || 0).toFixed(2) + " USDT");
+        if (pago.descuentoUsd > 0) {
+          lineas.push("Cupón aplicado: -" + pago.descuentoUsd.toFixed(2) + " USDT");
+        }
+        lineas.push("Total a pagar: " + pago.total.toFixed(2) + " USDT");
+        lineas.push("Método de pago: " + (metodoPago || "No requiere pago por cupón"));
+        if (pago.total > 0 && solicitudMontoBsActual) {
+          lineas.push("Monto en Bs: " + solicitudMontoBsActual + " Bs");
+        }
+        return lineas.join("\n");
       }
 
       function crearMensajeCuentaAsignada(info) {
@@ -5503,6 +5728,130 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
 
 
   </script>
+
+
+
+<script>
+/* =========================================================
+   FIX: aviso visible del tipo de garantía en Pedidos
+   Este bloque fuerza que la explicación de garantía salga
+   justo debajo de Garantía, antes del cupón / método de pago.
+========================================================= */
+(function() {
+  function htmlGarantia(valor) {
+    const garantia = String(valor || "").trim();
+    if (!garantia) return "";
+
+    if (garantia === "Garantía de Activación") {
+      return `
+        <div class="detalle-titulo">🛡️ Garantía de Activación</div>
+        <p style="margin:8px 0 0; color:#eaf3ff; font-weight:700;">
+          Cubre únicamente la activación inicial del servicio. Si la cuenta se activa correctamente, la garantía queda cumplida.
+        </p>
+      `;
+    }
+
+    if (garantia === "Garantía Parcial") {
+      return `
+        <div class="detalle-titulo">🛡️ Garantía Parcial</div>
+        <p style="margin:8px 0 0; color:#eaf3ff; font-weight:700;">
+          Si la cuenta cae o presenta algún incidente dentro del tiempo contratado, el cliente paga solo la mitad del monto para levantar nuevamente el servicio.
+        </p>
+      `;
+    }
+
+    if (garantia === "Garantía Total") {
+      return `
+        <div class="detalle-titulo">🛡️ Garantía Total</div>
+        <p style="margin:8px 0 0; color:#eaf3ff; font-weight:700;">
+          Si la cuenta cae desde el día 1 hasta el día 30, se levanta una vez sin costo. Si vuelve a caer, el cliente selecciona nuevamente el tipo de plan que desea.
+        </p>
+      `;
+    }
+
+    return "";
+  }
+
+  function estaVisible(el) {
+    return !!(el && el.offsetParent !== null && getComputedStyle(el).display !== "none");
+  }
+
+  function obtenerTipoCuentaNuevaSeleccionada() {
+    const seleccionado = document.querySelector('input[name="solTipoCuentaNueva"]:checked');
+    return seleccionado ? seleccionado.value : "";
+  }
+
+  function obtenerTipoSolicitudSeleccionada() {
+    const seleccionado = document.querySelector('input[name="solTipoSolicitud"]:checked');
+    return seleccionado ? seleccionado.value : "";
+  }
+
+  function actualizarAvisoGarantiaPedidos() {
+    const selectGarantia = document.getElementById("solGarantia");
+    if (!selectGarantia) return;
+
+    let contenedor = document.getElementById("descripcionGarantia");
+    if (!contenedor) {
+      contenedor = document.createElement("div");
+      contenedor.id = "descripcionGarantia";
+      contenedor.className = "info-box";
+      contenedor.style.display = "none";
+      contenedor.style.marginTop = "14px";
+      const cupon = document.getElementById("cuponDescuentoBox");
+      const metodo = document.querySelector('label[for="solMetodoPago"]');
+      if (cupon && cupon.parentNode) {
+        cupon.parentNode.insertBefore(contenedor, cupon);
+      } else if (metodo && metodo.parentNode) {
+        metodo.parentNode.insertBefore(contenedor, metodo);
+      } else {
+        selectGarantia.insertAdjacentElement("afterend", contenedor);
+      }
+    }
+
+    const tipoSolicitud = obtenerTipoSolicitudSeleccionada();
+    const tipoCuentaNueva = obtenerTipoCuentaNuevaSeleccionada();
+    const esPedidoCuentaAsignada = tipoSolicitud === "Cuenta Nueva" && tipoCuentaNueva === "Cuenta Asignada";
+    const esRenovacion = tipoSolicitud === "Renovación";
+    const garantia = selectGarantia.value;
+    const contenido = htmlGarantia(garantia);
+
+    if (!contenido || !estaVisible(selectGarantia) || (!esPedidoCuentaAsignada && !esRenovacion)) {
+      contenedor.innerHTML = "";
+      contenedor.style.display = "none";
+      return;
+    }
+
+    contenedor.innerHTML = contenido;
+    contenedor.style.display = "block";
+  }
+
+  function actualizarConRetraso() {
+    actualizarAvisoGarantiaPedidos();
+    setTimeout(actualizarAvisoGarantiaPedidos, 80);
+    setTimeout(actualizarAvisoGarantiaPedidos, 200);
+  }
+
+  document.addEventListener("change", function(e) {
+    if (!e.target) return;
+    if (
+      e.target.id === "solGarantia" ||
+      e.target.name === "solTipoSolicitud" ||
+      e.target.name === "solTipoCuentaNueva" ||
+      e.target.id === "solPlan" ||
+      e.target.id === "solTiempo"
+    ) {
+      actualizarConRetraso();
+    }
+  }, true);
+
+  document.addEventListener("click", function() {
+    setTimeout(actualizarAvisoGarantiaPedidos, 120);
+  }, true);
+
+  window.addEventListener("load", actualizarConRetraso);
+  document.addEventListener("DOMContentLoaded", actualizarConRetraso);
+})();
+</script>
 
 </body>
 </html>
