@@ -1144,6 +1144,106 @@
       }
     }
 
+  
+
+    .renovacion-vencer-box {
+      background: rgba(76, 255, 155, 0.10);
+      border: 1px solid rgba(76, 255, 155, 0.35);
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 22px;
+    }
+
+    .renovacion-vencer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .renovacion-vencer-header h3 {
+      margin: 0;
+      color: #4cff9b;
+      font-size: 24px;
+      font-weight: 900;
+    }
+
+    .renovacion-vencer-header p {
+      margin: 6px 0 0;
+      color: #eaf3ff;
+      font-weight: 800;
+      line-height: 1.45;
+      font-size: 13px;
+    }
+
+    .btn-mini-verde {
+      border: none;
+      background: #2394f8;
+      color: #fff;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tabla-vencen-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.14);
+    }
+
+    .tabla-vencen {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+      background: rgba(8, 16, 31, 0.66);
+    }
+
+    .tabla-vencen th,
+    .tabla-vencen td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      text-align: left;
+      color: #fff;
+      font-weight: 800;
+      vertical-align: middle;
+    }
+
+    .tabla-vencen th {
+      color: #4cff9b;
+      background: rgba(0,0,0,0.22);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+    }
+
+    .tabla-vencen td {
+      font-size: 14px;
+    }
+
+    .tabla-vencen .btn-usar-correo {
+      border: none;
+      border-radius: 10px;
+      padding: 9px 12px;
+      background: rgba(76,255,155,0.18);
+      color: #4cff9b;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .mensaje-vencen {
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: #eaf3ff;
+      padding: 14px;
+      border-radius: 14px;
+      font-weight: 900;
+    }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
@@ -1431,6 +1531,10 @@
           </div>
         </div>
 
+        <label for="comentariosRegistro">Comentarios</label>
+        <textarea id="comentariosRegistro" name="comentarios_registro_no_autofill_9910" rows="4" placeholder="Escribe aquí cualquier comentario adicional sobre la cuenta o el cliente" autocomplete="off"></textarea>
+
+
         <label for="correoBanca">Correo de la banca</label>
         <input type="text" inputmode="email" id="correoBanca" name="correo_banca_no_autofill_6549" placeholder="correo asociado a la banca" autocomplete="new-password" required>
 
@@ -1473,6 +1577,17 @@
       </form>
 
       <div id="mensajeRenovacion" class="mensaje"></div>
+
+      <div class="renovacion-vencer-box" id="boxCuentasPorVencer">
+        <div class="renovacion-vencer-header">
+          <div>
+            <h3>⏰ Cuentas por vencer</h3>
+            <p>Información tomada de la base de datos. Se muestran las cuentas que vencen en los próximos 7 días.</p>
+          </div>
+          <button type="button" class="btn-mini-verde" id="btnActualizarCuentasPorVencer">Actualizar lista</button>
+        </div>
+        <div id="contenidoCuentasPorVencer" class="mensaje-vencen">Cargando cuentas por vencer...</div>
+      </div>
 
       <div id="panelRenovacion" style="display:none;">
         <div class="resultado">
@@ -1750,6 +1865,7 @@
 
   <script>
     const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyKZfZPVDBurIIis9g9PIJVqp0YV_rf7-jOR8CEtmLUdtGiVQde2Z7d9zp_tYkeYA0g2A/exec";
+    const TIPO_CAMBIO_RESPALDO_BS = 9.90;
 
     const videoFondo = document.getElementById("videoFondo");
     if (videoFondo) {
@@ -2156,6 +2272,7 @@
       if (seccion === "renovacion") {
         btnRenovacion.classList.add("active");
         seccionRenovacion.classList.add("active");
+        if (typeof cargarCuentasPorVencer === "function") cargarCuentasPorVencer();
       }
 
       seccionActual = seccion;
@@ -2490,6 +2607,7 @@
       const fechaAct = fechaActivacion.value;
       const tiempoSuscripcion = duracion.value;
       const garantia = document.getElementById("garantiaRegistro").value;
+      const comentariosRegistro = document.getElementById("comentariosRegistro") ? document.getElementById("comentariosRegistro").value.trim() : "";
       const correoBanca = document.getElementById("correoBanca").value.trim();
 
       const tarjetaSegura = obtenerTarjetaSegura(numeroTarjetaInput);
@@ -2521,6 +2639,7 @@
         fechaActivacion: fechaAct,
         tiempoSuscripcion,
         garantia,
+        comentarios: comentariosRegistro,
         fechaVencimiento: fechasCalculadas.fechaVencimiento,
         diasRestantes: fechasCalculadas.diasRestantes,
         correoBanca,
@@ -3661,6 +3780,7 @@
 
     function aplicarCuponACalculo(calculo) {
       const base = Object.assign({
+        cantidad: 0,
         precioBase: 0,
         subtotal: 0,
         descuentoPorcentaje: 0,
@@ -3669,14 +3789,21 @@
         total: 0
       }, calculo || {});
 
-      const totalAntesCupon = parseFloat(base.total || base.subtotal || 0) || 0;
-      base.subtotal = totalAntesCupon;
+      /*
+        El subtotal es la suma real antes del cupón.
+        Importante: usamos primero subtotal y no total, porque total puede venir
+        de un cálculo anterior o del precio unitario. Así el cupón siempre se aplica
+        sobre la cantidad completa de cuentas.
+      */
+      const subtotalAntesCupon = parseFloat(base.subtotal || base.total || 0) || 0;
+
+      base.subtotal = subtotalAntesCupon;
       base.descuentoPorcentaje = 0;
       base.descuentoUsd = 0;
       base.descuentoMotivo = "";
-      base.total = totalAntesCupon;
+      base.total = subtotalAntesCupon;
 
-      if (!cuponAplicadoActual || totalAntesCupon <= 0) {
+      if (!cuponAplicadoActual || subtotalAntesCupon <= 0) {
         return base;
       }
 
@@ -3685,24 +3812,24 @@
 
       if (cuponAplicadoActual.tipo === "porcentaje") {
         descuentoPorcentaje = parseFloat(cuponAplicadoActual.valor || 0) || 0;
-        descuentoUsd = totalAntesCupon * (descuentoPorcentaje / 100);
+        descuentoUsd = subtotalAntesCupon * (descuentoPorcentaje / 100);
       } else if (cuponAplicadoActual.tipo === "fijo") {
         descuentoUsd = parseFloat(cuponAplicadoActual.valor || 0) || 0;
       }
 
-      descuentoUsd = Math.max(0, Math.min(descuentoUsd, totalAntesCupon));
+      descuentoUsd = Math.max(0, Math.min(descuentoUsd, subtotalAntesCupon));
 
       if (descuentoUsd <= 0) {
         return base;
       }
 
       return Object.assign(base, {
-        subtotal: totalAntesCupon,
+        subtotal: subtotalAntesCupon,
         descuentoPorcentaje: descuentoPorcentaje,
         descuentoUsd: descuentoUsd,
         descuentoMotivo: "Cupón " + cuponAplicadoActual.codigo,
         cuponCodigo: cuponAplicadoActual.codigo,
-        total: totalAntesCupon - descuentoUsd
+        total: subtotalAntesCupon - descuentoUsd
       });
     }
 
@@ -3809,19 +3936,11 @@
 
         enviarJSONP({ action: "cotizacion" }, function(respuesta) {
           if (pagoRequestId !== solicitudPagoRequestId || solMetodoPago.value !== "QR Bolivia") return;
-          if (respuesta.status !== "success") {
-            solTipoCambio.textContent = "No disponible";
-            solMontoBs.textContent = "No disponible";
-            mostrarMensaje(mensajeSolicitud, "No se pudo obtener el tipo de cambio desde la base.", "error");
-            return;
-          }
-
-          const tc = parseFloat(respuesta.tipoCambio);
+          let tc = parseFloat(respuesta && respuesta.tipoCambio);
 
           if (!tc) {
-            solTipoCambio.textContent = "No disponible";
-            solMontoBs.textContent = "No disponible";
-            return;
+            tc = TIPO_CAMBIO_RESPALDO_BS;
+            mostrarMensaje(mensajeSolicitud, "No se pudo obtener el tipo de cambio desde la base. Se usó el tipo de cambio de respaldo: " + tc.toFixed(2) + " Bs.", "error");
           }
 
           const totalActual = parseFloat(solicitudPrecioActual || "0") || precioTotal || 0;
@@ -4538,22 +4657,31 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         };
       }
 
+      function obtenerCantidadCuentaAsignadaSeleccionada() {
+        const selectCantidad = document.getElementById("cantidadCuentaAsignada");
+        const textoCantidad = selectCantidad ? (selectCantidad.value || selectCantidad.options[selectCantidad.selectedIndex]?.textContent || "0") : "0";
+        const cantidad = parseInt(textoCantidad, 10);
+        return cantidad > 0 ? cantidad : 0;
+      }
+
       function calcularPagoCuentaAsignada() {
-        const cantidad = parseInt(document.getElementById("cantidadCuentaAsignada")?.value || "0", 10);
+        const cantidad = obtenerCantidadCuentaAsignadaSeleccionada();
         const pais = solPais.value;
         const plan = solPlan.value;
         const garantia = solGarantia.value;
         const dias = parseInt(solTiempo.value || "0", 10);
         const unitario = calcularPrecioUnitario(pais, plan, garantia, dias, cantidad);
+        const subtotalReal = (parseFloat(unitario.subtotal || unitario.total || 0) || 0) * cantidad;
+        const precioBaseReal = (parseFloat(unitario.precioBase || 0) || 0) * cantidad;
 
         return aplicarCuponACalculo({
           cantidad,
-          precioBase: unitario.precioBase * cantidad,
-          subtotal: unitario.subtotal * cantidad,
+          precioBase: precioBaseReal,
+          subtotal: subtotalReal,
           descuentoPorcentaje: 0,
           descuentoUsd: 0,
           descuentoMotivo: "",
-          total: unitario.total * cantidad,
+          total: subtotalReal,
           unitario
         });
       }
@@ -4700,7 +4828,7 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
         if (calculo.descuentoUsd > 0) {
           const motivo = calculo.descuentoMotivo ? calculo.descuentoMotivo + ": " : "";
           const porcentaje = calculo.descuentoPorcentaje ? calculo.descuentoPorcentaje + "% " : "";
-          solDescuentoUsd.textContent = motivo + porcentaje + "(-" + calculo.descuentoUsd.toFixed(2) + " USDT)";
+          solDescuentoUsd.textContent = motivo + porcentaje + "descuenta " + calculo.descuentoUsd.toFixed(2) + " USDT";
         } else {
           solDescuentoUsd.textContent = "Sin cupón aplicado";
         }
@@ -4740,17 +4868,9 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
 
           enviarJSONP({ action: "cotizacion" }, function(respuesta) {
             if (pagoRequestId !== solicitudPagoRequestId || solMetodoPago.value !== "QR Bolivia") return;
-            if (!respuesta || respuesta.status !== "success") {
-              solTipoCambio.textContent = "No disponible";
-              solMontoBs.textContent = "No disponible";
-              return;
-            }
-
-            const tc = parseFloat(respuesta.tipoCambio);
+            let tc = parseFloat(respuesta && respuesta.tipoCambio);
             if (!tc) {
-              solTipoCambio.textContent = "No disponible";
-              solMontoBs.textContent = "No disponible";
-              return;
+              tc = TIPO_CAMBIO_RESPALDO_BS;
             }
 
             solicitudTipoCambioActual = tc.toFixed(2);
@@ -5606,6 +5726,85 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
       }, true);
     })();
 
+
+
+
+    function cargarCuentasPorVencer() {
+      const contenedor = document.getElementById("contenidoCuentasPorVencer");
+      if (!contenedor) return;
+
+      if (!adminAutenticado || !adminToken) {
+        contenedor.innerHTML = '<div class="mensaje-vencen">Inicia sesión para ver las cuentas por vencer.</div>';
+        return;
+      }
+
+      contenedor.innerHTML = '<div class="mensaje-vencen">Cargando cuentas por vencer...</div>';
+
+      enviarJSONP({
+        action: "listarCuentasPorVencer",
+        tokenAdmin: adminToken,
+        dias: "7"
+      }, function(respuesta) {
+        if (!respuesta || respuesta.status !== "success") {
+          contenedor.innerHTML = '<div class="mensaje-vencen">No se pudo cargar la lista: ' + escaparHTML((respuesta && respuesta.message) || "Error") + '</div>';
+          return;
+        }
+
+        const cuentas = Array.isArray(respuesta.data) ? respuesta.data : [];
+
+        if (!cuentas.length) {
+          contenedor.innerHTML = '<div class="mensaje-vencen">No hay cuentas por vencer en los próximos 7 días.</div>';
+          return;
+        }
+
+        const filas = cuentas.map(function(cuenta) {
+          return `
+            <tr>
+              <td>${escaparHTML(cuenta.correoCuenta || "-")}</td>
+              <td>${escaparHTML(cuenta.nombreCliente || "-")}</td>
+              <td>${escaparHTML(cuenta.numeroCliente || "-")}</td>
+              <td>${escaparHTML(cuenta.correoBanca || "-")}</td>
+              <td><button type="button" class="btn-usar-correo" data-correo="${escaparHTML(cuenta.correoCuenta || "")}">Usar</button></td>
+            </tr>
+          `;
+        }).join("");
+
+        contenedor.innerHTML = `
+          <div class="tabla-vencen-wrap">
+            <table class="tabla-vencen">
+              <thead>
+                <tr>
+                  <th>Correo</th>
+                  <th>Nombre del cliente</th>
+                  <th>Número</th>
+                  <th>Correo de banca</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>${filas}</tbody>
+            </table>
+          </div>
+        `;
+      });
+    }
+
+    document.addEventListener("click", function(evento) {
+      const btnActualizar = evento.target.closest("#btnActualizarCuentasPorVencer");
+      if (btnActualizar) {
+        cargarCuentasPorVencer();
+        return;
+      }
+
+      const btnUsar = evento.target.closest(".btn-usar-correo");
+      if (btnUsar) {
+        const correo = btnUsar.dataset.correo || "";
+        const input = document.getElementById("correoRenovacion");
+        if (input) {
+          input.value = correo;
+          input.focus();
+        }
+      }
+    });
 
   </script>
 
