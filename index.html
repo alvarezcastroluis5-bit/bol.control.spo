@@ -1513,23 +1513,6 @@
           <option value="Garantía Total">Garantía Total</option>
         </select>
 
-        <div class="info-box" id="descripcionGarantiaRegistro">
-          <div class="detalle-titulo">🛡️ ¿Qué significa cada garantía?</div>
-          <div style="display:grid; gap:12px; margin-top:10px;">
-            <div>
-              <strong>Garantía de Activación:</strong><br>
-              Cubre únicamente la activación inicial del servicio. Si la cuenta se activa correctamente, la garantía queda cumplida.
-            </div>
-            <div>
-              <strong>Garantía Parcial:</strong><br>
-              Si la cuenta cae o presenta algún incidente dentro del tiempo contratado, el cliente paga solo la mitad del monto para levantar nuevamente el servicio.
-            </div>
-            <div>
-              <strong>Garantía Total:</strong><br>
-              Si la cuenta cae desde el día 1 hasta el día 30, se levanta una vez sin costo. Si vuelve a caer, el cliente selecciona nuevamente el tipo de plan que desea.
-            </div>
-          </div>
-        </div>
 
         <label for="comentariosRegistro">Comentarios</label>
         <textarea id="comentariosRegistro" name="comentarios_registro_no_autofill_9910" rows="4" placeholder="Escribe aquí cualquier comentario adicional sobre la cuenta o el cliente" autocomplete="off"></textarea>
@@ -1578,7 +1561,7 @@
 
       <div id="mensajeRenovacion" class="mensaje"></div>
 
-      <div class="renovacion-vencer-box" id="boxCuentasPorVencer">
+      <div class="renovacion-vencer-box" id="boxCuentasPorVencer" style="display:none;">
         <div class="renovacion-vencer-header">
           <div>
             <h3>⏰ Cuentas por vencer</h3>
@@ -1601,6 +1584,7 @@
           <p><strong>Tipo de garantía:</strong> <span id="renovacionGarantiaCuenta">-</span></p>
           <p><strong>Fecha en la cual vencía:</strong> <span id="renovacionVencia">-</span></p>
           <p><strong>Días que le quedan:</strong> <span id="renovacionDias" class="contador">-</span></p>
+          <p class="observacion-renovacion-admin"><strong>Observaciones:</strong> <span id="renovacionComentarios">-</span></p>
         </div>
 
         <div id="bloqueEditarCliente" class="bloque-oculto">
@@ -1927,6 +1911,7 @@
     const renovacionDias = document.getElementById("renovacionDias");
     const renovacionCorreoBanca = document.getElementById("renovacionCorreoBanca");
     const renovacionTarjeta = document.getElementById("renovacionTarjeta");
+    const renovacionComentarios = document.getElementById("renovacionComentarios");
     const tiempoRenovacion = document.getElementById("tiempoRenovacion");
 
     const btnEditarCliente = document.getElementById("btnEditarCliente");
@@ -2358,6 +2343,7 @@
 
       if (renovacionCorreoBanca) renovacionCorreoBanca.textContent = "-";
       if (renovacionTarjeta) renovacionTarjeta.textContent = "-";
+      if (renovacionComentarios) renovacionComentarios.textContent = "-";
 
       if (tiempoRenovacion) tiempoRenovacion.value = "";
       if (nuevoCorreoBanca) nuevoCorreoBanca.value = "";
@@ -2808,6 +2794,7 @@
       renovacionDias.textContent = item.diasRestantes || "-";
       renovacionCorreoBanca.textContent = item.correoBanca || "-";
       renovacionTarjeta.textContent = mostrarTarjeta(item);
+      if (renovacionComentarios) renovacionComentarios.textContent = item.comentarios || item.observaciones || "-";
 
       renovacionDias.classList.remove("vencido");
 
@@ -3646,10 +3633,9 @@
       const seleccionadoSolicitud = document.querySelector('input[name="solTipoSolicitud"]:checked');
       const tipoCuentaNueva = typeof obtenerTipoCuentaNueva === "function" ? obtenerTipoCuentaNueva() : "";
       const modoCuentaNueva = seleccionadoSolicitud && seleccionadoSolicitud.value === "Cuenta Nueva";
-      const modoRenovacion = seleccionadoSolicitud && seleccionadoSolicitud.value === "Renovación";
       const modoAsignada = modoCuentaNueva && tipoCuentaNueva === "Cuenta Asignada";
 
-      if (!estaVisible || (!modoAsignada && !modoRenovacion) || !valorGarantia || !htmlGarantia) {
+      if (!estaVisible || !modoAsignada || !valorGarantia || !htmlGarantia) {
         descripcionGarantia.innerHTML = "";
         descripcionGarantia.style.display = "none";
         return;
@@ -5731,12 +5717,16 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
 
     function cargarCuentasPorVencer() {
       const contenedor = document.getElementById("contenidoCuentasPorVencer");
+      const box = document.getElementById("boxCuentasPorVencer");
       if (!contenedor) return;
 
       if (!adminAutenticado || !adminToken) {
+        if (box) box.style.display = "none";
         contenedor.innerHTML = '<div class="mensaje-vencen">Inicia sesión para ver las cuentas por vencer.</div>';
         return;
       }
+
+      if (box) box.style.display = "block";
 
       contenedor.innerHTML = '<div class="mensaje-vencen">Cargando cuentas por vencer...</div>';
 
@@ -5764,6 +5754,7 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
               <td>${escaparHTML(cuenta.nombreCliente || "-")}</td>
               <td>${escaparHTML(cuenta.numeroCliente || "-")}</td>
               <td>${escaparHTML(cuenta.correoBanca || "-")}</td>
+              <td>${escaparHTML(cuenta.comentarios || cuenta.observaciones || "-")}</td>
               <td><button type="button" class="btn-usar-correo" data-correo="${escaparHTML(cuenta.correoCuenta || "")}">Usar</button></td>
             </tr>
           `;
@@ -5778,6 +5769,7 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
                   <th>Nombre del cliente</th>
                   <th>Número</th>
                   <th>Correo de banca</th>
+                  <th>Observaciones</th>
                   <th>Acción</th>
                 </tr>
               </thead>
@@ -5890,11 +5882,10 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
     const tipoSolicitud = obtenerTipoSolicitudSeleccionada();
     const tipoCuentaNueva = obtenerTipoCuentaNuevaSeleccionada();
     const esPedidoCuentaAsignada = tipoSolicitud === "Cuenta Nueva" && tipoCuentaNueva === "Cuenta Asignada";
-    const esRenovacion = tipoSolicitud === "Renovación";
     const garantia = selectGarantia.value;
     const contenido = htmlGarantia(garantia);
 
-    if (!contenido || !estaVisible(selectGarantia) || (!esPedidoCuentaAsignada && !esRenovacion)) {
+    if (!contenido || !estaVisible(selectGarantia) || !esPedidoCuentaAsignada) {
       contenedor.innerHTML = "";
       contenedor.style.display = "none";
       return;
