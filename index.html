@@ -1244,6 +1244,43 @@
       font-weight: 900;
     }
 
+
+    .btn-renovar-ahora {
+      margin-top: 16px;
+      width: 100%;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      font-weight: 900;
+    }
+
+    .renovar-desde-consulta-aviso {
+      margin-top: 10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(45, 255, 151, 0.35);
+      background: rgba(45, 255, 151, 0.10);
+      color: #eaf3ff;
+      font-weight: 800;
+    }
+
+  
+
+    /* Optimización visual: reduce trabajo del navegador al hacer scroll */
+    .seccion,
+    .consulta-card,
+    .resultado,
+    .dominio-cuenta-card,
+    .catalogo-card,
+    .voucher-box {
+      content-visibility: auto;
+      contain-intrinsic-size: 1px 500px;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
@@ -1259,7 +1296,7 @@
   <div class="container">
 
     <div class="logo-box">
-      <img src="logocuentas.png" alt="Logo Cuentas Premium BO" class="logo-principal">
+      <img loading="lazy" src="logocuentas.png" alt="Logo Cuentas Premium BO" class="logo-principal">
     </div>
 
     <h1>Ventas Spotify</h1>
@@ -1650,7 +1687,7 @@
 
           <div id="comprobanteRenovacionCard" class="comprobante-renovacion-card">
             <div class="comprobante-header">
-              <img src="logocuentas.png" alt="Logo Cuentas Premium BO" class="comprobante-logo" crossorigin="anonymous">
+              <img loading="lazy" src="logocuentas.png" alt="Logo Cuentas Premium BO" class="comprobante-logo" crossorigin="anonymous">
               <div class="comprobante-header-texto">
                 <h3>CUENTAS PREMIUM BO</h3>
                 <p>Comprobante de Renovación</p>
@@ -1816,12 +1853,12 @@
 
           <div id="bloqueQrBolivia" style="display:none;">
             <div class="detalle-titulo">📲 QR Bolivia</div>
-            <img src="qr-bnb.png" alt="QR BNB Bolivia" class="qr-pago" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<div class=&quot;aviso-pago&quot;>No se encontró la imagen del QR. Sube el archivo <strong>qr-bnb.png</strong> en la misma carpeta del index.</div>');">
+            <img loading="lazy" src="qr-bnb.png" alt="QR BNB Bolivia" class="qr-pago" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<div class=&quot;aviso-pago&quot;>No se encontró la imagen del QR. Sube el archivo <strong>qr-bnb.png</strong> en la misma carpeta del index.</div>');">
           </div>
 
           <div id="bloqueBinance" style="display:none;">
             <div class="detalle-titulo">🟡 Binance</div>
-            <img src="qr-binance.png" alt="QR Binance" class="qr-pago" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<div class=&quot;aviso-pago&quot;>No se encontró la imagen del QR. Sube el archivo <strong>qr-binance.png</strong> en la misma carpeta del index.</div>');">
+            <img loading="lazy" src="qr-binance.png" alt="QR Binance" class="qr-pago" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<div class=&quot;aviso-pago&quot;>No se encontró la imagen del QR. Sube el archivo <strong>qr-binance.png</strong> en la misma carpeta del index.</div>');">
 
             <div class="red-binance">Red: <strong>BEP20</strong></div>
 
@@ -2721,8 +2758,96 @@
           </div>
         `;
 
+        const btnRenovarAhora = document.createElement("button");
+        btnRenovarAhora.type = "button";
+        btnRenovarAhora.className = "enviar btn-renovar-ahora";
+        btnRenovarAhora.textContent = "RENOVAR AHORA";
+        btnRenovarAhora.addEventListener("click", function() {
+          prepararPedidoRenovacionDesdeConsulta(item);
+        });
+        card.appendChild(btnRenovarAhora);
+
         resultadoConsulta.appendChild(card);
       });
+    }
+
+
+    function prepararPedidoRenovacionDesdeConsulta(item) {
+      if (!item || !item.correoCuenta) {
+        mostrarMensaje(mensajeConsulta, "No se pudo tomar el correo de la cuenta para renovar.", "error");
+        return;
+      }
+
+      const datosConsulta = {
+        correo: String(item.correoCuenta || "").trim(),
+        nombre: String(item.nombreCliente || "").trim(),
+        numero: String(item.numeroCliente || "").replace(/\D/g, "")
+      };
+
+      cambiarSeccion("solicitudes", true);
+
+      setTimeout(function() {
+        if (solNombre) solNombre.value = datosConsulta.nombre;
+        if (solNumero) solNumero.value = datosConsulta.numero;
+
+        const radioRenovacion = document.querySelector('input[name="solTipoSolicitud"][value="Renovación"]');
+        if (radioRenovacion) {
+          radioRenovacion.checked = true;
+          radioRenovacion.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      }, 80);
+
+      setTimeout(function() {
+        const cantidad = document.getElementById("cantidadRenovarSolicitud");
+        if (cantidad) {
+          cantidad.value = "1";
+          cantidad.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      }, 180);
+
+      setTimeout(function() {
+        const inputCorreo = document.querySelector(".correo-renovar-input");
+        if (inputCorreo) {
+          inputCorreo.value = datosConsulta.correo;
+          inputCorreo.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+
+        const btnVerificar = document.getElementById("btnVerificarCorreosRenovacion");
+        if (btnVerificar) btnVerificar.click();
+      }, 330);
+
+      let intentos = 0;
+      const intervalo = setInterval(function() {
+        intentos++;
+        const check = document.querySelector(".check-renovar-cuenta");
+
+        if (check) {
+          check.checked = true;
+          check.dispatchEvent(new Event("change", { bubbles: true }));
+          clearInterval(intervalo);
+
+          if (mensajeSolicitud) {
+            mostrarMensaje(
+              mensajeSolicitud,
+              "Cuenta cargada para renovar. Selecciona el tiempo, tipo de garantía, cupón si tienes y método de pago.",
+              "exito"
+            );
+          }
+
+          const aviso = document.createElement("div");
+          aviso.className = "renovar-desde-consulta-aviso";
+          aviso.textContent = "Cuenta seleccionada automáticamente desde Consulta. Ahora elige tiempo, garantía, cupón si tienes y método de pago.";
+          const resultado = document.getElementById("resultadoCorreosRenovacion");
+          if (resultado && !document.getElementById("avisoRenovarDesdeConsulta")) {
+            aviso.id = "avisoRenovarDesdeConsulta";
+            resultado.insertAdjacentElement("afterend", aviso);
+          }
+        }
+
+        if (intentos >= 40) {
+          clearInterval(intervalo);
+        }
+      }, 250);
     }
 
     formBuscarRenovacion.addEventListener("submit", function(e) {
@@ -3373,7 +3498,7 @@
         caja.innerHTML = `
           <strong>Imagen generada correctamente.</strong><br>
           El navegador no permitió copiarla automáticamente. Haz clic derecho sobre la imagen y selecciona <strong>Copiar imagen</strong>, o arrástrala al chat de WhatsApp Web.<br><br>
-          <img src="${url}" alt="${escaparHTML(nombreArchivo)}" style="width:100%;max-width:420px;display:block;margin:10px auto;border-radius:12px;background:#fff;">
+          <img loading="lazy" src="${url}" alt="${escaparHTML(nombreArchivo)}" style="width:100%;max-width:420px;display:block;margin:10px auto;border-radius:12px;background:#fff;">
         `;
 
         if (voucherWhatsappBox) {
@@ -3973,21 +4098,37 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
       return limpio;
     }
 
-    function abrirWhatsapp(numeroConMas, mensaje) {
+    function abrirWhatsapp(numeroConMas, mensaje, ventanaPreparada) {
       if (!numeroConMas) {
-        mostrarMensaje(mensajeRenovacion, "No se encontró número de WhatsApp del cliente.", "error");
+        if (typeof mostrarMensaje === "function" && typeof mensajeRenovacion !== "undefined") {
+          mostrarMensaje(mensajeRenovacion, "No se encontró número de WhatsApp del cliente.", "error");
+        }
         return;
       }
 
-      const numeroParaUrl = numeroConMas.replace(/\D/g, "");
+      const numeroParaUrl = String(numeroConMas || "").replace(/\D/g, "");
 
       if (!numeroParaUrl) {
-        mostrarMensaje(mensajeRenovacion, "El número de WhatsApp no es válido.", "error");
+        if (typeof mostrarMensaje === "function" && typeof mensajeRenovacion !== "undefined") {
+          mostrarMensaje(mensajeRenovacion, "El número de WhatsApp no es válido.", "error");
+        }
         return;
       }
 
-      const url = "https://wa.me/" + numeroParaUrl + "?text=" + encodeURIComponent(mensaje);
-      window.open(url, "_blank");
+      const url = "https://wa.me/" + numeroParaUrl + "?text=" + encodeURIComponent(mensaje || "");
+
+      if (ventanaPreparada && !ventanaPreparada.closed) {
+        ventanaPreparada.location.href = url;
+        return;
+      }
+
+      if (typeof esDispositivoMovil === "function" && esDispositivoMovil()) {
+        window.location.href = url;
+        return;
+      }
+
+      const ventana = window.open(url, "_blank");
+      if (!ventana) window.location.href = url;
     }
 
     function cerrarSesionLocal() {
@@ -4028,41 +4169,90 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
     }
 
     function enviarJSONP(parametros, callback) {
+      parametros = parametros || {};
+      callback = typeof callback === "function" ? callback : function() {};
+
+      // Cache rápido para tipo de cambio: evita llamadas repetidas a Apps Script.
+      if (parametros.action === "cotizacion") {
+        try {
+          const cacheRaw = localStorage.getItem("cache_cotizacion_spotify_bo");
+          if (cacheRaw) {
+            const cache = JSON.parse(cacheRaw);
+            const edad = Date.now() - (cache.timestamp || 0);
+            if (cache.respuesta && edad < 10 * 60 * 1000) {
+              callback(cache.respuesta);
+              return;
+            }
+          }
+        } catch (error) {}
+      }
+
       const callbackName = "callback_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
-
-      window[callbackName] = function(respuesta) {
-        callback(respuesta);
-        delete window[callbackName];
-        script.remove();
-      };
-
       const query = new URLSearchParams({
         ...parametros,
         callback: callbackName
       });
 
       const script = document.createElement("script");
-      script.src = URL_APPS_SCRIPT + "?" + query.toString();
+      let finalizado = false;
+
+      function limpiar() {
+        try { delete window[callbackName]; } catch (error) { window[callbackName] = undefined; }
+        try { script.remove(); } catch (error) {}
+      }
+
+      const timer = setTimeout(function() {
+        if (finalizado) return;
+        finalizado = true;
+        limpiar();
+        callback({
+          status: "error",
+          message: "Tiempo de espera agotado al conectar con Apps Script."
+        });
+      }, 18000);
+
+      window[callbackName] = function(respuesta) {
+        if (finalizado) return;
+        finalizado = true;
+        clearTimeout(timer);
+
+        if (parametros.action === "cotizacion" && respuesta && respuesta.tipoCambio) {
+          try {
+            localStorage.setItem("cache_cotizacion_spotify_bo", JSON.stringify({
+              timestamp: Date.now(),
+              respuesta: respuesta
+            }));
+          } catch (error) {}
+        }
+
+        callback(respuesta);
+        limpiar();
+      };
 
       script.onerror = function() {
+        if (finalizado) return;
+        finalizado = true;
+        clearTimeout(timer);
+        limpiar();
         callback({
           status: "error",
           message: "No se pudo conectar con Apps Script."
         });
-
-        delete window[callbackName];
-        script.remove();
       };
 
+      script.async = true;
+      script.src = URL_APPS_SCRIPT + "?" + query.toString();
       document.body.appendChild(script);
     }
 
     function mostrarMensaje(elemento, texto, tipo) {
-      elemento.textContent = texto;
-      elemento.className = "mensaje " + tipo;
-      elemento.style.display = "block";
+      if (!elemento) return;
+      elemento.textContent = texto || "";
+      elemento.className = "mensaje " + (tipo || "exito");
+      elemento.style.display = texto ? "block" : "none";
 
-      setTimeout(() => {
+      if (elemento._mensajeTimer) clearTimeout(elemento._mensajeTimer);
+      elemento._mensajeTimer = setTimeout(function() {
         elemento.style.display = "none";
       }, 4500);
     }
