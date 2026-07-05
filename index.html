@@ -1199,7 +1199,7 @@
     .tabla-vencen {
       width: 100%;
       border-collapse: collapse;
-      min-width: 720px;
+      min-width: 980px;
       background: rgba(8, 16, 31, 0.66);
     }
 
@@ -1279,6 +1279,106 @@
     img {
       max-width: 100%;
       height: auto;
+    }
+
+  
+    /* =========================================================
+       Registro: pedidos pendientes y comprobante de activación
+    ========================================================= */
+    .pedidos-pendientes-registro-box {
+      background: rgba(76, 255, 155, 0.08);
+      border: 1px solid rgba(76, 255, 155, 0.35);
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 22px;
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.22);
+    }
+
+    .pedidos-pendientes-registro-box h3 {
+      margin: 0 0 8px;
+      color: #4cff9b;
+      font-size: 26px;
+      line-height: 1.1;
+    }
+
+    .pedidos-pendientes-registro-box p {
+      margin: 0 0 12px;
+      color: #eaf3ff;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .pedidos-pendientes-toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 12px 0;
+    }
+
+    .tabla-pedidos-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 14px;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    .tabla-pedidos-pendientes {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 920px;
+      color: #fff;
+      font-size: 13px;
+    }
+
+    .tabla-pedidos-pendientes th,
+    .tabla-pedidos-pendientes td {
+      padding: 11px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .tabla-pedidos-pendientes th {
+      color: #4cff9b;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: .4px;
+      background: rgba(0,0,0,0.22);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .tabla-pedidos-pendientes tr:hover td {
+      background: rgba(76,255,155,0.08);
+    }
+
+    .btn-usar-pedido {
+      width: auto;
+      padding: 9px 13px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    .pedido-seleccionado-registro {
+      background: rgba(41, 151, 255, 0.14);
+      border: 1px solid rgba(41, 151, 255, 0.45);
+      color: #eaf3ff;
+      border-radius: 14px;
+      padding: 13px;
+      margin-top: 14px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .voucher-registro-container {
+      margin-top: 18px;
     }
 
   </style>
@@ -1470,6 +1570,27 @@
     <section id="seccionRegistro" class="seccion">
       <form id="formRegistro" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 
+        <div class="pedidos-pendientes-registro-box" id="boxPedidosPendientesRegistro">
+          <h3>📋 Pedidos pendientes de atender</h3>
+          <p>
+            Selecciona un pedido pendiente para llenar automáticamente los datos del cliente, país, plan, tiempo y garantía.
+            Luego coloca el correo de la cuenta, correo de banca y tarjeta para generar el comprobante de activación.
+          </p>
+
+          <div class="pedidos-pendientes-toolbar">
+            <button type="button" class="secundario" id="btnActualizarPedidosPendientesRegistro">
+              Actualizar pedidos
+            </button>
+          </div>
+
+          <div id="contenidoPedidosPendientesRegistro" class="mensaje-vencen">
+            Cargando pedidos pendientes...
+          </div>
+
+          <div id="pedidoSeleccionadoRegistroResumen" class="pedido-seleccionado-registro" style="display:none;"></div>
+        </div>
+
+
         <label for="correoCuenta">Correo de la cuenta</label>
         <input type="text" inputmode="email" id="correoCuenta" name="correo_cuenta_no_autofill_9871" placeholder="ejemplo@gmail.com" autocomplete="new-password" required>
 
@@ -1491,6 +1612,7 @@
             <select id="tipoCuenta" autocomplete="off" required>
               <option value="">Seleccionar</option>
               <option value="Individual">Individual</option>
+              <option value="Individual unido a plan familiar">Individual unido a plan familiar</option>
               <option value="Dúo">Dúo</option>
               <option value="Familiar">Familiar</option>
             </select>
@@ -1567,6 +1689,7 @@
       </form>
 
       <div id="mensajeRegistro" class="mensaje"></div>
+      <div id="voucherRegistroContainer" class="voucher-registro-container"></div>
     </section>
 
     <section id="seccionConsulta" class="seccion">
@@ -2028,6 +2151,8 @@
     let solicitudDescuentoUsdActual = 0;
     let solicitudPagoRequestId = 0;
     let cuponAplicadoActual = null;
+    let pedidoRegistroSeleccionado = null;
+    let pedidosPendientesRegistroCache = [];
 
     /*
       Los cupones ya no se editan aquí.
@@ -2289,6 +2414,7 @@
       if (seccion === "registro") {
         btnRegistro.classList.add("active");
         seccionRegistro.classList.add("active");
+        if (typeof cargarPedidosPendientesRegistro === "function") cargarPedidosPendientesRegistro();
       }
 
       if (seccion === "renovacion") {
@@ -2332,6 +2458,18 @@
       if (formRegistro) formRegistro.reset();
       resetearSelectorPais("pais");
       ocultarMensaje(mensajeRegistro);
+      pedidoRegistroSeleccionado = null;
+
+      const resumenPedido = document.getElementById("pedidoSeleccionadoRegistroResumen");
+      if (resumenPedido) {
+        resumenPedido.innerHTML = "";
+        resumenPedido.style.display = "none";
+      }
+
+      if (voucherWhatsappBox && document.getElementById("voucherRegistroContainer")?.contains(voucherWhatsappBox)) {
+        voucherWhatsappBox.style.display = "none";
+        if (textoVoucherWhatsapp) textoVoucherWhatsapp.value = "";
+      }
 
       if (btnGuardar) {
         btnGuardar.disabled = false;
@@ -2614,6 +2752,210 @@
       return "-";
     }
 
+
+    function obtenerMensajeComprobanteActual() {
+      const tipo = String(ultimoComprobanteDatos?.tipo || "").toLowerCase();
+      return tipo.includes("activ") ? mensajeRegistro : mensajeRenovacion;
+    }
+
+    function moverVoucherARegistro() {
+      const contenedor = document.getElementById("voucherRegistroContainer");
+      if (contenedor && voucherWhatsappBox && voucherWhatsappBox.parentElement !== contenedor) {
+        contenedor.appendChild(voucherWhatsappBox);
+      }
+    }
+
+    function moverVoucherARenovacion() {
+      if (panelRenovacion && voucherWhatsappBox && voucherWhatsappBox.parentElement !== panelRenovacion) {
+        panelRenovacion.appendChild(voucherWhatsappBox);
+      }
+    }
+
+    function setPaisRegistro(valor) {
+      const paisValor = String(valor || "").split(",")[0].trim();
+      const input = document.getElementById("pais");
+      const selector = document.querySelector('.selector-personalizado[data-input="pais"]');
+      if (!input || !selector) return;
+
+      input.value = paisValor;
+      const boton = selector.querySelector(".selector-btn");
+      if (boton) {
+        boton.innerHTML = `<span class="pais-con-bandera">${obtenerBanderaHTML(paisValor)} ${escaparHTML(paisValor || "Seleccionar")}</span>`;
+      }
+
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    function normalizarPlanRegistro(valor) {
+      const texto = String(valor || "").trim();
+      const bajo = texto.toLowerCase();
+
+      if (bajo.includes("individual") && bajo.includes("familiar")) return "Individual unido a plan familiar";
+      if (bajo.includes("familiar")) return "Familiar";
+      if (bajo.includes("duo") || bajo.includes("dúo")) return "Dúo";
+      if (bajo.includes("individual")) return "Individual";
+
+      return texto;
+    }
+
+    function primerValorRegistro(valor) {
+      return String(valor || "").split(",")[0].trim();
+    }
+
+    function fechaHoyInputRegistro() {
+      const hoy = new Date();
+      const y = hoy.getFullYear();
+      const m = String(hoy.getMonth() + 1).padStart(2, "0");
+      const d = String(hoy.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function cargarPedidosPendientesRegistro() {
+      const contenedor = document.getElementById("contenidoPedidosPendientesRegistro");
+      if (!contenedor || !adminAutenticado) return;
+
+      contenedor.innerHTML = "Cargando pedidos pendientes...";
+
+      enviarJSONP({
+        action: "listarPedidosPendientes",
+        tokenAdmin: adminToken
+      }, function(respuesta) {
+        if (respuesta.status !== "success") {
+          contenedor.innerHTML = `<div class="mensaje error" style="display:block;">No se pudieron cargar los pedidos: ${escaparHTML(respuesta.message || "Intenta nuevamente.")}</div>`;
+          return;
+        }
+
+        pedidosPendientesRegistroCache = respuesta.data || [];
+        renderizarPedidosPendientesRegistro(pedidosPendientesRegistroCache);
+      });
+    }
+
+    function renderizarPedidosPendientesRegistro(lista) {
+      const contenedor = document.getElementById("contenidoPedidosPendientesRegistro");
+      if (!contenedor) return;
+
+      if (!lista || lista.length === 0) {
+        contenedor.innerHTML = `<div class="mensaje exito" style="display:block;">No hay pedidos pendientes de atender.</div>`;
+        return;
+      }
+
+      const filas = lista.map((pedido, index) => `
+        <tr>
+          <td><strong>${escaparHTML(pedido.codigoSeguimiento || "-")}</strong><br><small>${escaparHTML(pedido.estado || "Pendiente")}</small></td>
+          <td>${escaparHTML(pedido.nombre || "-")}<br><small>${escaparHTML(pedido.numero || "-")}</small></td>
+          <td>${escaparHTML(pedido.tipoCuentaNueva || pedido.tipoSolicitud || "-")}<br><small>Cantidad: ${escaparHTML(pedido.cantidadCuentas || "1")}</small></td>
+          <td>${escaparHTML(pedido.paisRegistro || pedido.pais || "-")}</td>
+          <td>${escaparHTML(pedido.planRegistro || pedido.plan || "-")}</td>
+          <td>${escaparHTML(pedido.tiempoRegistro || pedido.tiempo || "-")} días</td>
+          <td>${escaparHTML(pedido.garantiaRegistro || pedido.garantia || "-")}</td>
+          <td><button type="button" class="enviar btn-usar-pedido" data-pedido-index="${index}">Usar</button></td>
+        </tr>
+      `).join("");
+
+      contenedor.innerHTML = `
+        <div class="tabla-pedidos-wrapper">
+          <table class="tabla-pedidos-pendientes">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Cliente</th>
+                <th>Modalidad</th>
+                <th>País</th>
+                <th>Plan</th>
+                <th>Tiempo</th>
+                <th>Garantía</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>${filas}</tbody>
+          </table>
+        </div>
+      `;
+
+      contenedor.querySelectorAll(".btn-usar-pedido").forEach(btn => {
+        btn.addEventListener("click", function() {
+          const index = parseInt(this.dataset.pedidoIndex || "-1", 10);
+          const pedido = pedidosPendientesRegistroCache[index];
+          seleccionarPedidoPendienteRegistro(pedido);
+        });
+      });
+    }
+
+    function seleccionarPedidoPendienteRegistro(pedido) {
+      if (!pedido) return;
+
+      pedidoRegistroSeleccionado = pedido;
+
+      const nombreInput = document.getElementById("nombreCliente");
+      const numeroInput = document.getElementById("numeroCliente");
+      const correoInput = document.getElementById("correoCuenta");
+      const tipoInput = document.getElementById("tipoCuenta");
+      const fechaInput = document.getElementById("fechaActivacion");
+      const tiempoInput = document.getElementById("duracion");
+      const garantiaInput = document.getElementById("garantiaRegistro");
+      const comentariosInput = document.getElementById("comentariosRegistro");
+
+      if (nombreInput) nombreInput.value = pedido.nombre || "";
+      if (numeroInput) numeroInput.value = String(pedido.numero || "").replace(/\D/g, "");
+      if (correoInput && pedido.correoRegistro && !String(pedido.correoRegistro).toLowerCase().includes("cuenta asignada")) {
+        correoInput.value = pedido.correoRegistro;
+      }
+
+      if (tipoInput) tipoInput.value = normalizarPlanRegistro(pedido.planRegistro || pedido.plan || "");
+      setPaisRegistro(pedido.paisRegistro || pedido.pais || "");
+
+      if (fechaInput) fechaInput.value = fechaHoyInputRegistro();
+      if (tiempoInput) tiempoInput.value = primerValorRegistro(pedido.tiempoRegistro || pedido.tiempo || "");
+      if (garantiaInput) garantiaInput.value = primerValorRegistro(pedido.garantiaRegistro || pedido.garantia || "");
+
+      if (comentariosInput) {
+        comentariosInput.value = [
+          "Pedido: " + (pedido.codigoSeguimiento || "-"),
+          "Modalidad: " + (pedido.tipoCuentaNueva || pedido.tipoSolicitud || "-"),
+          "Cantidad: " + (pedido.cantidadCuentas || "1"),
+          pedido.detalleDominio ? "Detalle: " + pedido.detalleDominio : ""
+        ].filter(Boolean).join("\n");
+      }
+
+      const resumen = document.getElementById("pedidoSeleccionadoRegistroResumen");
+      if (resumen) {
+        resumen.innerHTML = `
+          ✅ <strong>Pedido seleccionado:</strong> ${escaparHTML(pedido.codigoSeguimiento || "-")}<br>
+          Cliente: ${escaparHTML(pedido.nombre || "-")} | WhatsApp: ${escaparHTML(pedido.numero || "-")}<br>
+          Plan: ${escaparHTML(pedido.planRegistro || pedido.plan || "-")} | País: ${escaparHTML(pedido.paisRegistro || pedido.pais || "-")} | Tiempo: ${escaparHTML(pedido.tiempoRegistro || pedido.tiempo || "-")} días | Garantía: ${escaparHTML(pedido.garantiaRegistro || pedido.garantia || "-")}
+        `;
+        resumen.style.display = "block";
+      }
+
+      mostrarMensaje(mensajeRegistro, "Pedido cargado. Completa el correo de la cuenta, correo de banca y tarjeta.", "exito");
+      window.scrollTo({ top: formRegistro.offsetTop - 20, behavior: "smooth" });
+    }
+
+    function mostrarComprobanteActivacionRegistro(datosActivacion) {
+      moverVoucherARegistro();
+
+      mostrarComprobanteRenovacion({
+        tipo: "Activación",
+        correo: datosActivacion.correo || "-",
+        fechaRenovacion: datosActivacion.fechaActivacion || formatearFechaActualLocal(),
+        horaRenovacion: datosActivacion.horaActivacion || formatearHoraActualLocal(),
+        fechaProximoPago: datosActivacion.fechaProximoPago || "-",
+        ultimos4Tarjeta: datosActivacion.ultimos4Tarjeta || "-",
+        numeroCliente: datosActivacion.numeroCliente || ""
+      });
+
+      if (voucherWhatsappBox) {
+        voucherWhatsappBox.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
+
+
+    const btnActualizarPedidosPendientesRegistro = document.getElementById("btnActualizarPedidosPendientesRegistro");
+    if (btnActualizarPedidosPendientesRegistro) {
+      btnActualizarPedidosPendientesRegistro.addEventListener("click", cargarPedidosPendientesRegistro);
+    }
+
     formRegistro.addEventListener("submit", function(e) {
       e.preventDefault();
 
@@ -2654,6 +2996,7 @@
       const datos = {
         action: "registro",
         tokenAdmin: adminToken,
+        codigoSolicitudRegistro: pedidoRegistroSeleccionado?.codigoSeguimiento || "",
         correoCuenta,
         nombreCliente,
         numeroCliente,
@@ -2678,9 +3021,28 @@
         btnGuardar.textContent = "Guardar registro";
 
         if (respuesta.status === "success") {
-          mostrarMensaje(mensajeRegistro, "Registro guardado correctamente.", "exito");
+          mostrarMensaje(mensajeRegistro, "Registro guardado correctamente. Comprobante de activación generado.", "exito");
+
+          mostrarComprobanteActivacionRegistro({
+            correo: datos.correoCuenta,
+            fechaActivacion: datos.fechaActivacion,
+            horaActivacion: formatearHoraActualLocal(),
+            fechaProximoPago: datos.fechaVencimiento,
+            ultimos4Tarjeta: datos.ultimos4Tarjeta,
+            numeroCliente: datos.numeroCliente
+          });
+
           formRegistro.reset();
           resetearSelectorPais("pais");
+          pedidoRegistroSeleccionado = null;
+
+          const resumenPedido = document.getElementById("pedidoSeleccionadoRegistroResumen");
+          if (resumenPedido) {
+            resumenPedido.innerHTML = "";
+            resumenPedido.style.display = "none";
+          }
+
+          if (typeof cargarPedidosPendientesRegistro === "function") cargarPedidosPendientesRegistro();
         } else {
           mostrarMensaje(mensajeRegistro, "Error al guardar: " + respuesta.message, "error");
         }
@@ -2910,6 +3272,7 @@
     });
 
     function mostrarPanelRenovacion(item, comprobanteGuardado) {
+      moverVoucherARenovacion();
       renovacionNombreCliente.textContent = item.nombreCliente || "-";
       renovacionNumeroCliente.textContent = item.numeroCliente || "-";
       renovacionPaisCuenta.innerHTML = `${obtenerBanderaHTML(item.pais)} ${escaparHTML(item.pais || "-")}`;
@@ -3120,27 +3483,47 @@
     }
 
     function generarTextoComprobanteWhatsapp(datosComprobante) {
-      const fechaRenovacionLimpia = limpiarFechaISO(datosComprobante.fechaRenovacion);
+      const tipo = String(datosComprobante.tipo || "Renovación").trim();
+      const esActivacion = tipo.toLowerCase().includes("activ");
+      const fechaPrincipalLimpia = limpiarFechaISO(datosComprobante.fechaRenovacion);
       const fechaProximoPagoLimpia = limpiarFechaISO(datosComprobante.fechaProximoPago);
+      const etiquetaAccion = esActivacion ? "Activación" : "Renovación";
+      const etiquetaFecha = esActivacion ? "Fecha de activación" : "Fecha de renovación";
 
       return [
         "*CUENTAS PREMIUM BO*",
-        "*COMPROBANTE DE RENOVACIÓN*",
+        "*COMPROBANTE DE " + etiquetaAccion.toUpperCase() + "*",
         "",
-        "*Renovación:* Confirmada",
+        "*" + etiquetaAccion + ":* Confirmada",
         "*Correo:* " + (datosComprobante.correo || "-"),
-        "*Fecha de renovación:* " + fechaRenovacionLimpia,
-        "*Hora de renovación:* " + (datosComprobante.horaRenovacion || "-"),
+        "*" + etiquetaFecha + ":* " + fechaPrincipalLimpia,
+        "*Hora de " + etiquetaAccion.toLowerCase() + ":* " + (datosComprobante.horaRenovacion || "-"),
         "*Fecha de próximo pago:* " + fechaProximoPagoLimpia,
         "*Últimos 4 dígitos de tarjeta:* " + (datosComprobante.ultimos4Tarjeta || "-"),
         "",
-        "Gracias por renovar con *Cuentas Premium BO*."
+        "Gracias por confiar en *Cuentas Premium BO*."
       ].join("\n");
     }
 
     function mostrarComprobanteRenovacion(datosComprobante) {
+      const tipoComprobante = String(datosComprobante.tipo || "Renovación").trim();
+      const esActivacion = tipoComprobante.toLowerCase().includes("activ");
       const numeroCliente = obtenerNumeroWhatsappConMas(datosComprobante.numeroCliente || "");
       const texto = generarTextoComprobanteWhatsapp(datosComprobante);
+
+      if (comprobanteRenovacionCard) {
+        const subtituloComprobante = comprobanteRenovacionCard.querySelector(".comprobante-header-texto p");
+        if (subtituloComprobante) subtituloComprobante.textContent = "Comprobante de " + (esActivacion ? "Activación" : "Renovación");
+
+        const detalleComprobante = comprobanteRenovacionCard.querySelector(".comprobante-body p:first-child");
+        if (detalleComprobante) detalleComprobante.innerHTML = "<strong>Detalle:</strong> " + escaparHTML(esActivacion ? "Activación" : "Renovación");
+      }
+
+      const labelFechaPrincipal = compFechaRenovacion?.closest("p")?.querySelector("strong");
+      if (labelFechaPrincipal) labelFechaPrincipal.textContent = esActivacion ? "Fecha de activación:" : "Fecha de renovación:";
+
+      const labelHoraPrincipal = compHoraRenovacion?.closest("p")?.querySelector("strong");
+      if (labelHoraPrincipal) labelHoraPrincipal.textContent = esActivacion ? "Hora de activación:" : "Hora de renovación:";
 
       if (compCorreo) compCorreo.textContent = datosComprobante.correo || "-";
       if (compFechaRenovacion) compFechaRenovacion.textContent = limpiarFechaISO(datosComprobante.fechaRenovacion);
@@ -3203,7 +3586,8 @@
         .replace(/[^a-zA-Z0-9]/g, "_")
         .substring(0, 40);
       const fecha = new Date().toISOString().slice(0, 10);
-      return "comprobante_renovacion_" + correo + "_" + fecha + ".png";
+      const tipo = String(ultimoComprobanteDatos?.tipo || "renovacion").toLowerCase().includes("activ") ? "activacion" : "renovacion";
+      return "comprobante_" + tipo + "_" + correo + "_" + fecha + ".png";
     }
 
     async function descargarComprobanteRenovacion() {
@@ -3233,7 +3617,8 @@
     }
 
     function crearTextoCompartirComprobante() {
-      return "Hola, te enviamos tu comprobante de renovación.\n\n" + (ultimoTextoVoucher || "");
+      const tipo = String(ultimoComprobanteDatos?.tipo || "renovación").toLowerCase().includes("activ") ? "activación" : "renovación";
+      return "Hola, te enviamos tu comprobante de " + tipo + ".\n\n" + (ultimoTextoVoucher || "");
     }
 
     function esDispositivoMovil() {
@@ -3511,12 +3896,12 @@
 
     async function enviarComprobanteImagenWhatsapp() {
       if (!ultimoComprobanteDatos) {
-        mostrarMensaje(mensajeRenovacion, "Primero genera el comprobante de renovación.", "error");
+        mostrarMensaje(obtenerMensajeComprobanteActual(), "Primero genera el comprobante.", "error");
         return;
       }
 
       if (!ultimoNumeroWhatsapp) {
-        mostrarMensaje(mensajeRenovacion, "No se encontró el WhatsApp del cliente en la base de datos.", "error");
+        mostrarMensaje(obtenerMensajeComprobanteActual(), "No se encontró el WhatsApp del cliente.", "error");
         return;
       }
 
@@ -3537,12 +3922,12 @@
           const compartido = await compartirImagenSistema(blobMovil, nombreArchivo, textoWhatsApp);
 
           if (compartido) {
-            mostrarMensaje(mensajeRenovacion, "Se abrió el cuadro de compartir. Elige WhatsApp y envía la imagen con el texto.", "exito");
+            mostrarMensaje(obtenerMensajeComprobanteActual(), "Se abrió el cuadro de compartir. Elige WhatsApp y envía la imagen con el texto.", "exito");
             return;
           }
 
           abrirWhatsapp(ultimoNumeroWhatsapp, textoWhatsApp, null);
-          mostrarMensaje(mensajeRenovacion, "Tu navegador no permitió compartir la imagen. Se abrió WhatsApp con el texto. Prueba con Chrome/Safari actualizado y con la página en HTTPS.", "error");
+          mostrarMensaje(obtenerMensajeComprobanteActual(), "Tu navegador no permitió compartir la imagen. Se abrió WhatsApp con el texto. Prueba con Chrome/Safari actualizado y con la página en HTTPS.", "error");
           return;
         }
 
@@ -3566,7 +3951,7 @@
         abrirWhatsapp(ultimoNumeroWhatsapp, textoWhatsApp, ventanaWhatsapp);
 
         mostrarMensaje(
-          mensajeRenovacion,
+          obtenerMensajeComprobanteActual(),
           "Imagen copiada automáticamente. Se abrió WhatsApp Web con el texto. En el chat presiona Ctrl + V y luego Enviar.",
           "exito"
         );
@@ -3585,7 +3970,7 @@
         }
 
         if (error && error.name === "AbortError") {
-          mostrarMensaje(mensajeRenovacion, "Compartir cancelado.", "error");
+          mostrarMensaje(obtenerMensajeComprobanteActual(), "Compartir cancelado.", "error");
           return;
         }
 
@@ -3595,7 +3980,7 @@
         } catch (_) {}
 
         mostrarMensaje(
-          mensajeRenovacion,
+          obtenerMensajeComprobanteActual(),
           (error.message || "No se pudo copiar la imagen automáticamente.") + " WhatsApp Web se abrió con el texto; copia la imagen manualmente desde la vista previa de abajo.",
           "error"
         );
@@ -5938,14 +6323,19 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
         }
 
         const filas = cuentas.map(function(cuenta) {
+          const fechaVence = cuenta.fechaVencimiento || cuenta.fechaRenovacion || cuenta.fechaProximoPago || "-";
+          const diasRestantes = cuenta.diasRestantes || (typeof cuenta.diasNumero !== "undefined" ? cuenta.diasNumero + " días" : "-");
+
           return `
             <tr>
-              <td>${escaparHTML(cuenta.correoCuenta || "-")}</td>
-              <td>${escaparHTML(cuenta.nombreCliente || "-")}</td>
-              <td>${escaparHTML(cuenta.numeroCliente || "-")}</td>
+              <td>${escaparHTML(cuenta.correoCuenta || cuenta.correo || "-")}</td>
+              <td>${escaparHTML(cuenta.nombreCliente || cuenta.nombre || "-")}</td>
+              <td>${escaparHTML(cuenta.numeroCliente || cuenta.numero || "-")}</td>
               <td>${escaparHTML(cuenta.correoBanca || "-")}</td>
+              <td>${escaparHTML(fechaVence)}</td>
+              <td>${escaparHTML(diasRestantes)}</td>
               <td>${escaparHTML(cuenta.comentarios || cuenta.observaciones || "-")}</td>
-              <td><button type="button" class="btn-usar-correo" data-correo="${escaparHTML(cuenta.correoCuenta || "")}">Usar</button></td>
+              <td><button type="button" class="btn-usar-correo" data-correo="${escaparHTML(cuenta.correoCuenta || cuenta.correo || "")}">Usar</button></td>
             </tr>
           `;
         }).join("");
@@ -5959,6 +6349,8 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
                   <th>Nombre del cliente</th>
                   <th>Número</th>
                   <th>Correo de banca</th>
+                  <th>Fecha que vence</th>
+                  <th>Días restantes</th>
                   <th>Observaciones</th>
                   <th>Acción</th>
                 </tr>
