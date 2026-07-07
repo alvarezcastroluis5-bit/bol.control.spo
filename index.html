@@ -2842,6 +2842,7 @@
       const filas = lista.map((pedido, index) => `
         <tr>
           <td><strong>${escaparHTML(pedido.codigoSeguimiento || "-")}</strong><br><small>${escaparHTML(pedido.estado || "Pendiente")}</small></td>
+          <td>${escaparHTML(pedido.fechaSolicitud || "-")}<br><small>${escaparHTML(pedido.horaSolicitud || pedido.horaPedido || "-")}</small></td>
           <td>${escaparHTML(pedido.nombre || "-")}<br><small>${escaparHTML(pedido.numero || "-")}</small></td>
           <td>${escaparHTML(pedido.tipoCuentaNueva || pedido.tipoSolicitud || "-")}<br><small>Cantidad: ${escaparHTML(pedido.cantidadCuentas || "1")}</small></td>
           <td>${escaparHTML(pedido.paisRegistro || pedido.pais || "-")}</td>
@@ -2858,6 +2859,7 @@
             <thead>
               <tr>
                 <th>Código</th>
+                <th>Fecha / hora</th>
                 <th>Cliente</th>
                 <th>Modalidad</th>
                 <th>País</th>
