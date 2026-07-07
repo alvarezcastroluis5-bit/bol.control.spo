@@ -2953,6 +2953,40 @@
 
 
 
+    function crearMensajeConfirmacionActivacionRegistro(datosActivacion) {
+      datosActivacion = datosActivacion || {};
+
+      const nombre = datosActivacion.nombreCliente || "cliente";
+      const codigo = datosActivacion.codigoSolicitudRegistro || "-";
+      const correo = datosActivacion.correoCuenta || "-";
+      const pais = datosActivacion.pais || "-";
+      const plan = datosActivacion.tipoCuenta || "-";
+      const tiempo = datosActivacion.tiempoSuscripcion || "-";
+      const garantia = datosActivacion.garantia || "-";
+      const fechaActivacionTexto = limpiarFechaISO(datosActivacion.fechaActivacion || "");
+      const fechaProximoPagoTexto = limpiarFechaISO(datosActivacion.fechaVencimiento || "");
+      const ultimos4 = datosActivacion.ultimos4Tarjeta || "-";
+
+      return `*CUENTAS PREMIUM BO*
+*CONFIRMACIÓN DE ACTIVACIÓN*
+
+Hola ${nombre}, tu cuenta fue activada correctamente.
+
+*Código de pedido:* ${codigo}
+*Correo de la cuenta:* ${correo}
+*País:* ${pais}
+*Plan:* ${plan}
+*Tiempo:* ${tiempo} días
+*Garantía:* ${garantia}
+*Fecha de activación:* ${fechaActivacionTexto}
+*Fecha de próximo pago:* ${fechaProximoPagoTexto}
+*Últimos 4 dígitos de tarjeta:* ${ultimos4}
+
+Gracias por tu compra.`;
+    }
+
+
+
     const btnActualizarPedidosPendientesRegistro = document.getElementById("btnActualizarPedidosPendientesRegistro");
     if (btnActualizarPedidosPendientesRegistro) {
       btnActualizarPedidosPendientesRegistro.addEventListener("click", cargarPedidosPendientesRegistro);
@@ -3015,6 +3049,8 @@
         ultimos4Tarjeta: tarjetaSegura.ultimos4Tarjeta
       };
 
+      const ventanaWhatsappActivacion = datos.codigoSolicitudRegistro ? prepararVentanaWhatsapp() : null;
+
       btnGuardar.disabled = true;
       btnGuardar.textContent = "Guardando...";
 
@@ -3023,16 +3059,25 @@
         btnGuardar.textContent = "Guardar registro";
 
         if (respuesta.status === "success") {
-          mostrarMensaje(mensajeRegistro, "Registro guardado correctamente. Comprobante de activación generado.", "exito");
+          const esActivacionDesdePedido = Boolean(datos.codigoSolicitudRegistro);
 
-          mostrarComprobanteActivacionRegistro({
-            correo: datos.correoCuenta,
-            fechaActivacion: datos.fechaActivacion,
-            horaActivacion: formatearHoraActualLocal(),
-            fechaProximoPago: datos.fechaVencimiento,
-            ultimos4Tarjeta: datos.ultimos4Tarjeta,
-            numeroCliente: datos.numeroCliente
-          });
+          if (voucherWhatsappBox) voucherWhatsappBox.style.display = "none";
+          if (textoVoucherWhatsapp) textoVoucherWhatsapp.value = "";
+          ultimoTextoVoucher = "";
+          ultimoNumeroWhatsapp = "";
+          ultimoComprobanteDatos = null;
+          ultimoBlobComprobante = null;
+          ultimoBlobNombreComprobante = "";
+          ultimoBlobClaveComprobante = "";
+          precargaComprobanteEnProceso = null;
+
+          if (esActivacionDesdePedido) {
+            const mensajeActivacion = crearMensajeConfirmacionActivacionRegistro(datos);
+            abrirWhatsapp(datos.numeroCliente, mensajeActivacion, ventanaWhatsappActivacion);
+            mostrarMensaje(mensajeRegistro, "Registro guardado correctamente. Se abrió WhatsApp con la confirmación de activación.", "exito");
+          } else {
+            mostrarMensaje(mensajeRegistro, "Registro guardado correctamente.", "exito");
+          }
 
           formRegistro.reset();
           resetearSelectorPais("pais");
@@ -3306,11 +3351,16 @@
 
       panelRenovacion.style.display = "block";
 
-      const comprobanteParaMostrar = comprobanteGuardado || construirComprobanteDesdeRegistro(item);
-
-      if (comprobanteParaMostrar && comprobanteParaMostrar.numeroCliente) {
-        mostrarComprobanteRenovacion(comprobanteParaMostrar);
-      }
+      // El comprobante no se muestra al buscar la cuenta.
+      // Solo se genera después de presionar "Actualizar datos de renovación".
+      ultimoTextoVoucher = "";
+      ultimoNumeroWhatsapp = "";
+      ultimoComprobanteDatos = null;
+      ultimoBlobComprobante = null;
+      ultimoBlobNombreComprobante = "";
+      ultimoBlobClaveComprobante = "";
+      precargaComprobanteEnProceso = null;
+      if (voucherWhatsappBox) voucherWhatsappBox.style.display = "none";
     }
 
     btnEditarCliente.addEventListener("click", function() {
@@ -3418,11 +3468,20 @@
       btnActualizarRenovacion.disabled = true;
       btnActualizarRenovacion.textContent = "Actualizando...";
 
+      // Se abre una pestaña de espera desde el clic del usuario para evitar bloqueos del navegador.
+      let ventanaWhatsappAutoRenovacion = null;
+      if (!esDispositivoMovil()) {
+        ventanaWhatsappAutoRenovacion = prepararVentanaWhatsapp();
+      }
+
       enviarJSONP(datos, function(respuesta) {
         btnActualizarRenovacion.disabled = false;
         btnActualizarRenovacion.textContent = "Actualizar datos de renovación";
 
         if (respuesta.status !== "success") {
+          if (ventanaWhatsappAutoRenovacion && !ventanaWhatsappAutoRenovacion.closed) {
+            ventanaWhatsappAutoRenovacion.close();
+          }
           mostrarMensaje(mensajeRenovacion, "Error al actualizar: " + (respuesta.message || "No se pudo actualizar"), "error");
 
           if (String(respuesta.message || "").toLowerCase().includes("sesión")) {
@@ -3435,10 +3494,15 @@
 
         datosRenovacionActual = respuesta.data;
         mostrarPanelRenovacion(respuesta.data);
-        mostrarMensaje(mensajeRenovacion, "Renovación actualizada correctamente. Ya puedes enviar el comprobante por WhatsApp.", "exito");
+        mostrarMensaje(mensajeRenovacion, "Renovación actualizada correctamente. Se abrirá WhatsApp para enviar el comprobante.", "exito");
 
         const comprobante = respuesta.comprobante || construirComprobanteLocal(respuesta.data);
         mostrarComprobanteRenovacion(comprobante);
+
+        // Después de generar el comprobante, se envía directo a WhatsApp.
+        setTimeout(function() {
+          enviarComprobanteImagenWhatsapp(ventanaWhatsappAutoRenovacion);
+        }, 350);
       });
     });
 
@@ -3896,7 +3960,7 @@
       } catch (error) {}
     }
 
-    async function enviarComprobanteImagenWhatsapp() {
+    async function enviarComprobanteImagenWhatsapp(ventanaWhatsappPreparada) {
       if (!ultimoComprobanteDatos) {
         mostrarMensaje(obtenerMensajeComprobanteActual(), "Primero genera el comprobante.", "error");
         return;
@@ -3910,7 +3974,7 @@
       const textoWhatsApp = crearTextoCompartirComprobante();
       const nombreArchivo = obtenerNombreArchivoComprobante();
       const movil = esDispositivoMovil();
-      let ventanaWhatsapp = null;
+      let ventanaWhatsapp = ventanaWhatsappPreparada || null;
 
       try {
         btnEnviarVoucherWhatsapp.disabled = true;
@@ -3933,7 +3997,7 @@
           return;
         }
 
-        ventanaWhatsapp = prepararVentanaWhatsapp();
+        if (!ventanaWhatsapp) ventanaWhatsapp = prepararVentanaWhatsapp();
 
         let blobPC = ultimoBlobComprobante;
         const claveActual = crearClaveComprobante();
