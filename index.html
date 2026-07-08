@@ -7880,5 +7880,151 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
 })();
 </script>
 
+
+
+<script>
+/* =========================================================
+   CORRECCIÓN FINAL: Individual unido a plan familiar
+   - Nunca pide Correo de banca ni Número de tarjeta.
+   - Funciona en registro manual y con pedido seleccionado.
+   - Usa display:none!important para evitar que otros scripts lo vuelvan a mostrar.
+========================================================= */
+(function(){
+  function q(id){ return document.getElementById(id); }
+
+  function valorSelectSeguro(select){
+    if (!select) return '';
+    var valor = String(select.value || '').trim();
+    if (!valor && select.options && select.selectedIndex >= 0 && select.options[select.selectedIndex]) {
+      valor = String(select.options[select.selectedIndex].text || '').trim();
+    }
+    return valor;
+  }
+
+  function esIndividualUnidoAFamiliar(){
+    var tipo = q('tipoCuenta');
+    var texto = valorSelectSeguro(tipo).toLowerCase();
+    return texto.indexOf('individual') !== -1 && texto.indexOf('familiar') !== -1;
+  }
+
+  function mostrarForzado(el, mostrar){
+    if (!el) return;
+    if (mostrar) {
+      el.style.removeProperty('display');
+      el.hidden = false;
+    } else {
+      el.style.setProperty('display', 'none', 'important');
+      el.hidden = true;
+    }
+  }
+
+  function campoNoObligatorio(el){
+    if (!el) return;
+    el.required = false;
+    el.removeAttribute('required');
+    el.disabled = true;
+    el.value = '';
+  }
+
+  function campoObligatorio(el){
+    if (!el) return;
+    el.disabled = false;
+    el.required = true;
+    el.setAttribute('required', 'required');
+  }
+
+  function obtenerNotaTarjeta(input){
+    if (!input) return null;
+    var n = input.nextElementSibling;
+    while (n && n.nodeType === 3) n = n.nextElementSibling;
+    if (n && n.classList && n.classList.contains('nota')) return n;
+    var ps = document.querySelectorAll('p.nota');
+    for (var i = 0; i < ps.length; i++) {
+      var txt = String(ps[i].textContent || '').toLowerCase();
+      if (txt.indexOf('primeros 6') !== -1 || txt.indexOf('últimos 4') !== -1 || txt.indexOf('ultimos 4') !== -1) return ps[i];
+    }
+    return null;
+  }
+
+  function actualizarBancaTarjetaPorPlan(){
+    var ocultar = esIndividualUnidoAFamiliar();
+
+    var correoBanca = q('correoBanca');
+    var numeroTarjeta = q('numeroTarjeta');
+    var labelBanca = document.querySelector('label[for="correoBanca"]');
+    var labelTarjeta = document.querySelector('label[for="numeroTarjeta"]');
+    var notaTarjeta = obtenerNotaTarjeta(numeroTarjeta);
+
+    if (ocultar) {
+      campoNoObligatorio(correoBanca);
+      campoNoObligatorio(numeroTarjeta);
+      mostrarForzado(labelBanca, false);
+      mostrarForzado(correoBanca, false);
+      mostrarForzado(labelTarjeta, false);
+      mostrarForzado(numeroTarjeta, false);
+      mostrarForzado(notaTarjeta, false);
+    } else {
+      mostrarForzado(labelBanca, true);
+      mostrarForzado(correoBanca, true);
+      mostrarForzado(labelTarjeta, true);
+      mostrarForzado(numeroTarjeta, true);
+      mostrarForzado(notaTarjeta, true);
+      campoObligatorio(correoBanca);
+      campoObligatorio(numeroTarjeta);
+    }
+
+    var boxMadres = q('boxCuentasMadresRegistro');
+    if (boxMadres && ocultar) {
+      boxMadres.style.removeProperty('display');
+      boxMadres.hidden = false;
+    }
+  }
+
+  function refrescarVariasVeces(){
+    actualizarBancaTarjetaPorPlan();
+    setTimeout(actualizarBancaTarjetaPorPlan, 80);
+    setTimeout(actualizarBancaTarjetaPorPlan, 250);
+    setTimeout(actualizarBancaTarjetaPorPlan, 700);
+  }
+
+  document.addEventListener('change', function(e){
+    if (!e.target) return;
+    if (e.target.id === 'tipoCuenta' || e.target.id === 'pais' || e.target.id === 'duracion' || e.target.id === 'garantiaRegistro') {
+      refrescarVariasVeces();
+    }
+  }, true);
+
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if (!t) return;
+    if ((t.closest && t.closest('.selector-personalizado')) || (t.closest && t.closest('button'))) {
+      refrescarVariasVeces();
+    }
+  }, true);
+
+  document.addEventListener('submit', function(e){
+    if (e.target && e.target.id === 'formRegistro') {
+      actualizarBancaTarjetaPorPlan();
+    }
+  }, true);
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', refrescarVariasVeces);
+  } else {
+    refrescarVariasVeces();
+  }
+  window.addEventListener('load', refrescarVariasVeces);
+
+  var contador = 0;
+  var intervalo = setInterval(function(){
+    actualizarBancaTarjetaPorPlan();
+    contador++;
+    if (contador >= 20) clearInterval(intervalo);
+  }, 500);
+
+  window.actualizarBancaTarjetaPorPlanIndividualFamiliar = refrescarVariasVeces;
+})();
+</script>
+
 </body>
 </html>
