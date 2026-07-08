@@ -1522,7 +1522,23 @@
   cursor: default;
 }
 #grupoComentariosOperadorRegistro { margin-top: 12px; }
-</style>
+
+    .campos-registro-pedido {
+      display: none;
+      margin-top: 18px;
+    }
+
+    .registro-aviso-seleccion {
+      border: 1px solid rgba(52, 255, 137, 0.45);
+      background: rgba(30, 110, 80, 0.35);
+      color: #fff;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-weight: 800;
+      margin-top: 16px;
+    }
+
+  </style>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 
@@ -1746,6 +1762,8 @@
         </div>
 
 
+        <div id="camposRegistroPedido" class="campos-registro-pedido" style="display:block;">
+
         <label for="correoCuenta">Correo de la cuenta</label>
         <input type="text" inputmode="email" id="correoCuenta" name="correo_cuenta_no_autofill_9871" placeholder="ejemplo@gmail.com" autocomplete="new-password" required>
 
@@ -1864,6 +1882,7 @@
         <p class="nota">Por seguridad, se guardarán solo los primeros 6 dígitos y los últimos 4 dígitos de la tarjeta.</p>
 
         <button type="submit" class="enviar" id="btnGuardar">Guardar registro</button>
+        </div>
       </form>
 
       <div id="mensajeRegistro" class="mensaje"></div>
@@ -2637,6 +2656,7 @@
 
     function limpiarRegistro() {
       if (formRegistro) formRegistro.reset();
+      mostrarCamposRegistroPedido(true);
       resetearSelectorPais("pais");
       ocultarMensaje(mensajeRegistro);
       pedidoRegistroSeleccionado = null;
@@ -3130,6 +3150,37 @@
     }
 
 
+    function mostrarCamposRegistroPedido(visible) {
+      const box = document.getElementById("camposRegistroPedido");
+      if (box) box.style.display = visible ? "block" : "none";
+    }
+
+    function limpiarFormularioRegistroPedidoPendiente() {
+      if (formRegistro) formRegistro.reset();
+      resetearSelectorPais("pais");
+      pedidoRegistroSeleccionado = null;
+      window.pedidoRegistroSeleccionado = null;
+
+      const resumenPedido = document.getElementById("pedidoSeleccionadoRegistroResumen");
+      if (resumenPedido) {
+        resumenPedido.innerHTML = "";
+        resumenPedido.style.display = "none";
+      }
+
+      resetCuentasMadresRegistro();
+      mostrarCamposRegistroPedido(true);
+
+      if (typeof actualizarVistaRegistroIndividualFamiliar === "function") {
+        actualizarVistaRegistroIndividualFamiliar();
+      }
+
+      if (btnGuardar) {
+        btnGuardar.disabled = false;
+        btnGuardar.textContent = "Guardar registro";
+      }
+    }
+
+
     function cargarPedidosPendientesRegistro() {
       const contenedor = document.getElementById("contenidoPedidosPendientesRegistro");
       if (!contenedor || !adminAutenticado) return;
@@ -3141,6 +3192,7 @@
         tokenAdmin: adminToken
       }, function(respuesta) {
         if (respuesta.status !== "success") {
+          limpiarFormularioRegistroPedidoPendiente();
           contenedor.innerHTML = `<div class="mensaje error" style="display:block;">No se pudieron cargar los pedidos: ${escaparHTML(respuesta.message || "Intenta nuevamente.")}</div>`;
           return;
         }
@@ -3155,9 +3207,12 @@
       if (!contenedor) return;
 
       if (!lista || lista.length === 0) {
+        limpiarFormularioRegistroPedidoPendiente();
         contenedor.innerHTML = `<div class="mensaje exito" style="display:block;">No hay pedidos pendientes de atender.</div>`;
         return;
       }
+
+      mostrarCamposRegistroPedido(true);
 
       const filas = lista.map((pedido, index) => {
         const cantidad = parseInt(pedido.cantidadSolicitada || pedido.cantidadCuentas || "1", 10) || 1;
@@ -3271,6 +3326,7 @@
 
       pedidoRegistroSeleccionado = pedido;
       window.pedidoRegistroSeleccionado = pedidoRegistroSeleccionado;
+      mostrarCamposRegistroPedido(true);
       resetCuentasMadresRegistro();
 
       const cantidad = parseInt(pedido.cantidadSolicitada || pedido.cantidadCuentas || "1", 10) || 1;
@@ -3406,6 +3462,8 @@ Gracias por tu compra.`;
 
 
 
+    mostrarCamposRegistroPedido(true);
+
     const btnActualizarPedidosPendientesRegistro = document.getElementById("btnActualizarPedidosPendientesRegistro");
     if (btnActualizarPedidosPendientesRegistro) {
       btnActualizarPedidosPendientesRegistro.addEventListener("click", cargarPedidosPendientesRegistro);
@@ -3418,6 +3476,8 @@ Gracias por tu compra.`;
         mostrarLogin();
         return;
       }
+
+      // Si no hay pedido seleccionado, se guarda como registro manual.
 
       let correoCuenta = document.getElementById("correoCuenta").value.trim();
       const nombreCliente = document.getElementById("nombreCliente").value.trim();
@@ -3550,6 +3610,7 @@ Gracias por tu compra.`;
           }
 
           formRegistro.reset();
+          mostrarCamposRegistroPedido(true);
           resetearSelectorPais("pais");
           pedidoRegistroSeleccionado = null;
           window.pedidoRegistroSeleccionado = pedidoRegistroSeleccionado;
@@ -7250,9 +7311,9 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
 </script>
 <script>
 /* =========================================================
-   FIX REGISTRO: no dejar datos viejos sin pedido seleccionado
-   - Si no hay pedidos pendientes, limpia y bloquea el formulario.
-   - El formulario se habilita recién cuando se presiona USAR.
+   FIX REGISTRO: permitir registro manual aunque no haya pedido
+   - Si no hay pedidos pendientes, limpia datos viejos pero deja el formulario activo.
+   - Si se presiona USAR, llena datos del pedido y aplica reglas especiales.
    - Para Individual unido a plan familiar muestra cuentas madres solo con pedido seleccionado.
    - Limpia correos aunque vengan con contraseña al lado.
 ========================================================= */
@@ -7375,6 +7436,9 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
   }
 
   function activarFormularioRegistroPorPedido(activo) {
+    // El Registro debe poder usarse manualmente aunque no exista pedido pendiente.
+    // La variable activo solo indica si hay pedido seleccionado para reglas especiales,
+    // pero los campos del formulario quedan habilitados siempre.
     var ids = [
       'correoCuenta',
       'nombreCliente',
@@ -7391,15 +7455,18 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
       'numeroTarjeta'
     ];
 
-    ids.forEach(function(id) { setDisabled(id, !activo); });
+    ids.forEach(function(id) { setDisabled(id, false); });
 
     var selectorPais = document.querySelector('.selector-personalizado[data-input="pais"] .selector-btn');
-    if (selectorPais) selectorPais.disabled = !activo;
+    if (selectorPais) selectorPais.disabled = false;
+
+    var campos = q('camposRegistroPedido');
+    if (campos) campos.style.display = 'block';
 
     var btnGuardar = q('btnGuardar');
     if (btnGuardar) {
-      btnGuardar.disabled = !activo;
-      btnGuardar.textContent = activo ? 'Guardar registro' : 'Selecciona un pedido para guardar';
+      btnGuardar.disabled = false;
+      btnGuardar.textContent = 'Guardar registro';
     }
   }
 
@@ -7447,6 +7514,8 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
   function ponerModoSinPedido() {
     limpiarSeleccionPedidoRegistroSeguro();
     limpiarCamposDeRegistroPorPedido();
+    var campos = q('camposRegistroPedido');
+    if (campos) campos.style.display = 'block';
     activarFormularioRegistroPorPedido(false);
     actualizarVistaRegistroSeguro();
   }
@@ -7464,10 +7533,8 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
 
     if (!contenedorPedidos || !form) return;
 
-    // Estado inicial: no permitir guardar hasta seleccionar un pedido.
-    if (!hayPedidoSeleccionadoRegistroSeguro()) {
-      activarFormularioRegistroPorPedido(false);
-    }
+    // Estado inicial: permitir registro manual aunque no haya pedido.
+    activarFormularioRegistroPorPedido(hayPedidoSeleccionadoRegistroSeguro());
 
     // Si la lista queda vacía, limpiar datos viejos.
     var observer = new MutationObserver(function() {
@@ -7522,18 +7589,7 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
     form.addEventListener('submit', function(e) {
       normalizarCorreosAntesDeGuardar();
 
-      if (!hayPedidoSeleccionadoRegistroSeguro()) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        var mensaje = q('mensajeRegistro');
-        if (typeof mostrarMensaje === 'function' && mensaje) {
-          mostrarMensaje(mensaje, 'Primero selecciona un pedido pendiente con el botón USAR.', 'error');
-        } else {
-          alert('Primero selecciona un pedido pendiente con el botón USAR.');
-        }
-        return false;
-      }
-
+      // Permitir guardar registro manual aunque no haya pedido seleccionado.
       actualizarVistaRegistroSeguro();
     }, true);
   }
