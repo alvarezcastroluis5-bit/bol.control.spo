@@ -4401,134 +4401,6 @@ Gracias por tu compra.`;
 
 
 
-
-<script>
-/* =========================================================
-   FIX FINAL: INDIVIDUAL UNIDO A PLAN FAMILIAR
-   - No pide correo de la banca.
-   - No pide número de tarjeta.
-   - Quita required para que permita guardar.
-   - Se actualiza al seleccionar pedido, país o tipo de cuenta.
-========================================================= */
-(function() {
-  function q(id) { return document.getElementById(id); }
-
-  function esIndividualUnidoFamiliar(valor) {
-    var t = String(valor || '').toLowerCase();
-    return t.indexOf('individual') !== -1 && t.indexOf('familiar') !== -1;
-  }
-
-  function obtenerTipoRegistro() {
-    var tipo = q('tipoCuenta');
-    return tipo ? tipo.value : '';
-  }
-
-  function setCampoVisible(campo, visible) {
-    if (!campo) return;
-    campo.style.display = visible ? '' : 'none';
-  }
-
-  function actualizarCamposBancaTarjetaIndividual() {
-    var esIndividual = esIndividualUnidoFamiliar(obtenerTipoRegistro());
-
-    var labelBanca = document.querySelector('label[for="correoBanca"]');
-    var inputBanca = q('correoBanca');
-    var labelTarjeta = document.querySelector('label[for="numeroTarjeta"]');
-    var inputTarjeta = q('numeroTarjeta');
-    var notaTarjeta = null;
-
-    if (inputTarjeta) {
-      var siguiente = inputTarjeta.nextElementSibling;
-      if (siguiente && siguiente.classList && siguiente.classList.contains('nota')) {
-        notaTarjeta = siguiente;
-      }
-    }
-
-    setCampoVisible(labelBanca, !esIndividual);
-    setCampoVisible(inputBanca, !esIndividual);
-    setCampoVisible(labelTarjeta, !esIndividual);
-    setCampoVisible(inputTarjeta, !esIndividual);
-    setCampoVisible(notaTarjeta, !esIndividual);
-
-    if (inputBanca) {
-      if (esIndividual) {
-        inputBanca.required = false;
-        inputBanca.removeAttribute('required');
-        inputBanca.disabled = true;
-      } else {
-        inputBanca.disabled = false;
-        inputBanca.required = true;
-        inputBanca.setAttribute('required', 'required');
-      }
-    }
-
-    if (inputTarjeta) {
-      if (esIndividual) {
-        inputTarjeta.required = false;
-        inputTarjeta.removeAttribute('required');
-        inputTarjeta.disabled = true;
-      } else {
-        inputTarjeta.disabled = false;
-        inputTarjeta.required = true;
-        inputTarjeta.setAttribute('required', 'required');
-      }
-    }
-  }
-
-  function refrescarConRetraso() {
-    actualizarCamposBancaTarjetaIndividual();
-    setTimeout(actualizarCamposBancaTarjetaIndividual, 80);
-    setTimeout(actualizarCamposBancaTarjetaIndividual, 250);
-  }
-
-  document.addEventListener('change', function(e) {
-    if (!e.target) return;
-    if (e.target.id === 'tipoCuenta' || e.target.id === 'pais' || e.target.id === 'duracion' || e.target.id === 'garantiaRegistro') {
-      refrescarConRetraso();
-    }
-  }, true);
-
-  document.addEventListener('click', function(e) {
-    var t = e.target;
-    if (!t) return;
-
-    if (
-      (t.closest && t.closest('.btn-usar-pedido')) ||
-      (t.closest && t.closest('.btn-eliminar-pedido')) ||
-      (t.closest && t.closest('.opcion-pais')) ||
-      (t.closest && t.closest('.selector-personalizado')) ||
-      (t.closest && t.closest('#tipoCuenta'))
-    ) {
-      refrescarConRetraso();
-    }
-  }, true);
-
-  document.addEventListener('submit', function(e) {
-    if (e.target && e.target.id === 'formRegistro') {
-      actualizarCamposBancaTarjetaIndividual();
-    }
-  }, true);
-
-  if (typeof MutationObserver !== 'undefined') {
-    var form = q('formRegistro');
-    if (form) {
-      var obs = new MutationObserver(function() {
-        refrescarConRetraso();
-      });
-      obs.observe(form, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'value', 'disabled'] });
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', refrescarConRetraso);
-  } else {
-    refrescarConRetraso();
-  }
-
-  window.addEventListener('load', refrescarConRetraso);
-})();
-</script>
-
 </body>
           </html>
         `);
@@ -7937,129 +7809,74 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
 
 
 <script>
-/* =========================================================
-   FIX FINAL: INDIVIDUAL UNIDO A PLAN FAMILIAR
-   - No pide correo de la banca.
-   - No pide número de tarjeta.
-   - Quita required para que permita guardar.
-   - Se actualiza al seleccionar pedido, país o tipo de cuenta.
-========================================================= */
-(function() {
-  function q(id) { return document.getElementById(id); }
-
-  function esIndividualUnidoFamiliar(valor) {
-    var t = String(valor || '').toLowerCase();
-    return t.indexOf('individual') !== -1 && t.indexOf('familiar') !== -1;
-  }
-
-  function obtenerTipoRegistro() {
+(function(){
+  function q(id){ return document.getElementById(id); }
+  function esIndividualUnido(){
     var tipo = q('tipoCuenta');
-    return tipo ? tipo.value : '';
+    var valor = tipo ? String(tipo.value || (tipo.options[tipo.selectedIndex] ? tipo.options[tipo.selectedIndex].text : '') || '').toLowerCase() : '';
+    return valor.indexOf('individual') !== -1 && valor.indexOf('familiar') !== -1;
   }
-
-  function setCampoVisible(campo, visible) {
-    if (!campo) return;
-    campo.style.display = visible ? '' : 'none';
+  function setVisible(el, visible){
+    if (!el) return;
+    el.style.display = visible ? '' : 'none';
   }
-
-  function actualizarCamposBancaTarjetaIndividual() {
-    var esIndividual = esIndividualUnidoFamiliar(obtenerTipoRegistro());
-
+  function setCampo(el, ocultar){
+    if (!el) return;
+    if (ocultar) {
+      el.removeAttribute('required');
+      el.disabled = true;
+      el.value = '';
+    } else {
+      el.disabled = false;
+      el.setAttribute('required','required');
+    }
+    setVisible(el, !ocultar);
+  }
+  function refrescarBancaTarjetaIndividual(){
+    var ocultar = esIndividualUnido();
+    var correoBanca = q('correoBanca');
+    var numeroTarjeta = q('numeroTarjeta');
     var labelBanca = document.querySelector('label[for="correoBanca"]');
-    var inputBanca = q('correoBanca');
     var labelTarjeta = document.querySelector('label[for="numeroTarjeta"]');
-    var inputTarjeta = q('numeroTarjeta');
-    var notaTarjeta = null;
+    var notaTarjeta = numeroTarjeta ? numeroTarjeta.nextElementSibling : null;
 
-    if (inputTarjeta) {
-      var siguiente = inputTarjeta.nextElementSibling;
-      if (siguiente && siguiente.classList && siguiente.classList.contains('nota')) {
-        notaTarjeta = siguiente;
-      }
-    }
-
-    setCampoVisible(labelBanca, !esIndividual);
-    setCampoVisible(inputBanca, !esIndividual);
-    setCampoVisible(labelTarjeta, !esIndividual);
-    setCampoVisible(inputTarjeta, !esIndividual);
-    setCampoVisible(notaTarjeta, !esIndividual);
-
-    if (inputBanca) {
-      if (esIndividual) {
-        inputBanca.required = false;
-        inputBanca.removeAttribute('required');
-        inputBanca.disabled = true;
-      } else {
-        inputBanca.disabled = false;
-        inputBanca.required = true;
-        inputBanca.setAttribute('required', 'required');
-      }
-    }
-
-    if (inputTarjeta) {
-      if (esIndividual) {
-        inputTarjeta.required = false;
-        inputTarjeta.removeAttribute('required');
-        inputTarjeta.disabled = true;
-      } else {
-        inputTarjeta.disabled = false;
-        inputTarjeta.required = true;
-        inputTarjeta.setAttribute('required', 'required');
-      }
+    setVisible(labelBanca, !ocultar);
+    setVisible(labelTarjeta, !ocultar);
+    setCampo(correoBanca, ocultar);
+    setCampo(numeroTarjeta, ocultar);
+    if (notaTarjeta && notaTarjeta.classList && notaTarjeta.classList.contains('nota')) {
+      setVisible(notaTarjeta, !ocultar);
     }
   }
 
-  function refrescarConRetraso() {
-    actualizarCamposBancaTarjetaIndividual();
-    setTimeout(actualizarCamposBancaTarjetaIndividual, 80);
-    setTimeout(actualizarCamposBancaTarjetaIndividual, 250);
-  }
-
-  document.addEventListener('change', function(e) {
-    if (!e.target) return;
-    if (e.target.id === 'tipoCuenta' || e.target.id === 'pais' || e.target.id === 'duracion' || e.target.id === 'garantiaRegistro') {
-      refrescarConRetraso();
+  document.addEventListener('change', function(e){
+    if (e.target && e.target.id === 'tipoCuenta') {
+      refrescarBancaTarjetaIndividual();
+      setTimeout(refrescarBancaTarjetaIndividual, 100);
     }
   }, true);
 
-  document.addEventListener('click', function(e) {
-    var t = e.target;
-    if (!t) return;
-
-    if (
-      (t.closest && t.closest('.btn-usar-pedido')) ||
-      (t.closest && t.closest('.btn-eliminar-pedido')) ||
-      (t.closest && t.closest('.opcion-pais')) ||
-      (t.closest && t.closest('.selector-personalizado')) ||
-      (t.closest && t.closest('#tipoCuenta'))
-    ) {
-      refrescarConRetraso();
+  document.addEventListener('click', function(e){
+    var boton = e.target && e.target.closest ? e.target.closest('button') : null;
+    if (boton && String(boton.textContent || '').trim().toLowerCase() === 'usar') {
+      setTimeout(refrescarBancaTarjetaIndividual, 300);
+      setTimeout(refrescarBancaTarjetaIndividual, 1000);
     }
   }, true);
 
-  document.addEventListener('submit', function(e) {
-    if (e.target && e.target.id === 'formRegistro') {
-      actualizarCamposBancaTarjetaIndividual();
-    }
-  }, true);
-
-  if (typeof MutationObserver !== 'undefined') {
-    var form = q('formRegistro');
-    if (form) {
-      var obs = new MutationObserver(function() {
-        refrescarConRetraso();
-      });
-      obs.observe(form, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'value', 'disabled'] });
-    }
+  var form = q('formRegistro');
+  if (form) {
+    form.addEventListener('submit', function(){
+      refrescarBancaTarjetaIndividual();
+    }, true);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', refrescarConRetraso);
+    document.addEventListener('DOMContentLoaded', refrescarBancaTarjetaIndividual);
   } else {
-    refrescarConRetraso();
+    refrescarBancaTarjetaIndividual();
   }
-
-  window.addEventListener('load', refrescarConRetraso);
+  window.addEventListener('load', refrescarBancaTarjetaIndividual);
 })();
 </script>
 
