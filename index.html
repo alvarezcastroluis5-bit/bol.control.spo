@@ -1491,7 +1491,17 @@
       font-weight: 800;
     }
 
-  </style>
+  
+
+/* Ajustes: pedidos individual unido a plan familiar */
+.campo-oculto-individual-familiar { display: none !important; }
+#comentariosRegistro[readonly] {
+  background: rgba(255,255,255,0.94);
+  color: #111827;
+  cursor: default;
+}
+#grupoComentariosOperadorRegistro { margin-top: 12px; }
+</style>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 
@@ -1684,7 +1694,7 @@
           <h3>📋 Pedidos pendientes de atender</h3>
           <p>
             Selecciona un pedido pendiente para llenar automáticamente los datos del cliente, país, plan, tiempo y garantía.
-            Luego coloca el correo de la cuenta, correo de banca y tarjeta para generar el comprobante de activación.
+            Luego completa solo los datos necesarios para activar. Si es Individual unido a plan familiar, selecciona una cuenta madre disponible; no se pedirá correo de cuenta ni tarjeta.
           </p>
 
           <div class="pedidos-pendientes-toolbar">
@@ -1797,8 +1807,13 @@
         </select>
 
 
-        <label for="comentariosRegistro">Comentarios</label>
-        <textarea id="comentariosRegistro" name="comentarios_registro_no_autofill_9910" rows="4" placeholder="Escribe aquí cualquier comentario adicional sobre la cuenta o el cliente" autocomplete="off"></textarea>
+        <label for="comentariosRegistro">Detalles de pedido</label>
+        <textarea id="comentariosRegistro" name="comentarios_registro_no_autofill_9910" rows="5" placeholder="Aquí aparecerán los detalles del pedido seleccionado" autocomplete="off" readonly></textarea>
+
+        <div id="grupoComentariosOperadorRegistro">
+          <label for="comentariosOperadorRegistro">Comentarios operador</label>
+          <textarea id="comentariosOperadorRegistro" name="comentarios_operador_registro_no_autofill_9911" rows="3" placeholder="Escribe aquí observaciones internas del operador" autocomplete="off"></textarea>
+        </div>
 
 
         <label for="correoBanca">Correo de la banca</label>
@@ -2275,7 +2290,8 @@
     let solicitudDescuentoUsdActual = 0;
     let solicitudPagoRequestId = 0;
     let cuponAplicadoActual = null;
-    let pedidoRegistroSeleccionado = null;
+    var pedidoRegistroSeleccionado = null;
+    window.pedidoRegistroSeleccionado = pedidoRegistroSeleccionado;
     let pedidosPendientesRegistroCache = [];
     let cuentaMadreSeleccionadaRegistro = null;
     let cuentasMadresRegistroCache = [];
@@ -2585,6 +2601,8 @@
       resetearSelectorPais("pais");
       ocultarMensaje(mensajeRegistro);
       pedidoRegistroSeleccionado = null;
+      window.pedidoRegistroSeleccionado = pedidoRegistroSeleccionado;
+      if (typeof actualizarVistaRegistroIndividualFamiliar === "function") actualizarVistaRegistroIndividualFamiliar();
 
       const resumenPedido = document.getElementById("pedidoSeleccionadoRegistroResumen");
       if (resumenPedido) {
@@ -3069,7 +3087,7 @@
         btn.classList.add("seleccionada");
       }
 
-      mostrarMensaje(mensajeRegistro, "Cuenta madre seleccionada. Ahora coloca el correo individual que se entregará al cliente.", "exito");
+      mostrarMensaje(mensajeRegistro, "Cuenta madre seleccionada. Ya puedes guardar la activación sin pedir correo de cuenta ni tarjeta.", "exito");
     }
 
 
@@ -3195,6 +3213,7 @@
 
         if (pedidoRegistroSeleccionado && pedidoRegistroSeleccionado.codigoSeguimiento === codigo) {
           pedidoRegistroSeleccionado = null;
+          window.pedidoRegistroSeleccionado = pedidoRegistroSeleccionado;
           const resumen = document.getElementById("pedidoSeleccionadoRegistroResumen");
           if (resumen) {
             resumen.innerHTML = "";
@@ -3212,6 +3231,7 @@
       if (!pedido) return;
 
       pedidoRegistroSeleccionado = pedido;
+      window.pedidoRegistroSeleccionado = pedidoRegistroSeleccionado;
       resetCuentasMadresRegistro();
 
       const cantidad = parseInt(pedido.cantidadSolicitada || pedido.cantidadCuentas || "1", 10) || 1;
@@ -3227,6 +3247,7 @@
       const tiempoInput = document.getElementById("duracion");
       const garantiaInput = document.getElementById("garantiaRegistro");
       const comentariosInput = document.getElementById("comentariosRegistro");
+      const comentariosOperadorInput = document.getElementById("comentariosOperadorRegistro");
 
       if (nombreInput) nombreInput.value = pedido.nombre || "";
       if (numeroInput) numeroInput.value = String(pedido.numero || "").replace(/\D/g, "");
@@ -3243,6 +3264,8 @@
       if (fechaInput) fechaInput.value = fechaHoyInputRegistro();
       if (tiempoInput) tiempoInput.value = primerValorRegistro(pedido.tiempoRegistro || pedido.tiempo || "");
       if (garantiaInput) garantiaInput.value = primerValorRegistro(pedido.garantiaRegistro || pedido.garantia || "");
+
+      if (comentariosOperadorInput) comentariosOperadorInput.value = "";
 
       if (comentariosInput) {
         comentariosInput.value = [
@@ -3270,7 +3293,12 @@
 
       mostrarCuentasMadresSiAplicaRegistro(pedido);
 
-      mostrarMensaje(mensajeRegistro, `Pedido cargado. Estás entregando la cuenta ${proxima} de ${cantidad}. Completa el correo de la cuenta, correo de banca y tarjeta.`, "exito");
+      actualizarVistaRegistroIndividualFamiliar();
+
+      const mensajeCarga = esPlanIndividualFamiliarRegistro(pedido.planRegistro || pedido.plan || "")
+        ? `Pedido cargado. Estás entregando la cuenta ${proxima} de ${cantidad}. Selecciona una cuenta madre disponible y guarda la activación.`
+        : `Pedido cargado. Estás entregando la cuenta ${proxima} de ${cantidad}. Completa el correo de la cuenta, correo de banca y tarjeta.`;
+      mostrarMensaje(mensajeRegistro, mensajeCarga, "exito");
       window.scrollTo({ top: formRegistro.offsetTop - 20, behavior: "smooth" });
     }
 
@@ -3343,7 +3371,7 @@ Gracias por tu compra.`;
         return;
       }
 
-      const correoCuenta = document.getElementById("correoCuenta").value.trim();
+      let correoCuenta = document.getElementById("correoCuenta").value.trim();
       const nombreCliente = document.getElementById("nombreCliente").value.trim();
       const numeroCliente = obtenerNumeroWhatsappConMas(document.getElementById("numeroCliente").value.trim());
       const tipoCuenta = document.getElementById("tipoCuenta").value;
@@ -3351,13 +3379,31 @@ Gracias por tu compra.`;
       const fechaAct = fechaActivacion.value;
       const tiempoSuscripcion = duracion.value;
       const garantia = document.getElementById("garantiaRegistro").value;
-      const comentariosRegistro = document.getElementById("comentariosRegistro") ? document.getElementById("comentariosRegistro").value.trim() : "";
-      const correoBanca = document.getElementById("correoBanca").value.trim();
+      const detallesPedidoRegistro = document.getElementById("comentariosRegistro") ? document.getElementById("comentariosRegistro").value.trim() : "";
+      const comentariosOperadorRegistro = document.getElementById("comentariosOperadorRegistro") ? document.getElementById("comentariosOperadorRegistro").value.trim() : "";
+      const comentariosRegistro = [
+        detallesPedidoRegistro ? "Detalles de pedido:\n" + detallesPedidoRegistro : "",
+        comentariosOperadorRegistro ? "Comentarios operador:\n" + comentariosOperadorRegistro : ""
+      ].filter(Boolean).join("\n\n");
+      let correoBanca = document.getElementById("correoBanca").value.trim();
+
+      const esRegistroIndividualFamiliarActual = Boolean(pedidoRegistroSeleccionado?.codigoSeguimiento) && esPlanIndividualFamiliarRegistro(tipoCuenta);
+
+      if (esRegistroIndividualFamiliarActual && !correoCuenta) {
+        correoCuenta = String(pedidoRegistroSeleccionado?.correoRegistro || pedidoRegistroSeleccionado?.correo || "").trim();
+        if (!correoCuenta || correoCuenta.toLowerCase().includes("cuenta asignada")) {
+          correoCuenta = `individual-${pedidoRegistroSeleccionado?.codigoSeguimiento || Date.now()}-${pedidoRegistroSeleccionado?.proximaEntrega || 1}`;
+        }
+      }
+
+      if (esRegistroIndividualFamiliarActual && cuentaMadreSeleccionadaRegistro) {
+        correoBanca = cuentaMadreSeleccionadaRegistro.correoBanca || cuentaMadreSeleccionadaRegistro.banca || "";
+      }
 
       const tarjetaSegura = obtenerTarjetaSegura(numeroTarjetaInput);
       const fechasCalculadas = calcularFechasRegistro();
 
-      if (!correoCuenta || !nombreCliente || !numeroCliente || !tipoCuenta || !pais || !fechaAct || !tiempoSuscripcion || !garantia || !correoBanca) {
+      if (!nombreCliente || !numeroCliente || !tipoCuenta || !pais || !fechaAct || !tiempoSuscripcion || !garantia || (!esRegistroIndividualFamiliarActual && (!correoCuenta || !correoBanca))) {
         mostrarMensaje(mensajeRegistro, "Completa todos los campos.", "error");
         return;
       }
@@ -3367,12 +3413,12 @@ Gracias por tu compra.`;
         return;
       }
 
-      if (!tarjetaSegura) {
+      if (!esRegistroIndividualFamiliarActual && !tarjetaSegura) {
         mostrarMensaje(mensajeRegistro, "Coloca un número de tarjeta válido.", "error");
         return;
       }
 
-      const requiereCuentaMadre = Boolean(pedidoRegistroSeleccionado?.codigoSeguimiento) && esPlanIndividualFamiliarRegistro(tipoCuenta);
+      const requiereCuentaMadre = esRegistroIndividualFamiliarActual;
 
       if (requiereCuentaMadre && !cuentaMadreSeleccionadaRegistro) {
         mostrarMensaje(mensajeRegistro, "Este pedido es Individual unido a plan familiar. Selecciona una cuenta madre disponible antes de guardar.", "error");
@@ -3400,8 +3446,9 @@ Gracias por tu compra.`;
         fechaVencimiento: fechasCalculadas.fechaVencimiento,
         diasRestantes: fechasCalculadas.diasRestantes,
         correoBanca,
-        tarjetaEnmascarada: tarjetaSegura.tarjetaEnmascarada,
-        ultimos4Tarjeta: tarjetaSegura.ultimos4Tarjeta
+        tarjetaEnmascarada: esRegistroIndividualFamiliarActual ? (cuentaMadreSeleccionadaRegistro?.tarjetaEnmascarada || "") : tarjetaSegura.tarjetaEnmascarada,
+        ultimos4Tarjeta: esRegistroIndividualFamiliarActual ? (cuentaMadreSeleccionadaRegistro?.ultimos4Tarjeta || "") : tarjetaSegura.ultimos4Tarjeta,
+        paisBanca: esRegistroIndividualFamiliarActual ? (cuentaMadreSeleccionadaRegistro?.paisBanca || "") : ""
       };
 
       const ventanaWhatsappActivacion = datos.codigoSolicitudRegistro ? prepararVentanaWhatsapp() : null;
@@ -3443,6 +3490,10 @@ Gracias por tu compra.`;
           formRegistro.reset();
           resetearSelectorPais("pais");
           pedidoRegistroSeleccionado = null;
+          window.pedidoRegistroSeleccionado = pedidoRegistroSeleccionado;
+          setTimeout(function() {
+            if (typeof actualizarVistaRegistroIndividualFamiliar === "function") actualizarVistaRegistroIndividualFamiliar();
+          }, 80);
 
           const resumenPedido = document.getElementById("pedidoSeleccionadoRegistroResumen");
           if (resumenPedido) {
@@ -7028,5 +7079,76 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
 })();
 </script>
 
+
+<script>
+(function() {
+  function q(id) { return document.getElementById(id); }
+
+  function setCampoRegistro(id, mostrar) {
+    var el = q(id);
+    var label = document.querySelector('label[for="' + id + '"]');
+    if (el) el.classList.toggle('campo-oculto-individual-familiar', !mostrar);
+    if (label) label.classList.toggle('campo-oculto-individual-familiar', !mostrar);
+  }
+
+  function setNotaTarjeta(mostrar) {
+    var input = q('numeroTarjeta');
+    if (!input) return;
+    var nota = input.nextElementSibling;
+    if (nota && nota.classList && nota.classList.contains('nota')) {
+      nota.classList.toggle('campo-oculto-individual-familiar', !mostrar);
+    }
+  }
+
+  window.actualizarVistaRegistroIndividualFamiliar = function() {
+    var tipo = q('tipoCuenta');
+    var plan = tipo ? String(tipo.value || '').toLowerCase() : '';
+    var pedidoSeleccionado = window.pedidoRegistroSeleccionado;
+    var esIndividualFamiliar = Boolean(pedidoSeleccionado && pedidoSeleccionado.codigoSeguimiento) && plan.includes('individual') && plan.includes('familiar');
+
+    setCampoRegistro('correoCuenta', !esIndividualFamiliar);
+    setCampoRegistro('numeroTarjeta', !esIndividualFamiliar);
+    setCampoRegistro('correoBanca', !esIndividualFamiliar);
+    setNotaTarjeta(!esIndividualFamiliar);
+
+    var correo = q('correoCuenta');
+    var banca = q('correoBanca');
+    var tarjeta = q('numeroTarjeta');
+
+    if (correo) correo.required = !esIndividualFamiliar;
+    if (banca) banca.required = !esIndividualFamiliar;
+    if (tarjeta) tarjeta.required = !esIndividualFamiliar;
+
+    var detalles = q('comentariosRegistro');
+    var boxMadres = q('boxCuentasMadresRegistro');
+    var grupoOperador = q('grupoComentariosOperadorRegistro');
+
+    if (detalles && boxMadres && detalles.parentNode) {
+      if (boxMadres.previousElementSibling !== detalles) {
+        detalles.insertAdjacentElement('afterend', boxMadres);
+      }
+    }
+
+    if (grupoOperador && boxMadres && boxMadres.parentNode && esIndividualFamiliar) {
+      if (grupoOperador.previousElementSibling !== boxMadres) {
+        boxMadres.insertAdjacentElement('afterend', grupoOperador);
+      }
+    }
+  };
+
+  document.addEventListener('change', function(e) {
+    if (e.target && e.target.id === 'tipoCuenta') {
+      setTimeout(window.actualizarVistaRegistroIndividualFamiliar, 50);
+    }
+  }, true);
+
+  document.addEventListener('click', function() {
+    setTimeout(window.actualizarVistaRegistroIndividualFamiliar, 120);
+  }, true);
+
+  window.addEventListener('load', window.actualizarVistaRegistroIndividualFamiliar);
+  document.addEventListener('DOMContentLoaded', window.actualizarVistaRegistroIndividualFamiliar);
+})();
+</script>
 </body>
 </html>
