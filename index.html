@@ -1400,6 +1400,97 @@
       margin-top: 18px;
     }
 
+
+
+    .cuentas-madres-registro-box {
+      margin: 22px 0;
+      padding: 22px;
+      border: 1px solid rgba(47, 255, 139, 0.5);
+      border-radius: 18px;
+      background: rgba(12, 48, 39, 0.72);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+    }
+
+    .cuentas-madres-registro-box h3 {
+      margin: 0 0 8px;
+      color: #45ff91;
+      font-size: 1.45rem;
+    }
+
+    .cuentas-madres-registro-box p {
+      margin: 0 0 14px;
+      color: #e8f2ff;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .tabla-cuentas-madres-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 14px;
+      background: rgba(4, 20, 25, 0.45);
+      padding: 10px;
+    }
+
+    .tabla-cuentas-madres {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    .tabla-cuentas-madres th,
+    .tabla-cuentas-madres td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      text-align: left;
+      vertical-align: middle;
+      color: #ffffff;
+      font-weight: 800;
+    }
+
+    .tabla-cuentas-madres th {
+      color: #45ff91;
+      text-transform: uppercase;
+      font-size: 0.82rem;
+      letter-spacing: 0.03em;
+      background: rgba(0,0,0,0.25);
+    }
+
+    .btn-seleccionar-madre {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 16px;
+      background: #2196f3;
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .btn-seleccionar-madre.seleccionada {
+      background: #10b981;
+    }
+
+    .cuenta-madre-seleccionada {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(47,255,139,0.55);
+      background: rgba(22, 163, 74, 0.22);
+      color: #fff;
+      font-weight: 900;
+    }
+
+    .cuentas-madres-alerta {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(255, 193, 7, 0.18);
+      border: 1px solid rgba(255, 193, 7, 0.55);
+      color: #fff7db;
+      font-weight: 800;
+    }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
@@ -1607,6 +1698,20 @@
           </div>
 
           <div id="pedidoSeleccionadoRegistroResumen" class="pedido-seleccionado-registro" style="display:none;"></div>
+        </div>
+
+        <div class="cuentas-madres-registro-box" id="boxCuentasMadresRegistro" style="display:none;">
+          <h3>👑 Cuentas madres disponibles</h3>
+          <p>
+            Esta opción aparece solo para pedidos de <strong>Individual unido a plan familiar</strong>.
+            Selecciona una cuenta madre del mismo país. Cada cuenta madre tiene capacidad para 5 usuarios.
+          </p>
+
+          <div id="contenidoCuentasMadresRegistro" class="mensaje-vencen">
+            Selecciona primero un pedido individual unido a plan familiar.
+          </div>
+
+          <div id="cuentaMadreSeleccionadaRegistroResumen" class="cuenta-madre-seleccionada" style="display:none;"></div>
         </div>
 
 
@@ -2172,6 +2277,8 @@
     let cuponAplicadoActual = null;
     let pedidoRegistroSeleccionado = null;
     let pedidosPendientesRegistroCache = [];
+    let cuentaMadreSeleccionadaRegistro = null;
+    let cuentasMadresRegistroCache = [];
 
     /*
       Los cupones ya no se editan aquí.
@@ -2829,6 +2936,143 @@
       return `${y}-${m}-${d}`;
     }
 
+
+
+    function esPlanIndividualFamiliarRegistro(valor) {
+      const texto = String(valor || "").toLowerCase();
+      return texto.includes("individual") && texto.includes("familiar");
+    }
+
+    function resetCuentasMadresRegistro() {
+      cuentaMadreSeleccionadaRegistro = null;
+      cuentasMadresRegistroCache = [];
+
+      const box = document.getElementById("boxCuentasMadresRegistro");
+      const contenido = document.getElementById("contenidoCuentasMadresRegistro");
+      const resumen = document.getElementById("cuentaMadreSeleccionadaRegistroResumen");
+
+      if (box) box.style.display = "none";
+      if (contenido) contenido.innerHTML = "Selecciona primero un pedido individual unido a plan familiar.";
+      if (resumen) {
+        resumen.innerHTML = "";
+        resumen.style.display = "none";
+      }
+    }
+
+    function mostrarCuentasMadresSiAplicaRegistro(pedido) {
+      resetCuentasMadresRegistro();
+
+      const plan = normalizarPlanRegistro(pedido?.planRegistro || pedido?.plan || "");
+      const pais = primerValorRegistro(pedido?.paisRegistro || pedido?.pais || "");
+      const box = document.getElementById("boxCuentasMadresRegistro");
+      const contenido = document.getElementById("contenidoCuentasMadresRegistro");
+
+      if (!pedido || !esPlanIndividualFamiliarRegistro(plan)) return;
+
+      if (box) box.style.display = "block";
+      if (contenido) contenido.innerHTML = "Cargando cuentas madres disponibles...";
+
+      cargarCuentasMadresDisponiblesRegistro(pais);
+    }
+
+    function cargarCuentasMadresDisponiblesRegistro(pais) {
+      const contenido = document.getElementById("contenidoCuentasMadresRegistro");
+      if (!contenido) return;
+
+      enviarJSONP({
+        action: "listarCuentasMadresDisponibles",
+        tokenAdmin: adminToken,
+        pais: pais,
+        adminNumero: "62212956"
+      }, function(respuesta) {
+        if (respuesta.status !== "success") {
+          contenido.innerHTML = `<div class="mensaje error" style="display:block;">No se pudieron cargar las cuentas madres: ${escaparHTML(respuesta.message || "Intenta nuevamente.")}</div>`;
+          return;
+        }
+
+        cuentasMadresRegistroCache = respuesta.data || [];
+        renderizarCuentasMadresRegistro(cuentasMadresRegistroCache, pais);
+      });
+    }
+
+    function renderizarCuentasMadresRegistro(lista, pais) {
+      const contenido = document.getElementById("contenidoCuentasMadresRegistro");
+      if (!contenido) return;
+
+      if (!lista || lista.length === 0) {
+        contenido.innerHTML = `
+          <div class="cuentas-madres-alerta">
+            No hay cuentas madres disponibles para ${escaparHTML(pais || "este país")}.
+            Registra una cuenta Familiar a nombre del admin 62212956 o libera cupos.
+          </div>
+        `;
+        return;
+      }
+
+      const filas = lista.map((madre, index) => `
+        <tr>
+          <td><strong>${escaparHTML(madre.correoCuenta || madre.correo || "-")}</strong></td>
+          <td>${obtenerBanderaHTML(madre.pais || "")} ${escaparHTML(madre.pais || "-")}</td>
+          <td>${escaparHTML(madre.estado || "-")}</td>
+          <td><strong>${escaparHTML(String(madre.cuposUsados ?? 0))}/5</strong></td>
+          <td><strong>${escaparHTML(String(madre.cuposDisponibles ?? 0))}</strong></td>
+          <td><button type="button" class="btn-seleccionar-madre" data-madre-index="${index}">Seleccionar</button></td>
+        </tr>
+      `).join("");
+
+      contenido.innerHTML = `
+        <div class="tabla-cuentas-madres-wrapper">
+          <table class="tabla-cuentas-madres">
+            <thead>
+              <tr>
+                <th>Cuenta madre</th>
+                <th>País</th>
+                <th>Estado</th>
+                <th>Cupos usados</th>
+                <th>Cupos disponibles</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>${filas}</tbody>
+          </table>
+        </div>
+      `;
+
+      contenido.querySelectorAll(".btn-seleccionar-madre").forEach(btn => {
+        btn.addEventListener("click", function() {
+          const index = parseInt(this.dataset.madreIndex || "-1", 10);
+          const madre = cuentasMadresRegistroCache[index];
+          seleccionarCuentaMadreRegistro(madre);
+        });
+      });
+    }
+
+    function seleccionarCuentaMadreRegistro(madre) {
+      if (!madre) return;
+
+      cuentaMadreSeleccionadaRegistro = madre;
+
+      const resumen = document.getElementById("cuentaMadreSeleccionadaRegistroResumen");
+      if (resumen) {
+        resumen.innerHTML = `
+          ✅ <strong>Cuenta madre seleccionada:</strong> ${escaparHTML(madre.correoCuenta || madre.correo || "-")}<br>
+          País: ${escaparHTML(madre.pais || "-")} | Cupos usados: ${escaparHTML(String(madre.cuposUsados ?? 0))}/5 | Cupos disponibles: ${escaparHTML(String(madre.cuposDisponibles ?? 0))}
+        `;
+        resumen.style.display = "block";
+      }
+
+      document.querySelectorAll(".btn-seleccionar-madre").forEach(btn => btn.classList.remove("seleccionada"));
+      const idx = cuentasMadresRegistroCache.findIndex(x => String(x.correoCuenta || x.correo || "") === String(madre.correoCuenta || madre.correo || ""));
+      const btn = document.querySelector(`.btn-seleccionar-madre[data-madre-index="${idx}"]`);
+      if (btn) {
+        btn.textContent = "Seleccionada";
+        btn.classList.add("seleccionada");
+      }
+
+      mostrarMensaje(mensajeRegistro, "Cuenta madre seleccionada. Ahora coloca el correo individual que se entregará al cliente.", "exito");
+    }
+
+
     function cargarPedidosPendientesRegistro() {
       const contenedor = document.getElementById("contenidoPedidosPendientesRegistro");
       if (!contenedor || !adminAutenticado) return;
@@ -2956,6 +3200,7 @@
             resumen.innerHTML = "";
             resumen.style.display = "none";
           }
+          resetCuentasMadresRegistro();
         }
 
         cargarPedidosPendientesRegistro();
@@ -2967,6 +3212,7 @@
       if (!pedido) return;
 
       pedidoRegistroSeleccionado = pedido;
+      resetCuentasMadresRegistro();
 
       const cantidad = parseInt(pedido.cantidadSolicitada || pedido.cantidadCuentas || "1", 10) || 1;
       const entregadas = parseInt(pedido.entregadas || "0", 10) || 0;
@@ -3006,6 +3252,7 @@
           "Entrega actual: " + proxima + " de " + cantidad,
           "Ya entregadas: " + entregadas,
           "Restantes luego de esta entrega: " + Math.max(cantidad - proxima, 0),
+          esPlanIndividualFamiliarRegistro(pedido.planRegistro || pedido.plan || "") ? "Requiere seleccionar cuenta madre antes de guardar." : "",
           pedido.detalleDominio ? "Detalle: " + pedido.detalleDominio : ""
         ].filter(Boolean).join("\n");
       }
@@ -3020,6 +3267,8 @@
         `;
         resumen.style.display = "block";
       }
+
+      mostrarCuentasMadresSiAplicaRegistro(pedido);
 
       mostrarMensaje(mensajeRegistro, `Pedido cargado. Estás entregando la cuenta ${proxima} de ${cantidad}. Completa el correo de la cuenta, correo de banca y tarjeta.`, "exito");
       window.scrollTo({ top: formRegistro.offsetTop - 20, behavior: "smooth" });
@@ -3058,6 +3307,7 @@
       const fechaActivacionTexto = limpiarFechaISO(datosActivacion.fechaActivacion || "");
       const fechaProximoPagoTexto = limpiarFechaISO(datosActivacion.fechaVencimiento || "");
       const ultimos4 = datosActivacion.ultimos4Tarjeta || "-";
+      const cuentaMadre = datosActivacion.cuentaMadre || "";
 
       return `*CUENTAS PREMIUM BO*
 *CONFIRMACIÓN DE ACTIVACIÓN*
@@ -3072,7 +3322,8 @@ Hola ${nombre}, tu cuenta fue activada correctamente.
 *Garantía:* ${garantia}
 *Fecha de activación:* ${fechaActivacionTexto}
 *Fecha de próximo pago:* ${fechaProximoPagoTexto}
-*Últimos 4 dígitos de tarjeta:* ${ultimos4}
+*Últimos 4 dígitos de tarjeta:* ${ultimos4}${cuentaMadre ? `
+*Cuenta madre asignada:* ${cuentaMadre}` : ""}
 
 Gracias por tu compra.`;
     }
@@ -3121,10 +3372,22 @@ Gracias por tu compra.`;
         return;
       }
 
+      const requiereCuentaMadre = Boolean(pedidoRegistroSeleccionado?.codigoSeguimiento) && esPlanIndividualFamiliarRegistro(tipoCuenta);
+
+      if (requiereCuentaMadre && !cuentaMadreSeleccionadaRegistro) {
+        mostrarMensaje(mensajeRegistro, "Este pedido es Individual unido a plan familiar. Selecciona una cuenta madre disponible antes de guardar.", "error");
+        const boxMadre = document.getElementById("boxCuentasMadresRegistro");
+        if (boxMadre) boxMadre.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+
       const datos = {
         action: "registro",
         tokenAdmin: adminToken,
         codigoSolicitudRegistro: pedidoRegistroSeleccionado?.codigoSeguimiento || "",
+        cuentaMadre: cuentaMadreSeleccionadaRegistro?.correoCuenta || cuentaMadreSeleccionadaRegistro?.correo || "",
+        cuposUsadosCuentaMadre: cuentaMadreSeleccionadaRegistro?.cuposUsados ?? "",
+        cuposDisponiblesCuentaMadre: cuentaMadreSeleccionadaRegistro?.cuposDisponibles ?? "",
         correoCuenta,
         nombreCliente,
         numeroCliente,
@@ -3186,6 +3449,8 @@ Gracias por tu compra.`;
             resumenPedido.innerHTML = "";
             resumenPedido.style.display = "none";
           }
+
+          resetCuentasMadresRegistro();
 
           if (typeof cargarPedidosPendientesRegistro === "function") cargarPedidosPendientesRegistro();
         } else {
