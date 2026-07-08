@@ -3321,6 +3321,101 @@
       });
     }
 
+
+    function extraerCorreoCuentaActualPedidoRegistro(pedido, entregadas) {
+      pedido = pedido || {};
+      const correoDirecto = String(pedido.correoCuentaActual || pedido.correoActual || pedido.correoRegistro || "").trim();
+      if (correoDirecto && !correoDirecto.toLowerCase().includes("cuenta asignada")) {
+        return extraerCorreoDeTextoFrontend(correoDirecto);
+      }
+
+      try {
+        const cuentas = JSON.parse(pedido.cuentasDominio || "[]");
+        if (Array.isArray(cuentas) && cuentas.length > 0) {
+          const indice = Math.min(parseInt(entregadas || "0", 10) || 0, cuentas.length - 1);
+          const cuenta = cuentas[indice] || cuentas[0] || {};
+          return extraerCorreoDeTextoFrontend(cuenta.correo || cuenta.email || "");
+        }
+      } catch (error) {}
+
+      const correoPedido = String(pedido.correo || "").trim();
+      if (correoPedido && !correoPedido.toLowerCase().includes("cuenta asignada")) {
+        return extraerCorreoDeTextoFrontend(correoPedido);
+      }
+
+      return "";
+    }
+
+    function obtenerCuentaActualDesdePedidoRegistro(pedido, entregadas) {
+      pedido = pedido || {};
+      try {
+        const cuentas = JSON.parse(pedido.cuentasDominio || "[]");
+        if (Array.isArray(cuentas) && cuentas.length > 0) {
+          const indice = Math.min(parseInt(entregadas || "0", 10) || 0, cuentas.length - 1);
+          return cuentas[indice] || cuentas[0] || null;
+        }
+      } catch (error) {}
+      return null;
+    }
+
+    function construirDetalleCuentaActualPedidoRegistro(pedido, cantidad, proxima, entregadas) {
+      pedido = pedido || {};
+
+      const detalleBackend = String(
+        pedido.detalleCuentaActual ||
+        pedido.detallePedidoActual ||
+        pedido.detalleDominioActual ||
+        ""
+      ).trim();
+
+      if (detalleBackend) {
+        return detalleBackend;
+      }
+
+      const cuentaActual = obtenerCuentaActualDesdePedidoRegistro(pedido, entregadas);
+
+      if (cuentaActual) {
+        const correoActual = extraerCorreoDeTextoFrontend(cuentaActual.correo || cuentaActual.email || pedido.correoRegistro || pedido.correo || "");
+        const paisActual = cuentaActual.pais || pedido.paisRegistro || pedido.pais || "-";
+        const planActual = cuentaActual.plan || pedido.planRegistro || pedido.plan || "-";
+        const tiempoActual = cuentaActual.tiempo || pedido.tiempoRegistro || pedido.tiempo || "-";
+        const garantiaActual = cuentaActual.garantia || pedido.garantiaRegistro || pedido.garantia || "-";
+
+        return [
+          "Cuenta a entregar ahora: " + proxima + " de " + cantidad,
+          "Correo que dio el cliente: " + (correoActual || "-"),
+          "País: " + paisActual,
+          "Plan: " + planActual,
+          "Tiempo: " + tiempoActual + (String(tiempoActual).toLowerCase().includes("día") ? "" : " días"),
+          "Garantía: " + garantiaActual
+        ].join("\n");
+      }
+
+      const detalleCompleto = String(pedido.detalleDominio || "").trim();
+      if (detalleCompleto) {
+        const lineas = detalleCompleto.split(/\n+/).map(function(l) { return l.trim(); }).filter(Boolean);
+        const patron = new RegExp("^" + proxima + "\\s*[\\).:-]");
+        const lineaActual = lineas.find(function(linea) { return patron.test(linea); });
+        if (lineaActual) {
+          return [
+            "Cuenta a entregar ahora: " + proxima + " de " + cantidad,
+            lineaActual.replace(/^\d+\s*[\).:-]\s*/, "")
+          ].join("\n");
+        }
+      }
+
+      const correoActualFinal = extraerCorreoCuentaActualPedidoRegistro(pedido, entregadas);
+
+      return [
+        "Cuenta a entregar ahora: " + proxima + " de " + cantidad,
+        correoActualFinal ? "Correo que dio el cliente: " + correoActualFinal : "Correo que dio el cliente: -",
+        "País: " + (pedido.paisRegistro || pedido.pais || "-"),
+        "Plan: " + (pedido.planRegistro || pedido.plan || "-"),
+        "Tiempo: " + (pedido.tiempoRegistro || pedido.tiempo || "-") + " días",
+        "Garantía: " + (pedido.garantiaRegistro || pedido.garantia || "-")
+      ].join("\n");
+    }
+
     function seleccionarPedidoPendienteRegistro(pedido) {
       if (!pedido) return;
 
@@ -3363,7 +3458,7 @@
       if (tiempoInput) tiempoInput.value = primerValorRegistro(pedido.tiempoRegistro || pedido.tiempo || "");
       if (garantiaInput) garantiaInput.value = primerValorRegistro(pedido.garantiaRegistro || pedido.garantia || "");
 
-      const correoClienteProporcionado = String(pedido.correoRegistro || pedido.correo || "").trim();
+      const correoClienteProporcionado = extraerCorreoCuentaActualPedidoRegistro(pedido, entregadas);
       if (correoClienteProporcionadoInput) correoClienteProporcionadoInput.value = correoClienteProporcionado;
       if (logramosAccederInput) logramosAccederInput.value = "si";
       if (cuentaReemplazoInput) cuentaReemplazoInput.value = "";
@@ -3380,7 +3475,7 @@
           "Ya entregadas: " + entregadas,
           "Restantes luego de esta entrega: " + Math.max(cantidad - proxima, 0),
           esPlanIndividualFamiliarRegistro(pedido.planRegistro || pedido.plan || "") ? "Requiere seleccionar cuenta madre antes de guardar." : "",
-          pedido.detalleDominio ? "Detalle: " + pedido.detalleDominio : ""
+          construirDetalleCuentaActualPedidoRegistro(pedido, cantidad, proxima, entregadas)
         ].filter(Boolean).join("\n");
       }
 
@@ -3495,7 +3590,8 @@ Gracias por tu compra.`;
       ].filter(Boolean).join("\n\n");
       let correoBanca = document.getElementById("correoBanca").value.trim();
 
-      const esRegistroIndividualFamiliarActual = Boolean(pedidoRegistroSeleccionado?.codigoSeguimiento) && esPlanIndividualFamiliarRegistro(tipoCuenta);
+      const esPlanIndividualFamiliarActual = esPlanIndividualFamiliarRegistro(tipoCuenta);
+      const esRegistroIndividualFamiliarActual = Boolean(pedidoRegistroSeleccionado?.codigoSeguimiento) && esPlanIndividualFamiliarActual;
       const correoClienteProporcionadoRegistro = document.getElementById("correoClienteProporcionadoRegistro") ? document.getElementById("correoClienteProporcionadoRegistro").value.trim() : "";
       const logramosAccederCuenta = document.getElementById("logramosAccederRegistro") ? document.getElementById("logramosAccederRegistro").value : "si";
       const cuentaReemplazoRegistro = document.getElementById("cuentaReemplazoRegistro") ? document.getElementById("cuentaReemplazoRegistro").value.trim() : "";
@@ -3514,15 +3610,18 @@ Gracias por tu compra.`;
         correoCuenta = logramosAccederCuenta === "no" ? cuentaReemplazoRegistro : correoClienteProporcionadoRegistro;
       }
 
-      if (esRegistroIndividualFamiliarActual && cuentaMadreSeleccionadaRegistro) {
+      if (esPlanIndividualFamiliarActual && cuentaMadreSeleccionadaRegistro) {
         correoBanca = cuentaMadreSeleccionadaRegistro.correoBanca || cuentaMadreSeleccionadaRegistro.banca || "";
       }
 
       const tarjetaSegura = obtenerTarjetaSegura(numeroTarjetaInput);
       const fechasCalculadas = calcularFechasRegistro();
 
-      if (!nombreCliente || !numeroCliente || !tipoCuenta || !pais || !fechaAct || !tiempoSuscripcion || !garantia || (!esRegistroIndividualFamiliarActual && (!correoCuenta || !correoBanca))) {
-        mostrarMensaje(mensajeRegistro, "Completa todos los campos.", "error");
+      const faltaCorreoCuenta = !String(correoCuenta || "").trim();
+      const faltaBanca = !esPlanIndividualFamiliarActual && !String(correoBanca || "").trim();
+
+      if (!nombreCliente || !numeroCliente || !tipoCuenta || !pais || !fechaAct || !tiempoSuscripcion || !garantia || faltaCorreoCuenta || faltaBanca) {
+        mostrarMensaje(mensajeRegistro, "Completa todos los campos obligatorios.", "error");
         return;
       }
 
@@ -3531,12 +3630,12 @@ Gracias por tu compra.`;
         return;
       }
 
-      if (!esRegistroIndividualFamiliarActual && !tarjetaSegura) {
+      if (!esPlanIndividualFamiliarActual && !tarjetaSegura) {
         mostrarMensaje(mensajeRegistro, "Coloca un número de tarjeta válido.", "error");
         return;
       }
 
-      const requiereCuentaMadre = esRegistroIndividualFamiliarActual;
+      const requiereCuentaMadre = esPlanIndividualFamiliarActual;
 
       if (requiereCuentaMadre && !cuentaMadreSeleccionadaRegistro) {
         mostrarMensaje(mensajeRegistro, "Este pedido es Individual unido a plan familiar. Selecciona una cuenta madre disponible antes de guardar.", "error");
@@ -3568,9 +3667,9 @@ Gracias por tu compra.`;
         fechaVencimiento: fechasCalculadas.fechaVencimiento,
         diasRestantes: fechasCalculadas.diasRestantes,
         correoBanca,
-        tarjetaEnmascarada: esRegistroIndividualFamiliarActual ? (cuentaMadreSeleccionadaRegistro?.tarjetaEnmascarada || "") : tarjetaSegura.tarjetaEnmascarada,
-        ultimos4Tarjeta: esRegistroIndividualFamiliarActual ? (cuentaMadreSeleccionadaRegistro?.ultimos4Tarjeta || "") : tarjetaSegura.ultimos4Tarjeta,
-        paisBanca: esRegistroIndividualFamiliarActual ? (cuentaMadreSeleccionadaRegistro?.paisBanca || "") : ""
+        tarjetaEnmascarada: esPlanIndividualFamiliarActual ? (cuentaMadreSeleccionadaRegistro?.tarjetaEnmascarada || "") : tarjetaSegura.tarjetaEnmascarada,
+        ultimos4Tarjeta: esPlanIndividualFamiliarActual ? (cuentaMadreSeleccionadaRegistro?.ultimos4Tarjeta || "") : tarjetaSegura.ultimos4Tarjeta,
+        paisBanca: esPlanIndividualFamiliarActual ? (cuentaMadreSeleccionadaRegistro?.paisBanca || "") : ""
       };
 
       const ventanaWhatsappActivacion = datos.codigoSolicitudRegistro ? prepararVentanaWhatsapp() : null;
@@ -7255,12 +7354,14 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
     var tipo = q('tipoCuenta');
     var plan = tipo ? String(tipo.value || '').toLowerCase() : '';
     var pedidoSeleccionado = window.pedidoRegistroSeleccionado;
-    var esIndividualFamiliar = Boolean(pedidoSeleccionado && pedidoSeleccionado.codigoSeguimiento) && plan.includes('individual') && plan.includes('familiar');
+    var tienePedidoSeleccionado = Boolean(pedidoSeleccionado && pedidoSeleccionado.codigoSeguimiento);
+    var esPlanIndividualFamiliar = plan.includes('individual') && plan.includes('familiar');
+    var esIndividualFamiliar = tienePedidoSeleccionado && esPlanIndividualFamiliar;
 
     setCampoRegistro('correoCuenta', !esIndividualFamiliar);
-    setCampoRegistro('numeroTarjeta', !esIndividualFamiliar);
-    setCampoRegistro('correoBanca', !esIndividualFamiliar);
-    setNotaTarjeta(!esIndividualFamiliar);
+    setCampoRegistro('numeroTarjeta', !esPlanIndividualFamiliar);
+    setCampoRegistro('correoBanca', !esPlanIndividualFamiliar);
+    setNotaTarjeta(!esPlanIndividualFamiliar);
 
     var correo = q('correoCuenta');
     var banca = q('correoBanca');
@@ -7271,8 +7372,8 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
     if (grupoAcceso) grupoAcceso.style.display = esIndividualFamiliar ? 'block' : 'none';
     if (correoCliente) correoCliente.required = esIndividualFamiliar;
     if (correo) correo.required = !esIndividualFamiliar;
-    if (banca) banca.required = !esIndividualFamiliar;
-    if (tarjeta) tarjeta.required = !esIndividualFamiliar;
+    if (banca) banca.required = !esPlanIndividualFamiliar;
+    if (tarjeta) tarjeta.required = !esPlanIndividualFamiliar;
     window.actualizarVistaAccesoClienteRegistro();
 
     var detalles = q('comentariosRegistro');
@@ -7473,29 +7574,32 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
   function actualizarVistaRegistroSeguro() {
     var seleccionado = hayPedidoSeleccionadoRegistroSeguro();
     var tipoCuenta = q('tipoCuenta');
-    var esIndividualFamiliar = seleccionado && esPlanIndividualFamiliarSeguro(tipoCuenta ? tipoCuenta.value : '');
+    var esPlanIndividualFamiliar = esPlanIndividualFamiliarSeguro(tipoCuenta ? tipoCuenta.value : '');
+    var esIndividualFamiliar = seleccionado && esPlanIndividualFamiliar;
 
     activarFormularioRegistroPorPedido(seleccionado);
 
     if (!seleccionado) {
       setDisplayCampo('correoCuenta', true);
-      setDisplayBancaTarjeta(true);
+      setDisplayBancaTarjeta(!esPlanIndividualFamiliar);
       var grupoAccesoNo = q('grupoAccesoClienteRegistro');
       if (grupoAccesoNo) grupoAccesoNo.style.display = 'none';
-      var boxMadresNo = q('boxCuentasMadresRegistro');
-      if (boxMadresNo) boxMadresNo.style.display = 'none';
+      var bancaNo = q('correoBanca');
+      var tarjetaNo = q('numeroTarjeta');
+      if (bancaNo) bancaNo.required = !esPlanIndividualFamiliar;
+      if (tarjetaNo) tarjetaNo.required = !esPlanIndividualFamiliar;
       return;
     }
 
     setDisplayCampo('correoCuenta', !esIndividualFamiliar);
-    setDisplayBancaTarjeta(!esIndividualFamiliar);
+    setDisplayBancaTarjeta(!esPlanIndividualFamiliar);
 
     var correoCuenta = q('correoCuenta');
     var banca = q('correoBanca');
     var tarjeta = q('numeroTarjeta');
     if (correoCuenta) correoCuenta.required = !esIndividualFamiliar;
-    if (banca) banca.required = !esIndividualFamiliar;
-    if (tarjeta) tarjeta.required = !esIndividualFamiliar;
+    if (banca) banca.required = !esPlanIndividualFamiliar;
+    if (tarjeta) tarjeta.required = !esPlanIndividualFamiliar;
 
     var grupoAcceso = q('grupoAccesoClienteRegistro');
     if (grupoAcceso) grupoAcceso.style.display = esIndividualFamiliar ? 'block' : 'none';
