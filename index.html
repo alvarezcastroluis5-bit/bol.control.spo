@@ -1329,7 +1329,7 @@
     .tabla-pedidos-pendientes {
       width: 100%;
       border-collapse: collapse;
-      min-width: 920px;
+      min-width: 1080px;
       color: #fff;
       font-size: 13px;
     }
@@ -1357,13 +1357,32 @@
       background: rgba(76,255,155,0.08);
     }
 
-    .btn-usar-pedido {
+    .btn-usar-pedido,
+    .btn-eliminar-pedido {
       width: auto;
       padding: 9px 13px;
       border-radius: 10px;
       font-size: 13px;
       margin: 0;
       white-space: nowrap;
+    }
+
+    .acciones-pedido-pendiente {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+      flex-wrap: nowrap;
+    }
+
+    .btn-eliminar-pedido {
+      background: linear-gradient(135deg, #ef4444, #b91c1c) !important;
+      color: #fff !important;
+      border: 0 !important;
+      box-shadow: 0 6px 14px rgba(239, 68, 68, 0.25);
+    }
+
+    .btn-eliminar-pedido:hover {
+      filter: brightness(1.08);
     }
 
     .pedido-seleccionado-registro {
@@ -2839,19 +2858,33 @@
         return;
       }
 
-      const filas = lista.map((pedido, index) => `
-        <tr>
-          <td><strong>${escaparHTML(pedido.codigoSeguimiento || "-")}</strong><br><small>${escaparHTML(pedido.estado || "Pendiente")}</small></td>
-          <td>${escaparHTML(pedido.fechaSolicitud || "-")}<br><small>${escaparHTML(pedido.horaSolicitud || pedido.horaPedido || "-")}</small></td>
-          <td>${escaparHTML(pedido.nombre || "-")}<br><small>${escaparHTML(pedido.numero || "-")}</small></td>
-          <td>${escaparHTML(pedido.tipoCuentaNueva || pedido.tipoSolicitud || "-")}<br><small>Cantidad: ${escaparHTML(pedido.cantidadCuentas || "1")}</small></td>
-          <td>${escaparHTML(pedido.paisRegistro || pedido.pais || "-")}</td>
-          <td>${escaparHTML(pedido.planRegistro || pedido.plan || "-")}</td>
-          <td>${escaparHTML(pedido.tiempoRegistro || pedido.tiempo || "-")} días</td>
-          <td>${escaparHTML(pedido.garantiaRegistro || pedido.garantia || "-")}</td>
-          <td><button type="button" class="enviar btn-usar-pedido" data-pedido-index="${index}">Usar</button></td>
-        </tr>
-      `).join("");
+      const filas = lista.map((pedido, index) => {
+        const cantidad = parseInt(pedido.cantidadSolicitada || pedido.cantidadCuentas || "1", 10) || 1;
+        const entregadas = parseInt(pedido.entregadas || "0", 10) || 0;
+        const restantes = Math.max(parseInt(pedido.restantes || (cantidad - entregadas), 10) || 0, 0);
+        const proxima = parseInt(pedido.proximaEntrega || (entregadas + 1), 10) || 1;
+        const textoEntrega = `Entrega ${proxima} de ${cantidad}`;
+
+        return `
+          <tr>
+            <td><strong>${escaparHTML(pedido.codigoSeguimiento || "-")}</strong><br><small>${escaparHTML(pedido.estado || "Pendiente")}</small></td>
+            <td>${escaparHTML(pedido.fechaSolicitud || "-")}<br><small>${escaparHTML(pedido.horaSolicitud || pedido.horaPedido || "-")}</small></td>
+            <td>${escaparHTML(pedido.nombre || "-")}<br><small>${escaparHTML(pedido.numero || "-")}</small></td>
+            <td>${escaparHTML(pedido.tipoCuentaNueva || pedido.tipoSolicitud || "-")}<br><small>Cantidad: ${cantidad}</small></td>
+            <td><strong>${entregadas}/${cantidad}</strong><br><small>Faltan: ${restantes}</small></td>
+            <td>${escaparHTML(pedido.paisRegistro || pedido.pais || "-")}</td>
+            <td>${escaparHTML(pedido.planRegistro || pedido.plan || "-")}</td>
+            <td>${escaparHTML(pedido.tiempoRegistro || pedido.tiempo || "-")} días</td>
+            <td>${escaparHTML(pedido.garantiaRegistro || pedido.garantia || "-")}</td>
+            <td>
+              <div class="acciones-pedido-pendiente">
+                <button type="button" class="enviar btn-usar-pedido" data-pedido-index="${index}">Usar<br><small>${escaparHTML(textoEntrega)}</small></button>
+                <button type="button" class="btn-eliminar-pedido" data-pedido-index="${index}">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
 
       contenedor.innerHTML = `
         <div class="tabla-pedidos-wrapper">
@@ -2862,6 +2895,7 @@
                 <th>Fecha / hora</th>
                 <th>Cliente</th>
                 <th>Modalidad</th>
+                <th>Entregas</th>
                 <th>País</th>
                 <th>Plan</th>
                 <th>Tiempo</th>
@@ -2881,12 +2915,63 @@
           seleccionarPedidoPendienteRegistro(pedido);
         });
       });
+
+      contenedor.querySelectorAll(".btn-eliminar-pedido").forEach(btn => {
+        btn.addEventListener("click", function() {
+          const index = parseInt(this.dataset.pedidoIndex || "-1", 10);
+          const pedido = pedidosPendientesRegistroCache[index];
+          eliminarPedidoPendienteRegistro(pedido);
+        });
+      });
+    }
+
+    function eliminarPedidoPendienteRegistro(pedido) {
+      if (!pedido || !pedido.codigoSeguimiento) return;
+
+      const codigo = pedido.codigoSeguimiento || "";
+      const cliente = pedido.nombre || "";
+      const confirmado = confirm(`¿Marcar el pedido ${codigo} como completado eliminado?\n\nCliente: ${cliente}\n\nNo se borrará de Google Sheets, solo cambiará su estado para que ya no salga como pendiente.`);
+
+      if (!confirmado) return;
+
+      const contenedor = document.getElementById("contenidoPedidosPendientesRegistro");
+      if (contenedor) contenedor.innerHTML = "Actualizando pedido...";
+
+      enviarJSONP({
+        action: "eliminarPedidoPendiente",
+        tokenAdmin: adminToken,
+        codigoSeguimiento: codigo,
+        motivo: "Eliminado desde Registro por personal autorizado"
+      }, function(respuesta) {
+        if (respuesta.status !== "success") {
+          alert(respuesta.message || "No se pudo eliminar el pedido.");
+          cargarPedidosPendientesRegistro();
+          return;
+        }
+
+        if (pedidoRegistroSeleccionado && pedidoRegistroSeleccionado.codigoSeguimiento === codigo) {
+          pedidoRegistroSeleccionado = null;
+          const resumen = document.getElementById("pedidoSeleccionadoRegistroResumen");
+          if (resumen) {
+            resumen.innerHTML = "";
+            resumen.style.display = "none";
+          }
+        }
+
+        cargarPedidosPendientesRegistro();
+        mostrarMensaje(mensajeRegistro, "Pedido marcado como completado eliminado. No fue borrado de la base de datos.", "exito");
+      });
     }
 
     function seleccionarPedidoPendienteRegistro(pedido) {
       if (!pedido) return;
 
       pedidoRegistroSeleccionado = pedido;
+
+      const cantidad = parseInt(pedido.cantidadSolicitada || pedido.cantidadCuentas || "1", 10) || 1;
+      const entregadas = parseInt(pedido.entregadas || "0", 10) || 0;
+      const restantes = Math.max(parseInt(pedido.restantes || (cantidad - entregadas), 10) || 0, 0);
+      const proxima = parseInt(pedido.proximaEntrega || (entregadas + 1), 10) || 1;
 
       const nombreInput = document.getElementById("nombreCliente");
       const numeroInput = document.getElementById("numeroCliente");
@@ -2899,8 +2984,11 @@
 
       if (nombreInput) nombreInput.value = pedido.nombre || "";
       if (numeroInput) numeroInput.value = String(pedido.numero || "").replace(/\D/g, "");
-      if (correoInput && pedido.correoRegistro && !String(pedido.correoRegistro).toLowerCase().includes("cuenta asignada")) {
-        correoInput.value = pedido.correoRegistro;
+      if (correoInput) {
+        correoInput.value = "";
+        if (pedido.correoRegistro && !String(pedido.correoRegistro).toLowerCase().includes("cuenta asignada")) {
+          correoInput.value = pedido.correoRegistro;
+        }
       }
 
       if (tipoInput) tipoInput.value = normalizarPlanRegistro(pedido.planRegistro || pedido.plan || "");
@@ -2914,7 +3002,10 @@
         comentariosInput.value = [
           "Pedido: " + (pedido.codigoSeguimiento || "-"),
           "Modalidad: " + (pedido.tipoCuentaNueva || pedido.tipoSolicitud || "-"),
-          "Cantidad: " + (pedido.cantidadCuentas || "1"),
+          "Cantidad solicitada: " + cantidad,
+          "Entrega actual: " + proxima + " de " + cantidad,
+          "Ya entregadas: " + entregadas,
+          "Restantes luego de esta entrega: " + Math.max(cantidad - proxima, 0),
           pedido.detalleDominio ? "Detalle: " + pedido.detalleDominio : ""
         ].filter(Boolean).join("\n");
       }
@@ -2924,12 +3015,13 @@
         resumen.innerHTML = `
           ✅ <strong>Pedido seleccionado:</strong> ${escaparHTML(pedido.codigoSeguimiento || "-")}<br>
           Cliente: ${escaparHTML(pedido.nombre || "-")} | WhatsApp: ${escaparHTML(pedido.numero || "-")}<br>
-          Plan: ${escaparHTML(pedido.planRegistro || pedido.plan || "-")} | País: ${escaparHTML(pedido.paisRegistro || pedido.pais || "-")} | Tiempo: ${escaparHTML(pedido.tiempoRegistro || pedido.tiempo || "-")} días | Garantía: ${escaparHTML(pedido.garantiaRegistro || pedido.garantia || "-")}
+          Plan: ${escaparHTML(pedido.planRegistro || pedido.plan || "-")} | País: ${escaparHTML(pedido.paisRegistro || pedido.pais || "-")} | Tiempo: ${escaparHTML(pedido.tiempoRegistro || pedido.tiempo || "-")} días | Garantía: ${escaparHTML(pedido.garantiaRegistro || pedido.garantia || "-")}<br>
+          <strong>Entrega:</strong> ${proxima} de ${cantidad} | <strong>Ya entregadas:</strong> ${entregadas} | <strong>Faltan:</strong> ${restantes}
         `;
         resumen.style.display = "block";
       }
 
-      mostrarMensaje(mensajeRegistro, "Pedido cargado. Completa el correo de la cuenta, correo de banca y tarjeta.", "exito");
+      mostrarMensaje(mensajeRegistro, `Pedido cargado. Estás entregando la cuenta ${proxima} de ${cantidad}. Completa el correo de la cuenta, correo de banca y tarjeta.`, "exito");
       window.scrollTo({ top: formRegistro.offsetTop - 20, behavior: "smooth" });
     }
 
@@ -3074,7 +3166,13 @@ Gracias por tu compra.`;
           if (esActivacionDesdePedido) {
             const mensajeActivacion = crearMensajeConfirmacionActivacionRegistro(datos);
             abrirWhatsapp(datos.numeroCliente, mensajeActivacion, ventanaWhatsappActivacion);
-            mostrarMensaje(mensajeRegistro, "Registro guardado correctamente. Se abrió WhatsApp con la confirmación de activación.", "exito");
+
+            const entregaInfo = respuesta.entregaPedido || {};
+            const textoEntrega = entregaInfo.total
+              ? ` Entrega registrada ${entregaInfo.entregadas}/${entregaInfo.total}. ${entregaInfo.restantes > 0 ? "El pedido seguirá pendiente para entregar las cuentas restantes." : "Pedido completado."}`
+              : "";
+
+            mostrarMensaje(mensajeRegistro, "Registro guardado correctamente. Se abrió WhatsApp con la confirmación de activación." + textoEntrega, "exito");
           } else {
             mostrarMensaje(mensajeRegistro, "Registro guardado correctamente.", "exito");
           }
@@ -6035,12 +6133,106 @@ Mi cuenta está disponible para activación. Los accesos, si son necesarios, se 
 
           window.open("https://wa.me/" + NUMERO_SOPORTE_SOLICITUDES + "?text=" + encodeURIComponent(mensajeWhatsapp), "_blank");
 
+          const mensajeExitoPedido = "Solicitud enviada correctamente. Código de seguimiento: " + datos.codigoSeguimiento + ". Se abrió WhatsApp para enviar el comprobante. Ya puedes realizar otro pedido.";
+
+          limpiarFormularioPedidosDespuesWhatsapp();
+
           mostrarMensaje(
             mensajeSolicitud,
-            "Solicitud enviada correctamente. Código de seguimiento: " + datos.codigoSeguimiento + ". Nuestro personal se contactará contigo en caso de algún percance.",
+            mensajeExitoPedido,
             "exito"
           );
         });
+      }
+
+      function limpiarFormularioPedidosDespuesWhatsapp() {
+        // La web no puede confirmar si el usuario presionó Enviar dentro de WhatsApp.
+        // Por eso se limpia justo después de abrir WhatsApp con el mensaje preparado.
+        if (formSolicitudes) formSolicitudes.reset();
+
+        document.querySelectorAll('input[name="solTipoSolicitud"], input[name="solTipoCuentaNueva"]').forEach(function(input) {
+          input.checked = false;
+        });
+
+        if (solNombre) solNombre.value = "";
+        if (solNumero) solNumero.value = "";
+        if (solCorreo) solCorreo.value = "";
+        if (solPais) solPais.value = "";
+        if (solPlan) solPlan.innerHTML = '<option value="">Seleccionar plan</option>';
+        if (solTiempo) solTiempo.value = "";
+        if (solGarantia) solGarantia.value = "";
+        if (solMetodoPago) solMetodoPago.value = "";
+        if (solAccesoConfirmado) solAccesoConfirmado.checked = false;
+
+        resetearSelectorPais("solPais");
+
+        const cantidadAsignada = document.getElementById("cantidadCuentaAsignada");
+        const cantidadDominio = document.getElementById("cantidadDominioSolicitud");
+        const cantidadRenovacion = document.getElementById("cantidadRenovarSolicitud");
+        const resumenAsignada = document.getElementById("resumenCuentaAsignada");
+        const contenedorDominio = document.getElementById("contenedorCuentasDominio");
+        const contenedorRenovacion = document.getElementById("contenedorCorreosRenovacion");
+        const resultadoRenovacion = document.getElementById("resultadoCorreosRenovacion");
+        const totalDominio = document.getElementById("totalDominioPorCuenta");
+        const detalleTotalDominio = document.getElementById("detalleTotalDominioPorCuenta");
+        const valorTotalDominio = document.getElementById("valorTotalDominioPorCuenta");
+
+        if (cantidadAsignada) cantidadAsignada.value = "";
+        if (cantidadDominio) cantidadDominio.value = "";
+        if (cantidadRenovacion) cantidadRenovacion.value = "";
+        if (resumenAsignada) {
+          resumenAsignada.innerHTML = "";
+          resumenAsignada.style.display = "none";
+        }
+        if (contenedorDominio) contenedorDominio.innerHTML = "";
+        if (contenedorRenovacion) contenedorRenovacion.innerHTML = "";
+        if (resultadoRenovacion) resultadoRenovacion.innerHTML = "";
+        if (totalDominio) totalDominio.style.display = "none";
+        if (detalleTotalDominio) detalleTotalDominio.innerHTML = "";
+        if (valorTotalDominio) valorTotalDominio.textContent = "-";
+
+        cuentasRenovacionVerificadas = [];
+        totalRenovacionUsdActual = 0;
+        subtotalRenovacionUsdActual = 0;
+        descuentoRenovacionUsdActual = 0;
+        tipoCambioRenovacionActual = "";
+        montoBsRenovacionActual = "";
+
+        cuponAplicadoActual = null;
+        if (cuponDescuento) cuponDescuento.value = "";
+        mostrarMensajeCupon("", "");
+
+        solicitudPrecioActual = 0;
+        solicitudPrecioBaseActual = 0;
+        solicitudTipoCambioActual = "";
+        solicitudMontoBsActual = "";
+        solicitudSubtotalActual = 0;
+        solicitudDescuentoPorcentajeActual = 0;
+        solicitudDescuentoUsdActual = 0;
+
+        if (descripcionGarantia) {
+          descripcionGarantia.innerHTML = "";
+          descripcionGarantia.style.display = "none";
+        }
+        if (resumenPagoSolicitud) resumenPagoSolicitud.style.display = "none";
+        if (bloqueQrBolivia) bloqueQrBolivia.style.display = "none";
+        if (bloqueBinance) bloqueBinance.style.display = "none";
+        if (lineaTipoCambio) lineaTipoCambio.style.display = "none";
+        if (lineaMontoBs) lineaMontoBs.style.display = "none";
+        if (lineaSubtotalUsd) lineaSubtotalUsd.style.display = "none";
+        if (lineaDescuentoUsd) lineaDescuentoUsd.style.display = "none";
+
+        actualizarModoTipoSolicitud();
+        actualizarPagoFlujoSolicitudes();
+
+        if (btnEnviarSolicitud) {
+          btnEnviarSolicitud.disabled = false;
+          btnEnviarSolicitud.textContent = "Enviar solicitud y comprobante";
+        }
+
+        if (formSolicitudes && formSolicitudes.scrollIntoView) {
+          formSolicitudes.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       }
 
       function textoPagoComun(pago, metodoPago) {
