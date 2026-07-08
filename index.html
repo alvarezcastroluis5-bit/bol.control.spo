@@ -7248,5 +7248,306 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
   document.addEventListener('DOMContentLoaded', window.actualizarVistaRegistroIndividualFamiliar);
 })();
 </script>
+<script>
+/* =========================================================
+   FIX REGISTRO: no dejar datos viejos sin pedido seleccionado
+   - Si no hay pedidos pendientes, limpia y bloquea el formulario.
+   - El formulario se habilita recién cuando se presiona USAR.
+   - Para Individual unido a plan familiar muestra cuentas madres solo con pedido seleccionado.
+   - Limpia correos aunque vengan con contraseña al lado.
+========================================================= */
+(function() {
+  function q(id) { return document.getElementById(id); }
+
+  function extraerCorreoPrincipal(valor) {
+    var texto = String(valor || '').trim();
+    var match = texto.match(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i);
+    return match && match[0] ? match[0].trim().toLowerCase() : texto;
+  }
+
+  function esPlanIndividualFamiliarSeguro(valor) {
+    var texto = String(valor || '').toLowerCase();
+    return texto.includes('individual') && texto.includes('familiar');
+  }
+
+  function hayPedidoSeleccionadoRegistroSeguro() {
+    var pedido = window.pedidoRegistroSeleccionado;
+    return Boolean(pedido && (pedido.codigoSeguimiento || pedido.codigo || pedido.codigoPedido));
+  }
+
+  function limpiarValor(id) {
+    var el = q(id);
+    if (el) el.value = '';
+  }
+
+  function setDisabled(id, disabled) {
+    var el = q(id);
+    if (!el) return;
+    el.disabled = Boolean(disabled);
+    el.classList.toggle('campo-bloqueado-sin-pedido', Boolean(disabled));
+  }
+
+  function setDisplayCampo(id, mostrar) {
+    var el = q(id);
+    if (!el) return;
+    var label = document.querySelector('label[for="' + id + '"]');
+    el.style.display = mostrar ? '' : 'none';
+    if (label) label.style.display = mostrar ? '' : 'none';
+  }
+
+  function setDisplayBancaTarjeta(mostrar) {
+    setDisplayCampo('correoBanca', mostrar);
+    setDisplayCampo('numeroTarjeta', mostrar);
+    var notas = Array.from(document.querySelectorAll('.nota'));
+    notas.forEach(function(nota) {
+      var texto = String(nota.textContent || '').toLowerCase();
+      if (texto.includes('tarjeta') && texto.includes('primeros 6')) {
+        nota.style.display = mostrar ? '' : 'none';
+      }
+    });
+  }
+
+  function limpiarSeleccionPedidoRegistroSeguro() {
+    try { window.pedidoRegistroSeleccionado = null; } catch (e) {}
+    try { pedidoRegistroSeleccionado = null; } catch (e) {}
+    try { cuentaMadreSeleccionadaRegistro = null; } catch (e) {}
+
+    var resumenPedido = q('pedidoSeleccionadoRegistroResumen');
+    if (resumenPedido) {
+      resumenPedido.innerHTML = '';
+      resumenPedido.style.display = 'none';
+    }
+
+    var resumenMadre = q('cuentaMadreSeleccionadaRegistroResumen');
+    if (resumenMadre) {
+      resumenMadre.innerHTML = '';
+      resumenMadre.style.display = 'none';
+    }
+
+    var boxMadres = q('boxCuentasMadresRegistro');
+    if (boxMadres) boxMadres.style.display = 'none';
+
+    var contMadres = q('contenidoCuentasMadresRegistro');
+    if (contMadres) contMadres.innerHTML = 'Selecciona primero un pedido individual unido a plan familiar.';
+  }
+
+  function limpiarCamposDeRegistroPorPedido() {
+    var ids = [
+      'correoCuenta',
+      'nombreCliente',
+      'numeroCliente',
+      'tipoCuenta',
+      'pais',
+      'fechaActivacion',
+      'duracion',
+      'garantiaRegistro',
+      'correoClienteProporcionadoRegistro',
+      'logramosAccederRegistro',
+      'cuentaReemplazoRegistro',
+      'comentariosRegistro',
+      'comentariosOperadorRegistro',
+      'correoBanca',
+      'numeroTarjeta'
+    ];
+
+    ids.forEach(function(id) {
+      var el = q(id);
+      if (!el) return;
+      if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      else el.value = '';
+    });
+
+    if (typeof resetearSelectorPais === 'function') {
+      try { resetearSelectorPais('pais'); } catch (e) {}
+    } else {
+      var btnPais = document.querySelector('.selector-personalizado[data-input="pais"] .selector-btn');
+      if (btnPais) btnPais.innerHTML = '<span class="pais-con-bandera"><span class="flag flag-empty"></span> Seleccionar</span>';
+    }
+
+    var grupoAcceso = q('grupoAccesoClienteRegistro');
+    if (grupoAcceso) grupoAcceso.style.display = 'none';
+
+    var grupoReemplazo = q('grupoCuentaReemplazoRegistro');
+    if (grupoReemplazo) grupoReemplazo.style.display = 'none';
+
+    var detalles = q('comentariosRegistro');
+    if (detalles) detalles.placeholder = 'Aquí aparecerán los detalles del pedido seleccionado';
+  }
+
+  function activarFormularioRegistroPorPedido(activo) {
+    var ids = [
+      'correoCuenta',
+      'nombreCliente',
+      'numeroCliente',
+      'tipoCuenta',
+      'fechaActivacion',
+      'duracion',
+      'garantiaRegistro',
+      'correoClienteProporcionadoRegistro',
+      'logramosAccederRegistro',
+      'cuentaReemplazoRegistro',
+      'comentariosOperadorRegistro',
+      'correoBanca',
+      'numeroTarjeta'
+    ];
+
+    ids.forEach(function(id) { setDisabled(id, !activo); });
+
+    var selectorPais = document.querySelector('.selector-personalizado[data-input="pais"] .selector-btn');
+    if (selectorPais) selectorPais.disabled = !activo;
+
+    var btnGuardar = q('btnGuardar');
+    if (btnGuardar) {
+      btnGuardar.disabled = !activo;
+      btnGuardar.textContent = activo ? 'Guardar registro' : 'Selecciona un pedido para guardar';
+    }
+  }
+
+  function actualizarVistaRegistroSeguro() {
+    var seleccionado = hayPedidoSeleccionadoRegistroSeguro();
+    var tipoCuenta = q('tipoCuenta');
+    var esIndividualFamiliar = seleccionado && esPlanIndividualFamiliarSeguro(tipoCuenta ? tipoCuenta.value : '');
+
+    activarFormularioRegistroPorPedido(seleccionado);
+
+    if (!seleccionado) {
+      setDisplayCampo('correoCuenta', true);
+      setDisplayBancaTarjeta(true);
+      var grupoAccesoNo = q('grupoAccesoClienteRegistro');
+      if (grupoAccesoNo) grupoAccesoNo.style.display = 'none';
+      var boxMadresNo = q('boxCuentasMadresRegistro');
+      if (boxMadresNo) boxMadresNo.style.display = 'none';
+      return;
+    }
+
+    setDisplayCampo('correoCuenta', !esIndividualFamiliar);
+    setDisplayBancaTarjeta(!esIndividualFamiliar);
+
+    var correoCuenta = q('correoCuenta');
+    var banca = q('correoBanca');
+    var tarjeta = q('numeroTarjeta');
+    if (correoCuenta) correoCuenta.required = !esIndividualFamiliar;
+    if (banca) banca.required = !esIndividualFamiliar;
+    if (tarjeta) tarjeta.required = !esIndividualFamiliar;
+
+    var grupoAcceso = q('grupoAccesoClienteRegistro');
+    if (grupoAcceso) grupoAcceso.style.display = esIndividualFamiliar ? 'block' : 'none';
+
+    var correoCliente = q('correoClienteProporcionadoRegistro');
+    if (correoCliente) correoCliente.required = esIndividualFamiliar;
+
+    var boxMadres = q('boxCuentasMadresRegistro');
+    if (boxMadres) boxMadres.style.display = esIndividualFamiliar ? 'block' : 'none';
+
+    if (typeof window.actualizarVistaAccesoClienteRegistro === 'function') {
+      try { window.actualizarVistaAccesoClienteRegistro(); } catch (e) {}
+    }
+  }
+
+  function ponerModoSinPedido() {
+    limpiarSeleccionPedidoRegistroSeguro();
+    limpiarCamposDeRegistroPorPedido();
+    activarFormularioRegistroPorPedido(false);
+    actualizarVistaRegistroSeguro();
+  }
+
+  function normalizarCorreosAntesDeGuardar() {
+    ['correoCuenta', 'correoClienteProporcionadoRegistro', 'cuentaReemplazoRegistro'].forEach(function(id) {
+      var el = q(id);
+      if (el && el.value) el.value = extraerCorreoPrincipal(el.value);
+    });
+  }
+
+  function instalarFix() {
+    var contenedorPedidos = q('contenidoPedidosPendientesRegistro');
+    var form = q('formRegistro');
+
+    if (!contenedorPedidos || !form) return;
+
+    // Estado inicial: no permitir guardar hasta seleccionar un pedido.
+    if (!hayPedidoSeleccionadoRegistroSeguro()) {
+      activarFormularioRegistroPorPedido(false);
+    }
+
+    // Si la lista queda vacía, limpiar datos viejos.
+    var observer = new MutationObserver(function() {
+      var texto = String(contenedorPedidos.textContent || '').toLowerCase();
+      var hayBotonUsar = Boolean(contenedorPedidos.querySelector('.btn-usar-pedido'));
+
+      if (texto.includes('no hay pedidos pendientes') && !hayBotonUsar) {
+        setTimeout(ponerModoSinPedido, 60);
+      } else if (!hayPedidoSeleccionadoRegistroSeguro()) {
+        setTimeout(function() { activarFormularioRegistroPorPedido(false); }, 60);
+      }
+    });
+
+    observer.observe(contenedorPedidos, { childList: true, subtree: true, characterData: true });
+
+    // Al presionar Usar, habilitar y aplicar reglas del plan.
+    document.addEventListener('click', function(e) {
+      var usar = e.target && e.target.closest ? e.target.closest('.btn-usar-pedido') : null;
+      var eliminar = e.target && e.target.closest ? e.target.closest('.btn-eliminar-pedido') : null;
+
+      if (usar) {
+        setTimeout(function() {
+          activarFormularioRegistroPorPedido(true);
+          actualizarVistaRegistroSeguro();
+          normalizarCorreosAntesDeGuardar();
+        }, 250);
+      }
+
+      if (eliminar) {
+        setTimeout(function() {
+          if (!hayPedidoSeleccionadoRegistroSeguro()) ponerModoSinPedido();
+        }, 600);
+      }
+    }, true);
+
+    document.addEventListener('change', function(e) {
+      if (e.target && (e.target.id === 'tipoCuenta' || e.target.id === 'logramosAccederRegistro')) {
+        setTimeout(actualizarVistaRegistroSeguro, 80);
+      }
+    }, true);
+
+    ['correoCuenta', 'correoClienteProporcionadoRegistro', 'cuentaReemplazoRegistro'].forEach(function(id) {
+      var el = q(id);
+      if (el) {
+        el.addEventListener('blur', function() {
+          if (this.value) this.value = extraerCorreoPrincipal(this.value);
+        });
+      }
+    });
+
+    // Seguridad: no guardar activación si no se seleccionó pedido.
+    form.addEventListener('submit', function(e) {
+      normalizarCorreosAntesDeGuardar();
+
+      if (!hayPedidoSeleccionadoRegistroSeguro()) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        var mensaje = q('mensajeRegistro');
+        if (typeof mostrarMensaje === 'function' && mensaje) {
+          mostrarMensaje(mensaje, 'Primero selecciona un pedido pendiente con el botón USAR.', 'error');
+        } else {
+          alert('Primero selecciona un pedido pendiente con el botón USAR.');
+        }
+        return false;
+      }
+
+      actualizarVistaRegistroSeguro();
+    }, true);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', instalarFix);
+  } else {
+    instalarFix();
+  }
+
+  window.addEventListener('load', function() {
+    setTimeout(actualizarVistaRegistroSeguro, 300);
+  });
+})();
+</script>
 </body>
 </html>
