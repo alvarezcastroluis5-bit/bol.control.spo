@@ -1865,11 +1865,11 @@
         </div>
 
         <label for="comentariosRegistro">Detalles de pedido</label>
-        <textarea id="comentariosRegistro" name="comentarios_registro_no_autofill_9910" rows="5" placeholder="Aquí aparecerán los detalles del pedido seleccionado" autocomplete="off" readonly></textarea>
+        <textarea id="comentariosRegistro" name="comentarios_registro_no_autofill_9910" rows="3" placeholder="Aquí aparecerán los detalles del pedido seleccionado" autocomplete="off" readonly></textarea>
 
         <div id="grupoComentariosOperadorRegistro">
           <label for="comentariosOperadorRegistro">Comentarios operador</label>
-          <textarea id="comentariosOperadorRegistro" name="comentarios_operador_registro_no_autofill_9911" rows="3" placeholder="Escribe aquí observaciones internas del operador" autocomplete="off"></textarea>
+          <textarea id="comentariosOperadorRegistro" name="comentarios_operador_registro_no_autofill_9911" rows="2" placeholder="Escribe aquí observaciones internas del operador" autocomplete="off"></textarea>
         </div>
 
 
@@ -7605,5 +7605,207 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
   });
 })();
 </script>
+
+<script>
+/* =========================================================
+   AJUSTE FINAL REGISTRO MANUAL / PEDIDO
+   - Si no hay pedido seleccionado, no muestra Detalles de pedido.
+   - Comentarios operador queda más pequeño.
+   - Si se selecciona Individual unido a plan familiar, carga cuentas madres
+     también en registro manual.
+   - Registro manual no abre WhatsApp ni genera mensaje al cliente.
+========================================================= */
+(function() {
+  function q(id) { return document.getElementById(id); }
+
+  function texto(v) { return String(v || '').trim(); }
+
+  function esIndividualFamiliar(valor) {
+    var t = String(valor || '').toLowerCase();
+    return t.indexOf('individual') !== -1 && t.indexOf('familiar') !== -1;
+  }
+
+  function pedidoActual() {
+    try {
+      return window.pedidoRegistroSeleccionado || pedidoRegistroSeleccionado || null;
+    } catch (e) {
+      return window.pedidoRegistroSeleccionado || null;
+    }
+  }
+
+  function hayPedidoSeleccionado() {
+    var p = pedidoActual();
+    return Boolean(p && (p.codigoSeguimiento || p.codigo || p.codigoPedido));
+  }
+
+  function obtenerPaisRegistroFinal() {
+    var pais = q('pais');
+    if (pais && pais.value) return pais.value;
+    var btn = document.querySelector('.selector-personalizado[data-input="pais"] .selector-btn');
+    return btn ? texto(btn.textContent).replace('▼', '').trim() : '';
+  }
+
+  function mostrarOcultarDetallesPedidoFinal() {
+    var tienePedido = hayPedidoSeleccionado();
+    var detalle = q('comentariosRegistro');
+    var labelDetalle = document.querySelector('label[for="comentariosRegistro"]');
+
+    if (labelDetalle) labelDetalle.style.display = tienePedido ? '' : 'none';
+    if (detalle) {
+      detalle.style.display = tienePedido ? '' : 'none';
+      detalle.rows = tienePedido ? 3 : 1;
+      if (!tienePedido) detalle.value = '';
+    }
+
+    var grupoOperador = q('grupoComentariosOperadorRegistro');
+    var comentarioOperador = q('comentariosOperadorRegistro');
+    if (grupoOperador) grupoOperador.style.display = '';
+    if (comentarioOperador) comentarioOperador.rows = 2;
+  }
+
+  var ultimaCargaMadresFinal = '';
+  var timerMadresFinal = null;
+
+  function cargarMadresFinalSiAplica() {
+    var tipo = q('tipoCuenta');
+    var plan = tipo ? tipo.value : '';
+    var pais = obtenerPaisRegistroFinal();
+    var box = q('boxCuentasMadresRegistro');
+    var contenido = q('contenidoCuentasMadresRegistro');
+    var esIndividual = esIndividualFamiliar(plan);
+
+    if (!box || !contenido) return;
+
+    if (!esIndividual) {
+      box.style.display = 'none';
+      return;
+    }
+
+    box.style.display = 'block';
+
+    if (!pais || pais.toLowerCase().indexOf('seleccionar') !== -1) {
+      contenido.innerHTML = 'Selecciona primero el país para ver las cuentas madres disponibles.';
+      return;
+    }
+
+    var p = pedidoActual();
+    var firma = (p && (p.codigoSeguimiento || p.codigo || p.codigoPedido) ? (p.codigoSeguimiento || p.codigo || p.codigoPedido) : 'REGISTRO_MANUAL') + '|' + pais + '|' + plan;
+
+    if (ultimaCargaMadresFinal === firma && contenido.textContent && contenido.textContent.indexOf('Cargando') === -1) {
+      return;
+    }
+
+    clearTimeout(timerMadresFinal);
+    timerMadresFinal = setTimeout(function() {
+      ultimaCargaMadresFinal = firma;
+      box.style.display = 'block';
+      contenido.innerHTML = 'Cargando cuentas madres disponibles...';
+
+      if (typeof cargarCuentasMadresDisponiblesRegistro === 'function') {
+        try {
+          cargarCuentasMadresDisponiblesRegistro(pais);
+          return;
+        } catch (e) {}
+      }
+
+      if (typeof enviarJSONP === 'function' && typeof renderizarCuentasMadresRegistro === 'function') {
+        enviarJSONP({
+          action: 'listarCuentasMadresDisponibles',
+          tokenAdmin: (typeof adminToken !== 'undefined' ? adminToken : ''),
+          pais: pais,
+          adminNumero: '62212956'
+        }, function(resp) {
+          if (!resp || resp.status !== 'success') {
+            contenido.innerHTML = '<div class="mensaje error" style="display:block;">No se pudieron cargar las cuentas madres.</div>';
+            return;
+          }
+          try { cuentasMadresRegistroCache = resp.data || []; } catch(e) {}
+          renderizarCuentasMadresRegistro(resp.data || [], pais);
+        });
+      }
+    }, 120);
+  }
+
+  function ocultarMensajesManualFinal() {
+    if (hayPedidoSeleccionado()) return;
+
+    var voucher = q('voucherRegistroContainer');
+    if (voucher) voucher.innerHTML = '';
+
+    if (typeof voucherWhatsappBox !== 'undefined' && voucherWhatsappBox) {
+      voucherWhatsappBox.style.display = 'none';
+    }
+  }
+
+  function ajustarRegistroFinal() {
+    mostrarOcultarDetallesPedidoFinal();
+    cargarMadresFinalSiAplica();
+    ocultarMensajesManualFinal();
+  }
+
+  var anteriorActualizar = window.actualizarVistaRegistroIndividualFamiliar;
+  window.actualizarVistaRegistroIndividualFamiliar = function() {
+    if (typeof anteriorActualizar === 'function') {
+      try { anteriorActualizar.apply(this, arguments); } catch(e) {}
+    }
+    setTimeout(ajustarRegistroFinal, 20);
+  };
+
+  document.addEventListener('change', function(e) {
+    if (!e.target) return;
+    if (e.target.id === 'tipoCuenta' || e.target.id === 'pais' || e.target.id === 'duracion' || e.target.id === 'garantiaRegistro') {
+      ultimaCargaMadresFinal = '';
+      setTimeout(ajustarRegistroFinal, 80);
+    }
+  }, true);
+
+  document.addEventListener('click', function(e) {
+    var t = e.target;
+    if (!t) return;
+
+    if (
+      (t.closest && t.closest('.opcion-pais')) ||
+      (t.closest && t.closest('.btn-usar-pedido')) ||
+      (t.closest && t.closest('.btn-eliminar-pedido')) ||
+      (t.closest && t.closest('.selector-personalizado'))
+    ) {
+      ultimaCargaMadresFinal = '';
+      setTimeout(ajustarRegistroFinal, 200);
+    }
+  }, true);
+
+  document.addEventListener('submit', function(e) {
+    if (e.target && e.target.id === 'formRegistro' && !hayPedidoSeleccionado()) {
+      ocultarMensajesManualFinal();
+    }
+  }, true);
+
+  function instalarObserverFinal() {
+    var contenedor = q('contenidoPedidosPendientesRegistro');
+    if (!contenedor || typeof MutationObserver === 'undefined') return;
+
+    var obs = new MutationObserver(function() {
+      setTimeout(ajustarRegistroFinal, 120);
+    });
+
+    obs.observe(contenedor, { childList: true, subtree: true, characterData: true });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      instalarObserverFinal();
+      setTimeout(ajustarRegistroFinal, 250);
+    });
+  } else {
+    instalarObserverFinal();
+    setTimeout(ajustarRegistroFinal, 250);
+  }
+
+  window.addEventListener('load', function() {
+    setTimeout(ajustarRegistroFinal, 500);
+  });
+})();
+</script>
+
 </body>
 </html>
