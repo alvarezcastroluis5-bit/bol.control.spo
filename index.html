@@ -3634,9 +3634,19 @@ Gracias por tu compra.`;
         const card = document.createElement("div");
         card.className = "consulta-card";
 
+        const avisoCambioCuenta = item.tieneReemplazo ? `
+          <div class="nota-renovacion-consulta" style="margin-bottom:16px;">
+            SE TE DIO UN CAMBIO POR ESTA CUENTA:<br>
+            <strong>${escaparHTML(item.cuentaReemplazo || item.correoCuenta || "")}</strong><br>
+            <span style="font-size:14px;">Correo original: ${escaparHTML(item.correoCuentaOriginal || item.consultaRealizadaCon || "")}</span>
+          </div>
+        ` : "";
+
         card.innerHTML = `
           <div class="detalle-titulo">✨ Detalles de la cuenta</div>
           <div class="detalle-subtitulo">Información de la cuenta consultada</div>
+
+          ${avisoCambioCuenta}
 
           <p><strong>Correo de la cuenta:</strong> ${escaparHTML(item.correoCuenta)}</p>
           <p><strong>Nombre del cliente:</strong> ${escaparHTML(item.nombreCliente)}</p>
