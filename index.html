@@ -1872,8 +1872,8 @@
 
     <section id="seccionConsulta" class="seccion">
       <form id="formConsulta" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <label for="correoConsulta">Correo de la cuenta</label>
-        <input type="text" inputmode="email" id="correoConsulta" name="correo_consulta_no_autofill_3487" placeholder="ejemplo@gmail.com" autocomplete="new-password" required>
+        <label for="correoConsulta">Correo de la cuenta o código de seguimiento</label>
+        <input type="text" inputmode="email" id="correoConsulta" name="correo_consulta_no_autofill_3487" placeholder="correo@gmail.com o correo@gmail.com clave" autocomplete="new-password" required>
 
         <button type="submit" class="enviar" id="btnBuscar">Consultar</button>
       </form>
@@ -3572,10 +3572,18 @@ Gracias por tu compra.`;
       });
     });
 
+
+    function extraerCorreoDeTextoFrontend(valor) {
+      const texto = String(valor || "").trim();
+      const encontrado = texto.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}/);
+      return encontrado ? encontrado[0].trim().toLowerCase() : texto.toLowerCase();
+    }
+
     formConsulta.addEventListener("submit", function(e) {
       e.preventDefault();
 
-      const correoConsulta = document.getElementById("correoConsulta").value.trim();
+      const valorConsultaOriginal = document.getElementById("correoConsulta").value.trim();
+      const correoConsulta = extraerCorreoDeTextoFrontend(valorConsultaOriginal);
 
       if (!correoConsulta) {
         mostrarMensaje(mensajeConsulta, "Coloca el correo para consultar.", "error");
@@ -6700,7 +6708,7 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
         if (labelConsulta) {
           labelConsulta.textContent = "Correo de la cuenta o código de seguimiento";
         }
-        correoConsultaInput.placeholder = "correo@gmail.com o SPO-20260623-1234";
+        correoConsultaInput.placeholder = "correo@gmail.com, correo@gmail.com clave o SPO-20260623-1234";
 
         formConsultaActual.addEventListener("submit", function(e) {
           const valor = correoConsultaInput.value.trim();
