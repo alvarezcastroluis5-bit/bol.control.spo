@@ -3531,7 +3531,27 @@
       const cuentaReemplazo = logramosAcceder === "No"
         ? (datosActivacion.cuentaReemplazo || datosActivacion.correoCuenta || "-")
         : "No aplica";
-      const notasOperador = datosActivacion.comentariosOperador || "-";
+      let notasOperador = String(datosActivacion.comentariosOperador || "").trim();
+
+      // Respaldo: toma el comentario directamente del campo visible del operador.
+      // Esto evita que el mensaje de WhatsApp salga sin la nota cuando el dato no llegó al objeto.
+      if (!notasOperador) {
+        const campoNotasOperador = document.getElementById("comentariosOperadorRegistro");
+        if (campoNotasOperador) {
+          notasOperador = String(campoNotasOperador.value || "").trim();
+        }
+      }
+
+      // Respaldo adicional: si el comentario fue unido dentro de "comentarios", lo extrae de ahí.
+      if (!notasOperador && datosActivacion.comentarios) {
+        const textoComentarios = String(datosActivacion.comentarios || "");
+        const matchNotas = textoComentarios.match(/Comentarios operador:\s*([\s\S]*)/i);
+        if (matchNotas && matchNotas[1]) {
+          notasOperador = matchNotas[1].trim();
+        }
+      }
+
+      if (!notasOperador) notasOperador = "Sin notas";
       const pais = datosActivacion.pais || "-";
       const plan = datosActivacion.tipoCuenta || "-";
       const tiempoBase = String(datosActivacion.tiempoSuscripcion || "-").trim();
@@ -3549,7 +3569,7 @@ Hola ${nombre}, tu cuenta fue activada correctamente.
 *Correo de la cuenta proporcionada:* ${correoProporcionado}
 Logramos acceder a tu cuenta: ${logramosAcceder}
 Cuenta de reemplazo: ${cuentaReemplazo}
-*Notas del operador:* ${notasOperador}
+Comentarios operador: ${notasOperador}
 *País:* ${pais}
 *Plan:* ${plan}
 *Tiempo:* ${tiempo}
