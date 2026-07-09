@@ -1892,7 +1892,7 @@
     <section id="seccionConsulta" class="seccion">
       <form id="formConsulta" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <label for="correoConsulta">Correo de la cuenta o código de seguimiento</label>
-        <input type="text" inputmode="email" id="correoConsulta" name="correo_consulta_no_autofill_3487" placeholder="correo@gmail.com o correo@gmail.com clave" autocomplete="new-password" required>
+        <input type="text" inputmode="email" id="correoConsulta" name="correo_consulta_no_autofill_3487" placeholder="correo@gmail.com o SPO-20260709-1234" autocomplete="new-password" required>
 
         <button type="submit" class="enviar" id="btnBuscar">Consultar</button>
       </form>
@@ -3826,6 +3826,18 @@ Gracias por tu compra.`;
           </div>
         ` : "";
 
+        const comentariosConsulta = String(
+          item.comentariosOperador ||
+          item.notaOperador ||
+          item.comentarios ||
+          item.observaciones ||
+          ""
+        ).trim();
+
+        const bloqueComentariosOperador = comentariosConsulta ? `
+          <p><strong>Comentarios operador:</strong> ${escaparHTML(comentariosConsulta)}</p>
+        ` : "";
+
         card.innerHTML = `
           <div class="detalle-titulo">✨ Detalles de la cuenta</div>
           <div class="detalle-subtitulo">Información de la cuenta consultada</div>
@@ -3837,6 +3849,7 @@ Gracias por tu compra.`;
           <p><strong>Estado:</strong> <span class="${estadoClase}">${escaparHTML(item.estado)}</span></p>
           <p><strong>Tipo de cuenta:</strong> ${escaparHTML(item.tipoCuenta)}</p>
           <p><strong>Tipo de garantía:</strong> ${escaparHTML(item.garantia || "-")}</p>
+          ${bloqueComentariosOperador}
           <p><strong>Fecha de activación:</strong> ${escaparHTML(item.fechaActivacion)}</p>
           <p><strong>Fecha de renovación:</strong> ${escaparHTML(item.fechaVencimiento)}</p>
 
@@ -6902,7 +6915,7 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
         if (labelConsulta) {
           labelConsulta.textContent = "Correo de la cuenta o código de seguimiento";
         }
-        correoConsultaInput.placeholder = "correo@gmail.com, correo@gmail.com clave o SPO-20260623-1234";
+        correoConsultaInput.placeholder = "correo@gmail.com o SPO-20260709-1234";
 
         formConsultaActual.addEventListener("submit", function(e) {
           const valor = correoConsultaInput.value.trim();
