@@ -6945,11 +6945,16 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
           const item = respuesta.data;
           mostrarMensaje(mensajeConsulta, "Solicitud encontrada correctamente.", "exito");
 
+          const cuentaActivada = obtenerCuentaActivadaSeguimiento(item);
+          const notaOperador = obtenerNotaOperadorSeguimiento(item);
+          const tiempoLimpio = formatearTiempoSeguimiento(item.tiempo || "-");
+
           const card = document.createElement("div");
           card.className = "consulta-card";
           card.innerHTML = `
             <div class="detalle-titulo">📌 Seguimiento de solicitud</div>
             <p><strong>Código:</strong> ${escaparHTML(item.codigoSeguimiento || "-")}</p>
+            <p><strong>Detalle:</strong></p>
             <p><strong>Tipo:</strong> ${escaparHTML(item.tipoSolicitud || "-")}</p>
             <p><strong>Modalidad:</strong> ${escaparHTML(item.tipoCuentaNueva || "-")}</p>
             <p><strong>Cantidad:</strong> ${escaparHTML(item.cantidadCuentas || "-")}</p>
@@ -6958,17 +6963,61 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
             <p><strong>Correo / cuentas:</strong> ${escaparHTML(item.correo || "-")}</p>
             <p><strong>País:</strong> ${escaparHTML(item.pais || "-")}</p>
             <p><strong>Plan:</strong> ${escaparHTML(item.plan || "-")}</p>
-            <p><strong>Tiempo:</strong> ${escaparHTML(item.tiempo || "-")} días</p>
+            <p><strong>Tiempo:</strong> ${escaparHTML(tiempoLimpio)}</p>
             <p><strong>Garantía:</strong> ${escaparHTML(item.garantia || "-")}</p>
-            <p><strong>Total:</strong> ${escaparHTML(item.precioUsd || "-")} USDT</p>
+            <p><strong>Total:</strong> ${escaparHTML(formatearTotalSeguimiento(item.precioUsd))}</p>
             <p><strong>Monto Bs:</strong> ${escaparHTML(item.montoBs || "-")}</p>
             <p><strong>Estado:</strong> <span class="estado-activo">${escaparHTML(item.estado || "Pendiente")}</span></p>
-            ${item.detalleDominio ? `<p><strong>Detalle:</strong><br>${escaparHTML(item.detalleDominio).replaceAll("\n", "<br>")}</p>` : ""}
-            ${item.detalleRenovacion ? `<p><strong>Detalle renovación:</strong><br>${escaparHTML(item.detalleRenovacion).replaceAll("\n", "<br>")}</p>` : ""}
-            <p><strong>Nota:</strong> Nuestro personal se contactará contigo en caso de algún percance.</p>
+            <p><strong>Cuenta activada:</strong> ${escaparHTML(cuentaActivada || "-")}</p>
+            <p><strong>Nota:</strong> ${escaparHTML(notaOperador || "-")}</p>
           `;
           resultadoConsulta.appendChild(card);
         });
+      }
+
+      function formatearTiempoSeguimiento(valor) {
+        const texto = String(valor || "").trim();
+        if (!texto || texto === "-") return "-";
+        if (/día|dias|días/i.test(texto)) return texto;
+        return texto + " días";
+      }
+
+      function formatearTotalSeguimiento(valor) {
+        const texto = String(valor || "").trim();
+        if (!texto || texto === "-") return "-";
+        if (/USDT/i.test(texto)) return texto;
+        return texto + " USDT";
+      }
+
+      function obtenerCuentaActivadaSeguimiento(item) {
+        item = item || {};
+
+        if (item.cuentaActivada) return String(item.cuentaActivada).trim();
+        if (item.correoCuentaActivada) return String(item.correoCuentaActivada).trim();
+        if (item.correoCuentaEntregada) return String(item.correoCuentaEntregada).trim();
+
+        const textos = [item.detalleDominio, item.detalleRenovacion, item.detalleEntrega, item.detalle].filter(Boolean).join("\n");
+        const match = textos.match(/Cuenta activada:\s*([^|\n]+)/i);
+        if (match && match[1]) return match[1].trim();
+
+        return "";
+      }
+
+      function obtenerNotaOperadorSeguimiento(item) {
+        item = item || {};
+
+        if (item.notaOperador) return String(item.notaOperador).trim();
+        if (item.comentariosOperador) return String(item.comentariosOperador).trim();
+        if (item.nota) return String(item.nota).trim();
+
+        const textos = [item.detalleDominio, item.detalleRenovacion, item.detalleEntrega, item.detalle].filter(Boolean).join("\n");
+        let match = textos.match(/Comentarios operador:\s*([^\n]+)/i);
+        if (match && match[1]) return match[1].trim();
+
+        match = textos.match(/Nota:\s*([^\n]+)/i);
+        if (match && match[1]) return match[1].trim();
+
+        return "";
       }
 
       function textoAvisoFamiliarNormalizado(valor) {
