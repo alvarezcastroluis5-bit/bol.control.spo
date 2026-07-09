@@ -3528,10 +3528,14 @@
       const codigo = datosActivacion.codigoSolicitudRegistro || "-";
       const correoProporcionado = datosActivacion.correoClienteProporcionado || datosActivacion.correoCuenta || "-";
       const logramosAcceder = String(datosActivacion.logramosAccederCuenta || "si").toLowerCase() === "no" ? "No" : "Sí";
-      const cuentaReemplazo = datosActivacion.cuentaReemplazo || (logramosAcceder === "No" ? datosActivacion.correoCuenta : "-") || "-";
+      const cuentaReemplazo = logramosAcceder === "No"
+        ? (datosActivacion.cuentaReemplazo || datosActivacion.correoCuenta || "-")
+        : "No aplica";
+      const notasOperador = datosActivacion.comentariosOperador || "-";
       const pais = datosActivacion.pais || "-";
       const plan = datosActivacion.tipoCuenta || "-";
-      const tiempo = datosActivacion.tiempoSuscripcion || "-";
+      const tiempoBase = String(datosActivacion.tiempoSuscripcion || "-").trim();
+      const tiempo = tiempoBase === "-" ? "-" : (/d[ií]a/i.test(tiempoBase) ? tiempoBase : tiempoBase + " días");
       const garantia = datosActivacion.garantia || "-";
       const fechaActivacionTexto = limpiarFechaISO(datosActivacion.fechaActivacion || "");
       const fechaProximoPagoTexto = limpiarFechaISO(datosActivacion.fechaVencimiento || "");
@@ -3544,17 +3548,17 @@ Hola ${nombre}, tu cuenta fue activada correctamente.
 *Código de pedido:* ${codigo}
 *Correo de la cuenta proporcionada:* ${correoProporcionado}
 Logramos acceder a tu cuenta: ${logramosAcceder}
-Cuenta de reemplazo: ${cuentaReemplazo || "-"}
+Cuenta de reemplazo: ${cuentaReemplazo}
+*Notas del operador:* ${notasOperador}
 *País:* ${pais}
 *Plan:* ${plan}
-*Tiempo:* ${tiempo} días
+*Tiempo:* ${tiempo}
 *Garantía:* ${garantia}
 *Fecha de activación:* ${fechaActivacionTexto}
 *Fecha de próximo pago:* ${fechaProximoPagoTexto}
 
 Gracias por tu compra.`;
     }
-
 
 
     mostrarCamposRegistroPedido(true);
