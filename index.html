@@ -7010,14 +7010,11 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
             const cuentaActivada = entrega.correoCuentaEntregada || entrega.cuentaReemplazo || "-";
             const comentario = entrega.comentariosOperador || "-";
             const cuentaOriginal = entrega.correoProporcionado || "";
-            const cuentaMadre = entrega.correoCuentaMadre || "";
-
             return `
               <div style="margin-top:14px;padding:12px;border:1px solid rgba(80,255,160,.35);border-radius:14px;background:rgba(0,0,0,.14);">
                 <p><strong>Entrega ${escaparHTML(numero)} de ${escaparHTML(total)}:</strong></p>
                 ${cuentaOriginal ? `<p><strong>Correo proporcionado ${escaparHTML(numero)}:</strong> ${escaparHTML(cuentaOriginal)}</p>` : ""}
                 <p><strong>Cuenta activada ${escaparHTML(numero)}:</strong> ${escaparHTML(cuentaActivada)}</p>
-                ${cuentaMadre ? `<p><strong>Cuenta madre ${escaparHTML(numero)}:</strong> ${escaparHTML(cuentaMadre)}</p>` : ""}
                 <p><strong>Comentarios operador ${escaparHTML(numero)}:</strong> ${escaparHTML(comentario)}</p>
               </div>
             `;
