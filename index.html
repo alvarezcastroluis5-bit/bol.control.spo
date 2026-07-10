@@ -3524,17 +3524,25 @@
     function crearMensajeConfirmacionActivacionRegistro(datosActivacion) {
       datosActivacion = datosActivacion || {};
 
-      const nombre = datosActivacion.nombreCliente || "cliente";
-      const codigo = datosActivacion.codigoSolicitudRegistro || "-";
-      const correoProporcionado = datosActivacion.correoClienteProporcionado || datosActivacion.correoCuenta || "-";
+      const limpiarValorMensaje = function(valor, defecto = "-") {
+        const texto = String(valor || "").trim();
+        if (!texto || texto.toLowerCase() === "undefined" || texto.toLowerCase() === "null") return defecto;
+        return texto;
+      };
+
+      const nombre = limpiarValorMensaje(datosActivacion.nombreCliente, "cliente");
+      const codigo = limpiarValorMensaje(datosActivacion.codigoSolicitudRegistro);
+      const correoProporcionado = limpiarValorMensaje(
+        datosActivacion.correoClienteProporcionado || datosActivacion.correoOriginalCliente || datosActivacion.correoCuenta
+      );
       const logramosAcceder = String(datosActivacion.logramosAccederCuenta || "si").toLowerCase() === "no" ? "No" : "Sí";
       const cuentaReemplazo = logramosAcceder === "No"
-        ? (datosActivacion.cuentaReemplazo || datosActivacion.correoCuenta || "-")
+        ? limpiarValorMensaje(datosActivacion.cuentaReemplazo || datosActivacion.correoCuenta)
         : "No aplica";
+
       let notasOperador = String(datosActivacion.comentariosOperador || "").trim();
 
-      // Respaldo: toma el comentario directamente del campo visible del operador.
-      // Esto evita que el mensaje de WhatsApp salga sin la nota cuando el dato no llegó al objeto.
+      // Toma el comentario directamente del campo visible del operador.
       if (!notasOperador) {
         const campoNotasOperador = document.getElementById("comentariosOperadorRegistro");
         if (campoNotasOperador) {
@@ -3542,7 +3550,7 @@
         }
       }
 
-      // Respaldo adicional: si el comentario fue unido dentro de "comentarios", lo extrae de ahí.
+      // Si el comentario quedó unido dentro de comentarios, lo extrae.
       if (!notasOperador && datosActivacion.comentarios) {
         const textoComentarios = String(datosActivacion.comentarios || "");
         const matchNotas = textoComentarios.match(/Comentarios operador:\s*([\s\S]*)/i);
@@ -3551,14 +3559,15 @@
         }
       }
 
-      if (!notasOperador) notasOperador = "Sin notas";
-      const pais = datosActivacion.pais || "-";
-      const plan = datosActivacion.tipoCuenta || "-";
-      const tiempoBase = String(datosActivacion.tiempoSuscripcion || "-").trim();
+      if (!notasOperador) notasOperador = "Sin comentarios";
+
+      const pais = limpiarValorMensaje(datosActivacion.pais);
+      const plan = limpiarValorMensaje(datosActivacion.tipoCuenta);
+      const tiempoBase = limpiarValorMensaje(datosActivacion.tiempoSuscripcion);
       const tiempo = tiempoBase === "-" ? "-" : (/d[ií]a/i.test(tiempoBase) ? tiempoBase : tiempoBase + " días");
-      const garantia = datosActivacion.garantia || "-";
-      const fechaActivacionTexto = limpiarFechaISO(datosActivacion.fechaActivacion || "");
-      const fechaProximoPagoTexto = limpiarFechaISO(datosActivacion.fechaVencimiento || "");
+      const garantia = limpiarValorMensaje(datosActivacion.garantia);
+      const fechaActivacionTexto = limpiarValorMensaje(limpiarFechaISO(datosActivacion.fechaActivacion || ""));
+      const fechaProximoPagoTexto = limpiarValorMensaje(limpiarFechaISO(datosActivacion.fechaVencimiento || ""));
 
       return `*CUENTAS PREMIUM BO*
 *CONFIRMACIÓN DE ACTIVACIÓN*
@@ -3566,10 +3575,13 @@
 Hola ${nombre}, tu cuenta fue activada correctamente.
 
 *Código de pedido:* ${codigo}
-*Correo de la cuenta proporcionada:* ${correoProporcionado}
+*Correo de la cuenta proporcionada:*
+${correoProporcionado}
 Logramos acceder a tu cuenta: ${logramosAcceder}
-Cuenta de reemplazo: ${cuentaReemplazo}
-Comentarios operador: ${notasOperador}
+Cuenta de reemplazo:
+${cuentaReemplazo}
+Comentarios operador:
+${notasOperador}
 *País:* ${pais}
 *Plan:* ${plan}
 *Tiempo:* ${tiempo}
@@ -6958,9 +6970,8 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
           const item = respuesta.data;
           mostrarMensaje(mensajeConsulta, "Solicitud encontrada correctamente.", "exito");
 
-          const cuentaActivada = obtenerCuentaActivadaSeguimiento(item);
-          const notaOperador = obtenerNotaOperadorSeguimiento(item);
           const tiempoLimpio = formatearTiempoSeguimiento(item.tiempo || "-");
+          const bloqueEntregas = crearBloqueEntregasSeguimiento(item);
 
           const card = document.createElement("div");
           card.className = "consulta-card";
@@ -6981,11 +6992,45 @@ Nuestro personal se contactará conmigo en caso de algún percance.`;
             <p><strong>Total:</strong> ${escaparHTML(formatearTotalSeguimiento(item.precioUsd))}</p>
             <p><strong>Monto Bs:</strong> ${escaparHTML(item.montoBs || "-")}</p>
             <p><strong>Estado:</strong> <span class="estado-activo">${escaparHTML(item.estado || "Pendiente")}</span></p>
-            <p><strong>Cuenta activada:</strong> ${escaparHTML(cuentaActivada || "-")}</p>
-            <p><strong>Comentarios operador:</strong> ${escaparHTML(notaOperador || "-")}</p>
+            ${bloqueEntregas}
           `;
           resultadoConsulta.appendChild(card);
         });
+      }
+
+      function crearBloqueEntregasSeguimiento(item) {
+        item = item || {};
+
+        const entregas = Array.isArray(item.entregasPedido) ? item.entregasPedido : [];
+
+        if (entregas.length > 0) {
+          return entregas.map((entrega, index) => {
+            const numero = entrega.numeroEntrega || (index + 1);
+            const total = entrega.totalPedido || item.cantidadCuentas || entregas.length;
+            const cuentaActivada = entrega.correoCuentaEntregada || entrega.cuentaReemplazo || "-";
+            const comentario = entrega.comentariosOperador || "-";
+            const cuentaOriginal = entrega.correoProporcionado || "";
+            const cuentaMadre = entrega.correoCuentaMadre || "";
+
+            return `
+              <div style="margin-top:14px;padding:12px;border:1px solid rgba(80,255,160,.35);border-radius:14px;background:rgba(0,0,0,.14);">
+                <p><strong>Entrega ${escaparHTML(numero)} de ${escaparHTML(total)}:</strong></p>
+                ${cuentaOriginal ? `<p><strong>Correo proporcionado ${escaparHTML(numero)}:</strong> ${escaparHTML(cuentaOriginal)}</p>` : ""}
+                <p><strong>Cuenta activada ${escaparHTML(numero)}:</strong> ${escaparHTML(cuentaActivada)}</p>
+                ${cuentaMadre ? `<p><strong>Cuenta madre ${escaparHTML(numero)}:</strong> ${escaparHTML(cuentaMadre)}</p>` : ""}
+                <p><strong>Comentarios operador ${escaparHTML(numero)}:</strong> ${escaparHTML(comentario)}</p>
+              </div>
+            `;
+          }).join("");
+        }
+
+        const cuentaActivada = obtenerCuentaActivadaSeguimiento(item);
+        const notaOperador = obtenerNotaOperadorSeguimiento(item);
+
+        return `
+          <p><strong>Cuenta activada:</strong> ${escaparHTML(cuentaActivada || "-")}</p>
+          <p><strong>Comentarios operador:</strong> ${escaparHTML(notaOperador || "-")}</p>
+        `;
       }
 
       function formatearTiempoSeguimiento(valor) {
